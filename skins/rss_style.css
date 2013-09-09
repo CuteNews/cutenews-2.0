@@ -1,0 +1,63 @@
+rss {
+        display: block;
+        font-family: verdana, arial;
+}
+
+channel title {
+        display:block;
+        margin: 5px;
+        padding: 2px;
+        color: gray;
+        border-bottom: 1px solid silver;
+        font-weight:bold;
+}
+
+channel link {
+        display:none;
+}
+
+item link{
+        display: block;
+        margin: 5px;
+        padding: 2px;
+        font-size:70%;
+        color: #91A7BA;
+
+}
+item title {
+        display: block;
+        margin: 5px;
+        padding: 2px;
+        border-bottom: 1px solid silver;
+        font-weight:bold;
+        color:black;
+        background-color:lightblue;
+        -moz-border-radius: .5em .5em .5em .5em;
+}
+
+item {
+        display: block;
+        padding: 2px 30px 2px 30px;
+}
+
+item description {
+        color: black;
+        margin: 12px;
+        font-size: small;
+}
+docs {
+        display: block;
+        background-color: #ffffe6;
+        margin: 20px;
+        text-align: center;
+        padding: 5px;
+        color: #7f7f7f;
+        border: 1px solid orange;
+}
+
+/* all hidden elements */
+language, lastBuildDate, ttl, guid, category, generator, pubDate {
+        display: none;
+}
+
+channel:before{ background-color:yellow; padding:1px; -moz-border-radius:0 0 1em 0; font-size:111%; letter-spacing:0.05em; border-bottom:3px solid red; border-right:3px solid red; color:red; text-align: center; content:"This is an RSS 2.0 file intended to be viewed in a newsreader or syndicated to another site." }

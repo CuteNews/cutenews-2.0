@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>CuteNews Release Notes</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <style type="text/css">
+        body pre { font-family: "Monospace", "Courier new", serif; font-size: 14px; line-height: 1.25em; }
+        code { color: #000080; font-weight: bold; }
+    </style>
+</head>
+<body><pre>
+
+Requirements
+
+    - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
+    - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
+
+CuteNews 2.0 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+    Coming soon!
+
+
+CuteNews 1.5.3 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+1.0 Requirements
+
+    - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
+    - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
+
+2.0 Safety improvements
+
+A   In order to authenticate and verify the security algorithm used XXTEA session Cookies. The essence of the method
+    implementation:
+
+    1. In the session is added REMOTE_ADDR to block repeated requests;
+    2. Serialize $_SESS array into serialized string;
+    3. Serialized string is encrypted using a randomly selected XXTEA with &ldquo;salt&rdquo; for the site;
+    4. Encrypting a string is passed to the Cookies named `session`.
+
+    What it gives?
+
+    Protection against CSRF and open view of identification user data. In order to properly encrypt data and send them
+    fraudulent manner, you need a &ldquo;salt&rdquo; and the IP address of the sender. Salt is unique for each site and set consists
+    of a 512-bit encryption. The probability of selection of the cipher salt is actually zero. Each time you update a
+    random number issued to confirm the return to the user, which is stored in an encrypted session.
+
+    You also cannot resend the same token to another IP-address, since the encrypted data is IP-address of the sender
+    and any attempt to send the wrong line leads to unlogin.
+
+    However, nothing can protect any data from the session, and &ldquo;listening&rdquo; to, if not using a secure https-connection.
+    To install it you have to buy a registrar certificate for your domain. Read more here
+    http://en.wikipedia.org/wiki/HTTP_Secure
+
+B   CAPTCHA
+
+    The main problem in the web space is still spam. For writing news comments and for account registration captcha has
+    been added, which uses session encryption mechanism through the Cookies, so that hacking by robot is impossible,
+    too. The information is stored securely.
+
+C   A function cleaning almost every XSS written by an offender in the comments or posts has been created.
+
+D   Enhanced protection from the folder view with .htaccess has been added.
+
+</pre></body></html>

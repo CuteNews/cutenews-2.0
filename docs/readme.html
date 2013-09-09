@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+    <title>CuteNews README</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <style type=text/css>
+        a:link    { color:#3E749F; text-decoration:none}
+        a:visited { color:#3E749F; text-decoration:none}
+        a:hover   { color:#3E749F; text-decoration:underline}
+        a:active  { color:#3E749F; text-decoration:underline}
+
+        a.menu:hover, A.menu:active { color:black; text-decoration: none }
+        a.menu:link, A.menu:visited { color:#305367; text-decoration: none }
+
+        body { background: lightsteelblue; }
+        BODY, P, LI, TD
+        {
+            color: black;
+            font-family: verdana, arial, serif;
+            font-size: 12px;
+            line-height: 16px
+        }
+        #wrapper
+        {
+            margin: 16px auto;
+            padding: 16px 0 16px 0;
+            background: white;
+            width: 733px;
+            border: 1px solid black;
+        }
+        .readme { text-align: center; color: #0090C0; font-weight: bold; font-size: 16px; margin: 0 4px 0 4px; }
+        .heading { background: #C2E4DB; font-weight: bold; font-size: 13px; margin: 16px 0 8px 0; padding: 4px; }
+        .content { margin: 8px 24px 8px 24px; }
+
+        .content hr { border: none; border-bottom: 1px dashed gray; margin: 0 0 8px 0; }
+        .content span { color: #993300; }
+        .content samp { font-family: monospace; border: 1px dashed #CCCCFF; display: block; padding: 8px; width: 400px; background: #EDF1F8; font-weight: bold; }
+
+        ul li span.red { color: red; }
+        ul li span.green { color: green; }
+
+    </style>
+</head>
+<body>
+
+<div id="wrapper">
+
+    <div class="readme">CuteNews README</div>
+
+    <div class="heading">Information About The Script</div>
+    <div class="content">
+
+        <p>CuteNews by <a href="http://cutephp.com">CutePHP Team</a>.</p>
+
+        <p>Cute news is a powerful and easy for using news management system that use flat files to store its database.
+        It supports comments and archives that can be organized by months.</p>
+
+        <p>Please read the provided <a href="LICENSE.txt" target="_blank">LICENSE.txt</a> file to get familiar with the legal usage of this script.</p>
+
+        <p><a href="http://cutephp.com/cutenews/register/">Registered</a> Customers can seek support on at <a href="mailto:support@cutephp.com">our support mail</a>
+        (technichal issues are discussed in our <a href="http://cutephp.com/forum">Forums</a>!)</p>
+
+    </div>
+
+    <div class="heading">Getting The News On Your Page...</div>
+    <div class="content">
+
+        <p>You can show the news, archives on your page by using some of the following php codes in your page.
+           The page where you include news, should be with extension *.php.</p>
+
+        <p>If you want these codes to be auto-generated for you, login into CuteNews and go to <b>Integration Wizards</b>.</p>
+
+        <hr/>
+
+        <p>When showing news, archives you can use <span>$number = x;</span> to limit the to x the number of maximum showed news on one page.
+           If you use <span>$number</span>, "next >>" link to remaining news will be displayed.</p>
+
+        <p>if you want to show news, archives from certain category you can use <span>$category = "ID";</span> where ID is the id (or category name) of the
+           category, you can choose and more that one category like this: <span>$category = "id1,id2,id3";</span></p>
+
+        <p>When you want to display news and headlines on one page for example, and want when a headline is clicked, the article to be displayed
+           on the place of the news you must use <span>$static = true;</span> before including headlines.</p>
+
+    </div>
+
+    <div class="heading">Examples</div>
+    <div class="content">
+
+        <h4>Showing Active News</h4>
+        <samp>&lt;?php<br/>
+        &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+        ?></samp>
+
+        <h4>Showing with Different Template</h4>
+        <samp>&lt;?php<br/>
+        &nbsp;&nbsp;$template = "YOUR_TEMPLATE_NAME";
+        &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+        ?></samp>
+
+        <h4>Showing Archives</h4>
+        <samp>
+            &lt;?php<br/>
+            &nbsp;&nbsp;include("path/to/show_archives.php");<br/>
+            ?>
+        </samp>
+
+        <h4>Showing 5 Latest News</h4>
+        <samp>
+            &lt;?php<br/>
+            &nbsp;&nbsp;$number = "5";<br/>
+            &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+            ?>
+        </samp>
+
+        <h4>Showing 5 News from Category with ID 2 </h4>
+        <samp>
+            &lt;?php<br/>
+            &nbsp;&nbsp;$number = "5";<br/>
+            &nbsp;&nbsp;$category = "2";<br/>
+            &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+            ?>
+        </samp>
+
+        <h4>Showing All Headlines And The 1 Latest News Article  On One Page</h4>
+        <samp>
+            &lt;?php<br/>
+            &nbsp;&nbsp;$static = true;<br/>
+            &nbsp;&nbsp;$template = "Headlines";<br/>
+            &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+            <br/>
+            &nbsp;&nbsp;$number = "1";<br/>
+            &nbsp;&nbsp;include("path/to/show_news.php");<br/>
+            ?>
+        </samp>
+
+        <h4>Remember that:</h4>
+        <ul>
+
+            <li>in all of the above examples you must replace path/to/... to with <b>your path</b> where you installed CuteNews</li>
+            <li>and not to use the URL but the path
+                <p>
+                    <span class="red">WRONG</span>: include("http://site.com/cutenews/show_news.php);<br/>
+                    <span class="green">CORRECT</span>: include("cutenews/show_news.php);</span>
+                </p>
+                </li>
+
+            <li>in most cases when you include news and headlines in one page, you must use $static = TRUE;</li>
+            <li>when you use $number, $category, $template or any other variable, it must be BEFORE include("show_news.php");</li>
+            <li>if you have any problems, you can always go to our support forums and we'll be more than glad to help you.</li>
+
+        </ul>
+    </div>
+
+    <div class="heading">Help & Support</div>
+    <div class="content">
+
+        <p>If you have some problems with CuteNews you can go to our <a href="http://cutephp.com/forum/" target="_blank">support forum</a>.</p>
+        <p>But before posting your problem on our forums, please look at the included Help Documentation with CuteNews. You can access it through CuteNews > Help > CuteNews internal Help Documentation.</p>
+
+    </div>
+
+</div>
+
+</body></html>
