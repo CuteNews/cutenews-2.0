@@ -1257,7 +1257,7 @@ function fcutenewslic()
 // ===================== ACL SECTION =====================
 
 // Since 2.0: Get cached categories with acl test
-function cn_get_categories()
+function cn_get_categories($is_frontend = FALSE)
 {
     if ($cc = mcache_get('#categories'))
         $catgl = $cc;
@@ -1271,7 +1271,7 @@ function cn_get_categories()
     foreach ($catgl as $id => $v)
     {
         if ($id == '#') unset($catgl[$id]);
-        elseif (!test_cat($id)) unset($catgl[$id]);
+        elseif (!test_cat($id) && !$is_frontend) unset($catgl[$id]);
     }
 
     return $catgl;
