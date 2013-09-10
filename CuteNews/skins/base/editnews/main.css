@@ -1,0 +1,48 @@
+.source { margin: 5px; }
+
+.pagination { padding: 6px 0 0 0; }
+.pagination a { font-size: 13px; }
+.pagination .b, .panel .b, .source .b { font-weight: bold; }
+a.bd { color: red; font-weight: bold; }
+
+.list-footer { margin: 8px 0 0 8px; }
+.actions { float: right; }
+
+#filters { background: #f0f0f0; border: 1px solid #a0a0a0; margin: 16px 0 0 0; padding: 8px; }
+
+.periods { background: #e0e0e0; border-top: #c0c0c0 1px solid; }
+.periods .year, .periods .month { float: left; padding: 3px 5px; ; }
+
+.periods .year { background: #ffe0e0; }
+.periods .year a.sl { font-weight: bold; }
+
+.periods .month { background: #e0ffe0; }
+.periods .month a.sl { font-weight: bold; }
+
+.periods .days { padding: 4px 0; }
+.periods .days a { padding: 4px;  }
+.periods .days a.sl { background: #404040; color: white; }
+
+
+#browse_dates .years { display: block; padding: 2px 4px; }
+#browse_dates .years-b { display: block; padding: 2px 4px; font-weight: bold; }
+#browse_dates .years-bwm { display: block; padding: 2px 4px; background: #000000; }
+#browse_dates .years-bwm a { color: white; font-weight: normal; }
+
+#browse_dates .mons { display: block; padding: 2px 0 2px 8px;  }
+#browse_dates .mons-b { display: block;  padding: 2px 0 2px 8px; font-weight: bold;  }
+#browse_dates .mons-bwm { display: block; padding: 2px 0 2px 8px; background: #000000; }
+#browse_dates .mons-bwm a { color: white; font-weight: normal; }
+
+#browse_dates .days { display: block; padding: 2px 0 2px 16px; }
+#browse_dates .days-b { display: block; padding: 2px 0 2px 16px; display: block; background: #000000;  }
+#browse_dates .days-b a { color: white; font-weight: normal; }
+
+#browse_dates a { text-decoration: underline; line-height: 1.5em; }
+#browse_dates small { font-size: 11px; color: #888888; }
+
+#archives_list a.arch, #archives_list a.arch-b {  text-decoration: none; display: block; padding: 4px; }
+#archives_list a.arch em, #archives_list a.arch-b em { font-size: 11px; text-decoration: underline; font-style: normal; }
+#archives_list a.arch-b { background: #000000; color: white; }
+
+.bold { font-weight: bold; }

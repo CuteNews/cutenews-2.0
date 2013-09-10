@@ -1,0 +1,32 @@
+a:active,a:visited,a:link {color: #446488; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt;}
+a:hover {color: #00004F; text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 8pt; }
+.code {
+    font-family : Andale Mono, Courier;
+    border: 1px solid #BBCDDB;
+    margin:10px;
+    padding:4px;
+    background:#FBFFFF;
+}
+h1 {
+    background-color : #BBCDDB;
+    border-bottom : #000000 1px solid;
+    border-top : #000000 1px solid;
+    color : #000000;
+    font-family : Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    font-size : 16px;
+    font-weight : bold;
+    margin : 10px 0 10px 0;
+    padding: 5px 10px;
+    text-decoration : none;
+}
+table { border-collapse: collapse; }
+BODY, TD, TR {
+    text-align: justify;
+    padding: 0;
+    text-decoration: none;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    cursor: default;
+}
+td { padding: 4px; border: 1px solid #dddddd; }
+td.r { font-weight: bold; text-align: right; }
