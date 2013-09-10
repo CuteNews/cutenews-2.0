@@ -183,6 +183,8 @@ function dashboard_sysconf()
             'disable_pagination'    => array('Y/N', 'Disable pagination|Use it to disable pagination'),
             'mon_list'              => array('text', 'Month list|comma separated, 12 variables'),
             'week_list'             => array('text', 'Weeks list|comma separated, 7 variables'),
+            'disable_title'         => array('Y/N', 'Title field will not be required'),
+            'disable_short'         => array('Y/N', 'Short story field will not be required'),
         ),
 
         'comments' => array

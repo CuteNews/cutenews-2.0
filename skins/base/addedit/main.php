@@ -35,7 +35,7 @@
     <input type="hidden" name="id" value="<?php echo intval($id); ?>" />
 
     <div class="section">
-        <div class="name">Article title <span class="req">*</span></div>
+        <div class="name">Article title<?php if (!getoption('disable_title')) echo ' <span class="req">*</span>'; ?></div>
         <div><input type="text" style="width: 100%" value="<?php echo cn_htmlspecialchars($vTitle); ?>" name="title" tabindex=1></div>
     </div>
 
@@ -77,7 +77,7 @@
     <!-- Short story -->
     <div class="section">
 
-        <div class="name">Short Story<span class="req">*</span></div>
+        <div class="name">Short Story<?php if (!getoption('disable_short')) echo ' <span class="req">*</span>'; ?></div>
         <div><textarea rows="12" cols="74" id="short_story" name="short_story" tabindex=2><?php echo cn_htmlspecialchars($vShort); ?></textarea></div>
 
         <?php if ($CKEDITOR_Active == 0) { ?>

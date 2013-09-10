@@ -85,8 +85,11 @@ function add_news_invoke()
         // ----
         if (!$preview)
         {
-            if (empty($title)) cn_throw_message('The title cannot be blank', 'e');
-            if (empty($short_story)) cn_throw_message('The story cannot be blank', 'e');
+            if (!getoption('disable_title') && empty($title))
+                cn_throw_message('The title cannot be blank', 'e');
+
+            if (!getoption('disable_short') && empty($short_story))
+                cn_throw_message('The story cannot be blank', 'e');
 
             // no errors in a[rticle] area
             if (cn_get_message('e', 'c') == 0)

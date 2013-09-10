@@ -291,10 +291,10 @@ function edit_news_action_edit()
             // Save new data
             elseif (REQ('do_editsave', 'POST'))
             {
-                if (empty($title))
+                if (!getoption('disable_title') && empty($title))
                     cn_throw_message('The title cannot be blank', 'e');
 
-                if (empty($short_story))
+                if (!getoption('disable_short') && empty($short_story))
                     cn_throw_message('The story cannot be blank', 'e');
 
                 // Check for change alias

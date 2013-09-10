@@ -184,8 +184,11 @@ $category   = cn_get_categories();
 
                             <?php hook('template/editnews/list_item_before', array($ID, $entry)); ?>
                             <td>
-                                <?php if ($entry['can']) { ?>
-                                    <a title="<?php echo cn_htmlspecialchars($entry['title'].($entry['pg'] ? ' ('.$entry['pg'].')' : '')); ?>" href="<?php echo cn_url_modify('action=editnews', "id=$ID"); ?>"><?php echo cn_htmlspecialchars($entry['title']); ?></a>
+                                <?php if ($entry['can']) {
+
+                                    $title = $entry['title'] ? $entry['title'] : '<no title:'.$entry['id'].'>';
+                                    ?>
+                                    <a title="<?php echo cn_htmlspecialchars($title.($entry['pg'] ? ' ('.$entry['pg'].')' : '')); ?>" href="<?php echo cn_url_modify('action=editnews', "id=$ID"); ?>"><?php echo cn_htmlspecialchars($title); ?></a>
                                 <?php } else echo cn_htmlspecialchars($entry['title']); ?>
                             </td>
                             <td align='center'><?php echo count($entry['co']); ?></td>
