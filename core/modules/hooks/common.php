@@ -1,5 +1,39 @@
 <?php
 
+// Since 2.0.1: Raw extends
+function cn_extrn_raw_template($template, $apply_patch = NULL)
+{
+    global $_raw_md5;
+
+    $variables = array();
+
+    // Template <RAW>
+    if (preg_match_all('/<\!\-\-RAW\-\-(.*?)\-\-RAW\-\->/s', $template, $cp, PREG_SET_ORDER))
+    {
+        foreach ($cp as $out)
+        {
+            if (is_null($apply_patch))
+            {
+                $md5 = md5($out[0]);
+                $variables[$md5] = $out[1];
+
+                $template = str_replace($out[0], '<!--RAW--('.$md5.')--RAW-->', $template);
+            }
+            else
+            {
+                $md5 = substr($out[1], 1, -1); echo $md5;
+                $template = str_replace('<!--RAW--('.$md5.')--RAW-->', $apply_patch[$md5], $template);
+            }
+        }
+    }
+
+    // Text <raw> convers
+    $template = str_replace(array_keys($_raw_md5), array_values($_raw_md5), $template);
+    unset($_raw_md5);
+
+    return array($template, $variables);
+}
+
 // Since 2.0: Replace words
 function cn_extrn_replace($input)
 {

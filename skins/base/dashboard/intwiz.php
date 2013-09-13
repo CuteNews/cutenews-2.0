@@ -1,6 +1,6 @@
 <?php
 
-list($sub, $categories, $user_templates) = _GL('sub, categories, user_templates');
+list($sub, $categories, $all_tpls) = _GL('sub, categories, all_tpls');
 
 // Options
 list($rss_news_include_url, $rss_encoding, $rss_language, $rss_title) = _GL('rss_news_include_url, rss_encoding, rss_language, rss_title');
@@ -83,10 +83,8 @@ cn_snippet_bc();
             <td><b><br>Template to Use When Displaying News:</b></td>
             <td rowspan="2" align="center">
                 <select name="w_template">
-                    <option value="default">Default</option>
-                    <option <?php if (REQ('w_template') == 'headlines') echo 'selected="selected"'; ?>value="headlines">Headlines</option>
-                    <?php foreach ($user_templates as $template) { ?>
-                        <option <?php if (REQ('w_template') == $template) echo 'selected="selected"'; ?> value="<?php echo cn_htmlspecialchars($template); ?>)"><?php echo cn_htmlspecialchars($template); ?></option>
+                    <?php foreach ($all_tpls as $template_id => $template) { ?>
+                        <option <?php if (REQ('w_template') == $template_id) echo 'selected="selected"'; ?> value="<?php echo $template_id; ?>)"><?php echo cn_htmlspecialchars(ucfirst($template)); ?></option>
                     <?php } ?>
                 </select>
             </td>

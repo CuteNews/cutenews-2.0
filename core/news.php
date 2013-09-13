@@ -192,6 +192,14 @@ function cn_modify_s2bb_youtube($t)
     return $t;
 }
 
+// Since 2.0.1: tag [cdata] ..[cdata].. [/cdata] save contains text
+function cn_modify_s2bb_cdata($t)
+{
+    global $_raw_md5;
+
+    $_raw_md5[ $raw = '<!--raw--('.md5($t).')--raw-->' ] = $t;
+    return $raw;
+}
 
 // NEWS ----------------------------------------------------------------------------------------------------------------
 function cn_modify_title($e)

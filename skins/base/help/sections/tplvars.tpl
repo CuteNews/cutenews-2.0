@@ -53,6 +53,7 @@
     <tr> <td class="r">[img] ... [/img]</td> <td>Make image link</td>  </tr>
     <tr> <td class="r">[more] ... [/more]</td> <td>Make "more" field</td>  </tr>
     <tr> <td class="r">[youtube] ... [/youtube]</td> <td>Make youtube link</td>  </tr>
+    <tr> <td class="r">[cdata] ...[bb-tags]... [/cdata]</td> <td>Save the text unchanged</td>  </tr>
 
     {$More_Active_News}
 </table>

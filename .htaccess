@@ -1,1 +1,7 @@
 DirectoryIndex index.php
+# --- CUTENEWS[ST]
+RewriteEngine ON
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /show_news.php?cn_rewrite_url=$1 [L]
+# --- CUTENEWS[ED]

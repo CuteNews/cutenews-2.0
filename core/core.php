@@ -647,13 +647,13 @@ function read_tpl($tpl = 'index')
     $cached = mcache_get("tpl:$tpl");
     if ($cached) return $cached;
 
-    $fine = '.tpl';
-    if (preg_match('/\.(css|js)/i', $tpl)) $fine = '';
+    // Get asset path
+    if (preg_match('/\.(css|js)/i', $tpl)) $fine = ''; else $fine = '.tpl';
 
-    // Get plugin patch
+    // Get plugin path
     if  ($tpl[0] == '/')
-         $open = SERVDIR.'/cdata/plugins/'.substr($tpl,1) .$fine;
-    else $open = SKIN.'/'.($tpl?$tpl:'default') . $fine;
+         $open = SERVDIR.'/cdata/plugins/'.substr($tpl, 1) .$fine;
+    else $open = SKIN.'/'.($tpl? $tpl : 'default') . $fine;
 
     // Try open
     $not_open = false;
@@ -665,7 +665,7 @@ function read_tpl($tpl = 'index')
     $ob = ob_get_clean();
     fclose($r);
 
-    // cache file
+    // caching file
     mcache_set("tpl:$tpl", $ob);
     return $ob;
 }
@@ -2048,32 +2048,45 @@ function cn_replace_text()
 // Since 2.0: Decode "defaults/templates" to list
 function cn_template_list()
 {
-    $templates        = array();
-    $current_tpl_name = $_tpl_var = '';
-    $tpl = explode("\n", read_tpl('defaults/templates'));
+    $config = file(SKIN.'/defaults/templates.tpl');
+    $tbasic  = getoption('#templates_basic');
 
-    foreach ($tpl as $line)
+    // template file is changed
+    if ($tbasic['hash'] !== ($nhash = md5(join(',', $config))))
     {
-        if ($line[0] == '#')
+        $templates        = array();
+        $current_tpl_name = $_tpl_var = '';
+
+        foreach ($config as $line)
         {
-            $current_tpl_name = substr($line, 1);
-            $templates[ $current_tpl_name ] = array();
-            continue;
+            if ($line[0] == '#')
+            {
+                $current_tpl_name = trim(substr($line, 1));
+                $templates[ $current_tpl_name ] = array();
+                continue;
+            }
+
+            // Subtemplate markers
+            if ($line[0] == '*')
+            {
+                $_tpl_var = trim(substr($line, 1));
+                if ($_tpl_var) $template_vars[$_tpl_var] = '';
+            }
+            // Subtemplate codes
+            elseif (preg_match('/\s/', $line[0]) || $line[0] === '')
+            {
+                $templates[ $current_tpl_name ][$_tpl_var] .= substr($line, 1);
+            }
         }
 
-        // Subtemplate marker
-        if ($line[0] == '*')
-        {
-            $_tpl_var = substr($line, 1);
-            if ($_tpl_var) $template_vars[$_tpl_var] = '';
-        }
-        elseif (preg_match('/\s/', $line[0]) || $line[0] === '')
-        {
-            $templates[ $current_tpl_name ][$_tpl_var] .= substr($line, 1)."\n";
-        }
+        // set <change hash> var and parsed templates
+        $tbasic['hash'] = $nhash;
+        $tbasic['templates'] = $templates;
+
+        setoption('#templates_basic', $tbasic);
     }
 
-    return $templates;
+    return $tbasic['templates'];
 }
 
 // Since 2.0: Get template (if not exists, create from defaults)
@@ -2082,21 +2095,25 @@ function cn_get_template($subtemplate, $template_name = 'default')
     $templates      = getoption('#templates');
     $template_name  = strtolower($template_name);
 
-    // Template not exists in config, get from defaults
+    // User template not exists in config... get from defaults
     if (!isset($templates[$template_name]))
     {
         $list = cn_template_list();
-        setoption("#templates/$template_name", $list[$template_name]);
+        return $list[$template_name][$subtemplate];
     }
-
-    // Get template part
-    return getoption("#templates/$template_name/$subtemplate");
+    else
+    {
+        return $templates[$template_name][$subtemplate];
+    }
 }
 
 // Since 2.0: Replace all {name} and [name..] .. [/name] in template file
 function entry_make($entry, $template_name, $template_glob = 'default', $section = '')
 {
     $template = cn_get_template($template_name, strtolower($template_glob));
+
+    // Get raw data
+    list($template, $raw_vars) = cn_extrn_raw_template($template);
 
     // Extrn function for replace
     $template = cn_extrn_morefields($template, $entry, $section);
@@ -2151,6 +2168,9 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     {
         $template = UTF8ToEntities($template);
     }
+
+    // Return raw data
+    list($template) = cn_extrn_raw_template($template, $raw_vars);
 
     return $template;
 }
@@ -2826,12 +2846,33 @@ function cn_widget()
 // Since 2.0: Make basic URL for rewrite
 function cn_rewrite()
 {
+    global $PHP_SELF;
+
     if (!getoption('rw_engine'))
         return NULL;
 
     $args   = func_get_args();
     $area   = array_shift($args);
-    $prefix = dirname(getoption('rw_prefix').'/.html');
+
+    // Check prefix
+    $plist = explode('/', $PHP_SELF); $playo = explode('/', getoption('rw_layout'));
+    $plvar = $plist[count($plist)-1]; $pyvar = $playo[count($playo)-1];
+
+    // It's correct (main) php-self
+    if ($plvar == $pyvar)
+    {
+        $prefix = dirname(getoption('rw_prefix').'/.html');
+    }
+    else
+    {
+        $prefix = array();
+        foreach ($plist as $_id) if ($_id)
+        {
+            if (preg_match('/^([^.]+)/', $_id, $c)) $prefix[] = $c[1];
+            elseif ($_id) $prefix[] = $_id;
+        }
+        $prefix = '/' . join('/', $prefix);
+    }
 
     $param  = $args[0];
     $param2 = $args[1];
@@ -2843,14 +2884,8 @@ function cn_rewrite()
 
     // Make postfix
     $postfix = array();
-    foreach ($param3 as $pfx)
-        if (REQ($pfx))
-            $postfix[] = $pfx.'='.urlencode(REQ($pfx));
-
-    if ($postfix)
-        $postfix = '?'.join('&amp;', $postfix);
-    else
-        $postfix = '';
+    foreach ($param3 as $pfx) if (REQ($pfx)) $postfix[] = $pfx.'='.urlencode(REQ($pfx));
+    $postfix = $postfix ? '?'.join('&amp;', $postfix) : '';
 
     // ----
     if ($area == 'full_story')
@@ -2911,6 +2946,26 @@ function cn_rewrite_load()
     if (isset($_GET['cn_rewrite_url']) && ($cn_rewrite_url = $_GET['cn_rewrite_url']))
     {
         $layout = getoption('rw_layout');
+
+        // Try get target php file
+        $request_uri = $_SERVER['REQUEST_URI'];
+        $basedir = dirname(getoption('rw_htaccess'));
+
+        // Rule matched, testing pathes
+        if (preg_match('/^(\/[^\?]+)/', $request_uri, $c))
+        {
+            $tf = explode('/', $c[1]);
+
+            // Decremental search
+            for ($i = count($tf); $i > 0; $i--)
+            {
+                $sp = array_slice($tf, 0, $i);
+                $ch = $basedir . join('/', $sp) . '.php';
+
+                // PHP-File is Founded!
+                if (file_exists($ch)) $layout = $ch;
+            }
+        }
 
         // Decode request URI
         if (preg_match('/\?/', $_SERVER['REQUEST_URI']))
@@ -2974,7 +3029,7 @@ function cn_rewrite_load()
         }
 
         define('CN_REWRITE', $layout);
-        define('PHP_SELF',   str_replace(dirname(getoption('rw_htaccess')), '', $layout));
+        define('PHP_SELF',   str_replace($basedir, '', $layout));
     }
     else
     {

@@ -566,111 +566,135 @@ function dashboard_category()
 
 function dashboard_templates()
 {
-    $user_templates = array();
+    $all_templates  = array();
     $template_parts = array();
+
+    $def_ids = array
+    (
+        'active' => 'Active News',
+        'full' => 'Full Story',
+        'comment' => 'Comment',
+        'form' => 'Add comment form',
+        'prev_next' => 'News Pagination',
+        'comments_prev_next' => 'Comments Pagination',
+    );
 
     list($template, $sub) = GET('template, sub', 'GPG');
 
+    // Default templates
     $list = cn_template_list();
-    $topt = getoption('#templates');
 
-    // Detect user templates
-    foreach ($topt as $id => $tv)
-        if (!isset($list[$id]) && $tv)
-            $user_templates[$id] = $tv;
+    // User changes
+    $tuser = getoption('#templates');
 
-    // Selected template not exist
-    if (!isset($list[$template]) && !isset($user_templates[$template]))
-        $template = 'default';
+    // Basic template name and fetch data (user/system)
+    if (!$template) $template = 'default';
 
-    if (!$sub && $template !== 'mail') $sub = 'active';
+    // Copy default subtemplate, if not exists
+    if (!isset($tuser[$template])) foreach ($list[$template] as $_sub => $_var) $tuser[$template][$_sub] = $_var;
 
-    // Translate id to name
-    foreach ($list[$template] as $id => $_t)
+    // Get all templates, mark it as user/system
+    foreach ($tuser as $id => $vs) $all_templates[ $id ] = 'User';
+    foreach ($list as $id => $vs) $all_templates[ $id ] = 'Sys';
+
+    $odata = array();
+    foreach ($tuser[$template] as $id => $subtpl)
     {
-        $_name = ucfirst(str_replace('_', ' ', $id));
+        if (isset($def_ids[$id]))
+            $_name = $def_ids[$id];
+        else
+            $_name = ucfirst(str_replace('_', ' ', $id));
 
-        if ($id == 'active') $_name = 'Active News';
-        elseif ($id == 'full') $_name = 'Full Story';
-        elseif ($id == 'comment') $_name = 'Comment';
-        elseif ($id == 'form') $_name = 'Add comment form';
-        elseif ($id == 'prev_next') $_name = 'News Pagination';
-        elseif ($id == 'comments_prev_next') $_name = 'Comments Pagination';
-
+        $odata[$id] = $subtpl;
         $template_parts[$id] = $_name;
     }
 
+    reset($odata);
+
+    // Get subtmpl by default
+    if (!$sub) $sub = key($odata);
+
+    // ------------------------------------------------------------------------------------ ACTIONS --------------------
     // save template?
     if (request_type('POST'))
     {
         cn_dsi_check();
 
         // ------------------------
-        if (REQ('delete'))
-        {
-            if (isset($list[$template]))
-                cn_throw_message("Template '$template' is system template, can't delete", 'e');
-            else
-            {
-                $templates = getoption('#templates');
-                if (isset($templates[$template]))
-                {
-                    unset($user_templates[$template]);
-                    unset($templates[$template]);
-                }
-
-                setoption('#templates', $templates);
-
-                cn_throw_message('Template ['.$template.'] deleted!');
-
-                $template = 'default';
-                $sub = 'active';
-            }
-        }
-        // ------------------------
-        elseif (REQ('save_button'))
-        {
-            setoption("#templates/$template/$sub", REQ('save_template_text', 'POST'));
-            cn_throw_message('Template saved');
-        }
-        // ------------------------
-        elseif (REQ('select', 'POST'))
+        if (REQ('select', 'POST'))
         {
             cn_relocation(cn_url_modify(array('reset'), 'mod='.REQ('mod'), 'opt='.REQ('opt'), 'template='.$template));
         }
         // ------------------------
-        else
+        elseif (REQ('create') || REQ('template_name'))
         {
-            $template_name = preg_replace('/[^a-z0-9_]/i', '-', REQ('template_name'));
+            $template_name = trim(strtolower(preg_replace('/[^a-z0-9_]/i', '-', REQ('template_name'))));
 
-            if (!$template_name || isset($list[$template_name]))
+            if (!$template_name)
+            {
                 cn_throw_message('Enter correct template name', 'e');
+            }
+            elseif (isset($all_templates[$template_name]))
+            {
+                cn_throw_message('Template already exists', 'e');
+            }
             else
             {
-                // clone template
-                $template_info = getoption("#templates/$template");
-                setoption("#templates/$template_name", $template_info);
-
-                cn_throw_message('Template ['.$template_name.'] created');
-
-                $template = $template_name;
-                $user_templates[$template_name] = TRUE;
+                setoption("#templates/$template_name", $tuser[$template]);
+                msg_info('Template ['.$template_name.'] created', cn_url_modify(array('reset'), 'mod='.REQ('mod'), 'opt='.REQ('opt'), 'template='.$template_name));
             }
+        }
+        // ------------------------
+        elseif (REQ('delete'))
+        {
+            if ($all_templates[ $template ] === 'Sys')
+            {
+                cn_throw_message("Template '$template' is system template, can't delete", 'e');
+            }
+            else
+            {
+                unset($tuser[$template]);
+                setoption('#templates', $tuser);
+
+                msg_info('Template ['.$template.'] deleted!', cn_url_modify(array('reset'), 'mod='.REQ('mod'), 'opt='.REQ('opt')));
+            }
+        }
+        // ------------------------
+        elseif (REQ('reset'))
+        {
+            if ($all_templates[ $template ] === 'Sys')
+            {
+                unset($tuser[$template]);
+                setoption("#templates", $tuser);
+
+                cn_throw_message("Template reset to default");
+            }
+            else
+            {
+                cn_throw_message("Template is user template, can't reset", 'e');
+            }
+        }
+        // ------------------------
+        else
+        {
+            $tuser[$template][$sub] = REQ('save_template_text', 'POST');
+            setoption("#templates", $tuser);
+
+            cn_throw_message('Template saved successfully');
         }
     }
 
     if (isset($_POST['template']))  $_GET['template'] = $_POST['template'];
     if (isset($_POST['sub']))       $_GET['sub'] = $_POST['sub'];
 
-    // try to load template from config
-    $modified_template = getoption("#templates/$template/$sub");
-    if (is_array($modified_template))
-        $template_text = $list[$template][$sub];
-    else
-        $template_text = $modified_template;
+    // user can't delete system template, only modify
+    $can_delete = $all_templates[$template] == 'Sys' ? FALSE : TRUE;
+
+    // get template text (may be modified before)
+    $template_text = isset($tuser[$template][$sub]) ? $tuser[$template][$sub] : (isset($list[$template][$sub]) ? $list[$template][$sub] : '');
 
     // ----
-    cn_assign('template_parts, user_templates, template_text, template, sub', $template_parts, $user_templates, $template_text, $template, $sub);
+    cn_assign('template_parts, all_templates, template_text, template, sub, can_delete', $template_parts, $all_templates, $template_text, $template, $sub, $can_delete);
     echoheader('-@dashboard/style.css', "Templates"); echo exec_tpl('dashboard/template'); echofooter();
 }
 
@@ -1079,15 +1103,15 @@ function dashboard_intwiz()
         }
     }
 
-    $user_templates = array();
+    $all_tpls  = array();
+    $listsys   = cn_template_list();
     $templates = getoption('#templates');
 
-    // Only user templates allowed
-    $list = cn_template_list();
-    foreach ($templates as $id => $_t)
-        if (!isset($list[$id])) $user_templates[] = $id;
+    // Get all templates
+    foreach ($listsys as $id => $_t) $all_tpls[ $id ] = $id;
+    foreach ($templates as $id => $_t) $all_tpls[ $id ] = $id;
 
-    cn_assign('sub, categories, user_templates', $sub, $categories, $user_templates);
+    cn_assign('sub, categories, all_tpls', $sub, $categories, $all_tpls);
     cn_assign('rss_news_include_url, rss_encoding, rss_language, rss_title', $rss_news_include_url, $rss_encoding, $rss_language, $rss_title);
 
     echoheader('-@dashboard/style.css', 'Integration Wizard'); echo exec_tpl('dashboard/intwiz'); echofooter();
