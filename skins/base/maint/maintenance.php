@@ -2,6 +2,8 @@
 
 list($sub) = _GL('sub');
 
+cn_snippet_bc();
+
 ?>
 <ul class="sysconf_top">
     <li<?php if ($sub == 'migrate') echo " class='selected'"; ?>><a href="<?php echo cn_url_modify('sub=migrate'); ?>">Migration</a></li>

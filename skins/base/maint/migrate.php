@@ -3,7 +3,6 @@
 list($version, $sample_id, $codepage, $preview_html, $old_dir) = _GL('version, sample_id, codepage, preview_html, old_dir');
 
 cn_snippet_messages();
-cn_snippet_bc();
 
 ?>
 

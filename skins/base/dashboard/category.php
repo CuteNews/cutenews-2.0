@@ -36,7 +36,7 @@ cn_snippet_bc();
                 <td align="center"><?php echo intval($id); ?></td>
                 <td><?php echo str_repeat('&ndash;', $category['level']); ?> <a href="<?php echo cn_url_modify("category_id=$id"); ?>"><?php echo cn_htmlspecialchars($category['name']); ?></a></td>
                 <td><?php echo cn_htmlspecialchars($category['memo']); ?></td>
-                <td align="center"><?php if ($category['icon']) echo '<img src="'.cn_htmlspecialchars($category['icon']).'" />'; else echo '---'; ?></td>
+                <td align="center"><?php if ($category['icon']) echo '<img style="max-width: 128px; max-height: 128px;" src="'.cn_htmlspecialchars($category['icon']).'" />'; else echo '---'; ?></td>
                 <td align="center"><?php echo $acl_message ? $acl_message : '---'; ?></td>
             </tr>
         <?php } } else { ?>

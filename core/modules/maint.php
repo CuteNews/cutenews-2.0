@@ -10,6 +10,10 @@ function maint_invoke()
 
     cn_assign('sub', $sub);
 
+    // Top level (dashboard)
+    cn_bc_add('Dashboard', cn_url_modify(array('reset')));
+    cn_bc_add('Maintenance', cn_url_modify());
+
     echoheader('-@dashboard/style.css', 'Maintenance');
     echo exec_tpl('maint/maintenance');
 
