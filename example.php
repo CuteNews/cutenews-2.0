@@ -118,7 +118,7 @@
             <!-- MAIN CONTENT, FIRST -->
             <div class="pagedata">
                 <?php
-$translate = array('category=1' => 'php_self=actu/test.php');
+
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 Here we decide what page to include
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
