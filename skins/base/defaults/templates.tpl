@@ -105,7 +105,7 @@
 *active
  <item>
     <title><![CDATA[{title}]]></title>
-    <link>{rss-news-include-url}?subaction=showfull&amp;id={news-id}</link>
+    <link>{rss-news-include-url}</link>
     <description><![CDATA[{short-story}]]></description>
     <guid isPermaLink="false">{news-id}</guid>
     <pubDate>{date}</pubDate>

@@ -360,10 +360,12 @@ function cn_modify_category_ids($e) { return $e['c']; }
 function cn_modify_category_id($e) { return intval($e['c']); }
 function cn_modify_rss_news_include_url($e)
 {
+    $id = cn_put_alias($e['id']);
+
     if (getoption('rw_engine'))
-        return cn_rewrite('rss', $e['id']);
+        return cn_rewrite('rss', $id);
     else
-        return getoption('#rss/news_include_url') . '?id='.$e['id'];
+        return getoption('#rss/news_include_url') . '?id='.$id;
 }
 function cn_modify_archive_id($e) { return intval($e['arch']); }
 

@@ -21,15 +21,18 @@ function cn_extrn_raw_template($template, $apply_patch = NULL)
             }
             else
             {
-                $md5 = substr($out[1], 1, -1); echo $md5;
+                $md5 = substr($out[1], 1, -1);
                 $template = str_replace('<!--RAW--('.$md5.')--RAW-->', $apply_patch[$md5], $template);
             }
         }
     }
 
     // Text <raw> convers
-    $template = str_replace(array_keys($_raw_md5), array_values($_raw_md5), $template);
-    unset($_raw_md5);
+    if (is_null($apply_patch))
+    {
+        $template = str_replace(array_keys($_raw_md5), array_values($_raw_md5), $template);
+        unset($_raw_md5);
+    }
 
     return array($template, $variables);
 }

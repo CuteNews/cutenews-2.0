@@ -2110,6 +2110,9 @@ function cn_get_template($subtemplate, $template_name = 'default')
 // Since 2.0: Replace all {name} and [name..] .. [/name] in template file
 function entry_make($entry, $template_name, $template_glob = 'default', $section = '')
 {
+    global $_raw_md5;
+
+    $_raw_md5 = array();
     $template = cn_get_template($template_name, strtolower($template_glob));
 
     // Get raw data
@@ -2851,15 +2854,19 @@ function cn_rewrite()
     if (!getoption('rw_engine'))
         return NULL;
 
-    $args   = func_get_args();
-    $area   = array_shift($args);
+    $args     = func_get_args();
+    $area     = array_shift($args);
+    $rss_area = FALSE;
+
+    if (preg_match('/\/rss\.php/i', $PHP_SELF))
+        $rss_area = TRUE;
 
     // Check prefix
     $plist = explode('/', $PHP_SELF); $playo = explode('/', getoption('rw_layout'));
     $plvar = $plist[count($plist)-1]; $pyvar = $playo[count($playo)-1];
 
     // It's correct (main) php-self
-    if ($plvar == $pyvar)
+    if ($plvar == $pyvar || $rss_area)
     {
         $prefix = dirname(getoption('rw_prefix').'/.html');
     }
@@ -2924,7 +2931,7 @@ function cn_rewrite()
     }
     elseif ($area == 'rss')
     {
-        return 'http://' . parse_url(getoption('http_script_dir'), PHP_URL_HOST) . '/rss-' . $param . '.html' . $postfix;
+        return 'http://' . parse_url(getoption('http_script_dir'), PHP_URL_HOST) . $prefix . '/' . $param . '.html' . $postfix;
     }
     elseif ($area == 'tag')
     {
