@@ -310,10 +310,27 @@ function cn_modify_weekday($e)
     return $weeks[$week];
 }
 
-function cn_modify_year($e) { return intval(date('Y', $e['id'])); }
-function cn_modify_day($e) { return intval(date('d', $e['id'])); }
-function cn_modify_hours($e) { return intval(date('H', $e['id'])); }
-function cn_modify_minute($e) { return intval(date('i', $e['id'])); }
+function cn_modify_year($e)
+{
+    return intval(date('Y', $e['id']));
+}
+
+function cn_modify_day($e)
+{
+    return intval(date('d', $e['id']));
+}
+
+function cn_modify_hours($e)
+{
+    $hour = intval(date('H', $e['id']));
+    return $hour < 10 ? '0' . $hour : $hour;
+}
+
+function cn_modify_minute($e)
+{
+    $minute = intval(date('i', $e['id']));
+    return $minute < 10 ? '0'.$minute : $minute;
+}
 
 function cn_modify_since($e)
 {
