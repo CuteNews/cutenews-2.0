@@ -9,38 +9,40 @@ list($snippet) = GET('snippet', 'GPG');
 if (!$snippet) $snippet = 'sandbox';
 
 $_snipdb = getoption('#snippets');
-$html = isset($_snipdb[$snippet]) ? $_snipdb[$snippet] : '';
+$_html = isset($_snipdb[$snippet]) ? $_snipdb[$snippet] : '';
 
 $_assign = array();
 
 // Catch all brackets
-if (preg_match_all('/\[(.*?)\]/is', $html, $c, PREG_SET_ORDER))
+if (preg_match_all('/\[(.*?)\]/is', $_html, $_c, PREG_SET_ORDER))
 {
-    foreach ($c as $vs)
+    foreach ($_c as $_vs)
     {
-        $echo = '';
+        $_echo = '';
 
-        $options = array();
-        list($mod, $opt) = explode('|', $vs[1], 2);
+        $_options = array();
+        list($_mod, $_opt) = explode('|', $_vs[1], 2);
 
-        $opts = spsep($opt);
-        foreach ($opts as $opt)
+        $_opts = spsep($_opt);
+        foreach ($_opts as $_opt)
         {
-            list($id, $value) = explode('=', $opt, 2);
-            $options[$id] = is_null($value) ? TRUE : $value;
+            list($_id, $_value) = explode('=', $_opt, 2);
+            $_options[$_id] = is_null($_value) ? TRUE : $_value;
         }
 
         // MODULES
-        if ($mod == 'news')
+        if ($_mod == 'news')
         {
-            foreach ($options as $id => $var) $$id = $var;
-            ob_start(); include dirname(__FILE__).'/show_news.php'; $echo = ob_get_clean();
+            $_gGET = $_GET; $_GET = array();
+            foreach ($_options as $_id => $_var) $$_id = $_var;
+            ob_start(); include dirname(__FILE__).'/show_news.php'; $_echo = ob_get_clean();
+            $_GET = $_gGET;
         }
 
         // do replace
-        $html = str_replace($vs[0], $echo, $html);
+        $_html = str_replace($_vs[0], $_echo, $_html);
     }
 }
 
-echo $html;
-unset($_snipdb, $_assign, $options, $snippet);
+echo $_html;
+unset($_gGET, $_snipdb, $_assign, $_c, $_vs, $_echo, $_options, $_id, $_mod, $_opt, $_value, $_opts, $_var, $snippet);
