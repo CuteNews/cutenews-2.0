@@ -624,11 +624,18 @@ function exec_tpl()
 
     foreach ($args as $arg)
     {
-        list($k, $v) = explode('=', $arg, 2);
+        if (is_array($arg))
+        {
+            foreach ($arg as $k0 => $v) { $k = "__$k0"; $$k = $v; }
+        }
+        else
+        {
+            list($k, $v) = explode('=', $arg, 2);
 
-        // <-- make local variable
-        $k = "__$k";
-        $$k = $v;
+            // <-- make local variable
+            $k = "__$k";
+            $$k = $v;
+        }
     }
 
     if (file_exists($open))
@@ -1509,10 +1516,14 @@ function word_truncate($text, $length = 75)
 
 // Since 2.0: Get option from #CFG or [%site][<opt_name>]
 // Usage: #level1/level2/.../levelN or 'option_name' from %site
-function getoption($opt_name)
+function getoption($opt_name = '')
 {
     $cfg = mcache_get('config');
 
+    if ($opt_name === '')
+    {
+        return $cfg;
+    }
     if ($opt_name[0] == '#')
     {
         $cfn = spsep(substr($opt_name, 1), '/');
@@ -3151,12 +3162,13 @@ function cn_snippet_open_win($url, $params = array(), $title = 'CN Window' )
     if (empty($params['sb'])) $params['sb'] = 1;
     if (empty($params['rs'])) $params['rs'] = 1;
 
+    $echo = '';
     if ($params['l'] === 'auto')
-        echo 'var lp = (window.innerWidth - '.$params['w'].') / 2; ';
+        $echo .= 'var lp=(window.innerWidth - '.$params['w'].') / 2; ';
     else
-        echo 'var lp = '.$params['l'].'; ';
+        $echo .= 'var lp='.$params['l'].'; ';
 
-    return "window.open('$url', '$title', 'scrollbars={$params['sb']},resizable={$params['rs']},width={$params['w']},height={$params['h']},left='+lp+',top={$params['t']}'); return false;";
+    return $echo . "window.open('$url', '$title', 'scrollbars={$params['sb']},resizable={$params['rs']},width={$params['w']},height={$params['h']},left='+lp+',top={$params['t']}'); return false;";
 }
 
 // Since 2.0: Show breadcrumbs

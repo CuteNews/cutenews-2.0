@@ -14,9 +14,6 @@ function maint_invoke()
     cn_bc_add('Dashboard', cn_url_modify(array('reset')));
     cn_bc_add('Maintenance', cn_url_modify());
 
-    echoheader('-@dashboard/style.css', 'Maintenance');
-    echo exec_tpl('maint/maintenance');
-
     // ----
     $fn_req = "maintenance_{$sub}";
     if (function_exists($fn_req))
@@ -27,8 +24,6 @@ function maint_invoke()
     // - optimize category
     // - update indexes in meta-...
     // - update users uids
-
-    echofooter();
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -166,6 +161,50 @@ function convert_update_indexes($index, $file)
     return array(min($ls), max($ls), count($ls));
 }
 
+
+// Since 2.0.1
+// ---------------------------------------------------------------------------------------------------------------------
+function maintenance_sysconf()
+{
+    list($path, $edit, $save_conf) = GET('path, edit, save_conf', 'POSTGET');
+
+    $saved = FALSE;
+
+    if (request_type('POST'))
+    {
+        setoption("$path/$edit", $save_conf);
+        $saved = TRUE;
+    }
+    else
+    {
+        $epath = spsep($path, '/');
+        foreach ($epath as $id => $vp) if (!trim($vp)) unset($epath[$id]); $epath = array_slice($epath, 0);
+
+        // get path
+        if (count($epath) > 0)
+        {
+            $epath[0] = $epath[0][0] === '#' ? $epath[0] : '#'.$epath[0];
+            $path = join('/', $epath);
+        }
+        else $path = '';
+    }
+
+    $cfg = getoption($path);
+    cn_assign('config, path', $cfg, $path);
+
+    if ($edit)
+    {
+        echo exec_tpl('window', 'title=Edit template part', 'content='.exec_tpl('maint/window/template', array('edit' => $edit, 'path' => $path, 'template' => $cfg[$edit], 'saved' => $saved)));
+    }
+    else
+    {
+        echoheader('-@dashboard/style.css', 'System config debug');
+        echo exec_tpl('maint/maintenance'); echo exec_tpl('maint/sysconf');
+        echofooter();
+    }
+}
+
+// Since 2.0
 // ---------------------------------------------------------------------------------------------------------------------
 function maintenance_migrate()
 {
@@ -464,5 +503,9 @@ function maintenance_migrate()
         cn_throw_message('mbstring not installed! Convert tool not work', 'e');
 
     cn_assign('version, sample_id, codepage, preview_html, old_dir', $version, $sample_id, $codepage, $preview_html, $old_dir);
-    echo exec_tpl('maint/migrate');
+
+    // -- render
+    echoheader('-@dashboard/style.css', 'Maintenance');
+    echo exec_tpl('maint/maintenance'); echo exec_tpl('maint/migrate');
+    echofooter();
 }
