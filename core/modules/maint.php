@@ -172,7 +172,11 @@ function maintenance_sysconf()
 
     if (request_type('POST'))
     {
-        setoption("$path/$edit", $save_conf);
+        if ($path == '')
+            setoption("#$edit", $save_conf);
+        else
+            setoption("$path/$edit", $save_conf);
+
         $saved = TRUE;
     }
     else
