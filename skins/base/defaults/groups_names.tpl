@@ -18,6 +18,8 @@ Cwp|Configs|widgets & plugins (block)
 Cmt|Configs|maintentance (block)
 Cpc|Configs|permission check (block)
 Clc|Configs|localization (block)
+Csr|Configs|html scripts (block)
+Com|Configs|comments manager (block)
 
 Can|Configs|can add news|User can add news
 Cvn|Configs|view news|User can view news list

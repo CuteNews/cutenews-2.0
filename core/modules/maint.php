@@ -170,27 +170,27 @@ function maintenance_sysconf()
 
     $saved = FALSE;
 
+    $epath = spsep($path, '/');
+    foreach ($epath as $id => $vp) if (!trim($vp)) unset($epath[$id]); $epath = array_slice($epath, 0);
+
+    // get path
+    if (count($epath) > 0)
+    {
+        $epath[0] = $epath[0][0] === '#' ? $epath[0] : '#'.$epath[0];
+        $path = join('/', $epath);
+    }
+    else $path = '';
+
     if (request_type('POST'))
     {
-        if ($path == '')
-            setoption("#$edit", $save_conf);
-        else
+        cn_dsi_check();
+
+        if ($path)
             setoption("$path/$edit", $save_conf);
+        else
+            setoption("#$edit", $save_conf);
 
         $saved = TRUE;
-    }
-    else
-    {
-        $epath = spsep($path, '/');
-        foreach ($epath as $id => $vp) if (!trim($vp)) unset($epath[$id]); $epath = array_slice($epath, 0);
-
-        // get path
-        if (count($epath) > 0)
-        {
-            $epath[0] = $epath[0][0] === '#' ? $epath[0] : '#'.$epath[0];
-            $path = join('/', $epath);
-        }
-        else $path = '';
     }
 
     $cfg = getoption($path);

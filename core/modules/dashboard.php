@@ -16,6 +16,7 @@ function dashboard_invoke()
         'main:userman:Cum'    => 'Users manager',
         'main:group:Cg'       => 'Groups',
         'main:backup:Cb'      => 'Backups',
+        // 'main:comments:Com'   => 'Comments',
         'main:archives:Ca'    => 'Archives',
         'main:ipban:Cbi'      => 'Block IP',
         'main:morefields:Caf' => 'Additional fields',
@@ -24,6 +25,7 @@ function dashboard_invoke()
         'main:widgets:Cwp'    => 'Plugins',
         'maint:maint:Cmt'     => 'Maintenance',
         'main:locale:Clc'     => 'Localization',
+        'main:script:Csr'     => 'HTML scripts', // Csr
         'main:selfchk:Cpc'    => 'Permission check',
     );
 
@@ -71,6 +73,8 @@ function dashboard_invoke()
         'maint'     => 'settings.png',
         'group'     => 'group.png',
         'locale'    => 'locale.png',
+        'script'    => 'script.png',
+        'comments'  => 'comments.png',
     );
 
     // More dashboard images
@@ -1803,4 +1807,66 @@ function dashboard_locale()
 
     cn_assign('lang_token, lang, list, tkn, phraseid, translate', $lang_token, $lang, $list, $tkn, $phraseid, $translate);
     echoheader('-@dashboard/style.css', 'Localization'); echo exec_tpl('dashboard/locale'); echofooter();
+}
+
+// Since 2.0.1: Scripts
+function dashboard_script()
+{
+    list($snippet, $text) = GET('snippet, text');
+
+    if ($snippet == '')
+        $snippet = 'sandbox';
+
+    // Prevent subfoldering
+    $snippet = preg_replace('/[^a-z0-9\-\.]/i', '_', $snippet);
+
+    if (request_type('POST'))
+    {
+        cn_dsi_check();
+
+        // Click select only
+        if (!REQ('select', 'POST'))
+        {
+            if (REQ('delete', 'POST'))
+            {
+                $_t = getoption('#snippets');
+                unset($_t[$snippet]);
+                setoption('#snippets', $_t);
+                $snippet = 'sandbox';
+            }
+            else
+            {
+                // Create new snippet
+                if (REQ('create', 'POST'))
+                    $snippet = REQ('create');
+
+                setoption('#snippets/'.$snippet, $text);
+                cn_throw_message('Changes saved');
+            }
+        }
+        else
+        {
+            cn_throw_message('Select snippet ['.cn_htmlspecialchars($snippet).']');
+        }
+    }
+
+    $list = getoption('#snippets');
+    if (empty($list)) $list['sandbox'] = '';
+
+    $params = array
+    (
+        'list' => $list,
+        'text' => getoption('#snippets/'.$snippet),
+        'can_delete' => ($snippet !== 'sandbox') ? TRUE : FALSE,
+        'snippet'  => $snippet,
+        'snippets' => getoption('#snippets'),
+    );
+
+    echoheader('-@dashboard/style.css', 'HTML Scripts'); echo exec_tpl('dashboard/script', $params); echofooter();
+}
+
+// Since 2.0.1: Latest comments
+function dashboard_comments()
+{
+    echoheader('-@dashboard/style.css', 'Comments manager'); echo exec_tpl('dashboard/comments'); echofooter();
 }
