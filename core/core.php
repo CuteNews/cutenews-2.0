@@ -2866,7 +2866,7 @@ function cn_rewrite()
     $plvar = $plist[count($plist)-1]; $pyvar = $playo[count($playo)-1];
 
     // It's correct (main) php-self
-    if ($plvar == $pyvar || $rss_area)
+    if (!$PHP_SELF || $plvar == $pyvar || $rss_area)
     {
         $prefix = dirname(getoption('rw_prefix').'/.html');
     }

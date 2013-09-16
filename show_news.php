@@ -102,7 +102,7 @@ if ($is_in_category && empty($CN_HALT))
 
 // Unset all used variables
 unset ($dir, $sortby, $archive, $only_active, $no_prev, $no_next, $category, $nocat, $id);
-unset ($template, $number, $start_from, $requested_cats, $reverse, $page_alias, $static, $PHP_SELF, $subaction, $translate);
+unset ($template, $number, $start_from, $requested_cats, $reverse, $page_alias, $static, $subaction, $translate);
 
 // Restore GET
 $_GET = $bGET;

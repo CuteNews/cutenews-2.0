@@ -350,6 +350,8 @@ function cn_modify_since($e)
 
 function cn_modify_tagline($e)
 {
+    global $template;
+
     $tag_extrn = strtolower(trim(REQ('tag')));
 
     $echo = '';
@@ -363,8 +365,17 @@ function cn_modify_tagline($e)
         else
             $url = cn_url_modify("tag=$tag");
 
-        $echo .= ' <a href="'.$url.'" class="cn_tag_item'.(($tag_extrn === strtolower($tag))? ' cn_tag_selected' : '').'">'.cn_htmlspecialchars($tag).'</a> ';
+        $esrc = cn_get_template('tagline', $template);
+
+        // tag selected?
+        if ($tag_extrn === strtolower($tag))
+            $esrc = preg_replace('/\{tag\:selected\|(.*?)\}/i', '\\1', $esrc);
+        else
+            $esrc = preg_replace('/\{tag\:selected\|(.*?)\}/i', '', $esrc);
+
+        $echo .= str_replace(array('{url}', '{tag}'), array($url, cn_htmlspecialchars($tag)), $esrc);
     }
+
     return $echo;
 }
 

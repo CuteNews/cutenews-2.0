@@ -48,6 +48,9 @@
   <div>[submit]Search[/submit]</div>
  </form>
 
+*tagline
+ <a href="{url}" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>
+
 *print
  <html>
  <head>
@@ -100,6 +103,9 @@
  </form>
 
 *print
+
+*tagline
+ <a href="{url}" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>
 
 #rss
 *active
