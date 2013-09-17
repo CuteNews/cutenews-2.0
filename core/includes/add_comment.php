@@ -233,7 +233,8 @@ $db[$id]['co'][$cid] = array
     'ed' => $edit_id,
 );
 
-db_save_news($db, $nloc);
+db_save_news($db, $nloc); // save db piece
+db_comm_sync($id, $cid);  // update latest comments
 
 // Hook comment checker
 if ( hook('add_comment_checker', FALSE) ) return FALSE;

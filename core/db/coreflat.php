@@ -680,3 +680,54 @@ function db_get_archives()
     krsort($archs);
     return $archs;
 }
+
+// ----------------------------------------------------------------------------------------------------- COMMENTS ------
+// Since 2.0.1
+function db_comm_sync($id, $comm_id)
+{
+    $chain = bt_get_id('lc:top', 'comm');
+    if (is_null($chain)) $chain = array(array(), null, 0); // entries, << back
+
+    $chain[0][] = "$id:$comm_id";
+
+    // Is over limit (64 entries by cluster)
+    if (count($chain[0]) > 64)
+    {
+        $new_entity = md5(mt_rand());
+        bt_set_id("lc:$new_entity", $chain, 'comm');
+
+        // Make clean
+        $chain[0] = array();
+        $chain[1] = $new_entity;
+    }
+
+    $chain[2]++;
+    bt_set_id('lc:top', $chain, 'comm');
+}
+
+// Since 2.0.1
+function db_comm_lst($start_from = 0, $clusters = 1)
+{
+    $cluster = intval( $start_from / 64 );
+
+    $bt = bt_get_id('lc:top', 'comm');
+    $cn = $bt[2];
+    $bc = $cb = array();
+
+    // Fetch descending order comments
+    for ($i = 0; $i < $cluster + $clusters; $i++)
+    {
+        $bt[0] = array_reverse($bt[0]);
+        if ($i >= $cluster) $bc = array_merge($bc, $bt[0]);
+        $bt = bt_get_id('lc:'.$bt[1], 'comm');
+    }
+
+    foreach ($bc as $citem)
+    {
+        list($_id, $_cid) = explode(':', $citem);
+        $blk = db_news_load(db_get_nloc($_id));
+        $cb[] = array(intval($_id), $blk[$_id]['co'][$_cid]);
+    }
+
+    return array($cb, $cn);
+}

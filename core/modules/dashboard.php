@@ -16,7 +16,7 @@ function dashboard_invoke()
         'main:userman:Cum'    => 'Users manager',
         'main:group:Cg'       => 'Groups',
         'main:backup:Cb'      => 'Backups',
-        // 'main:comments:Com'   => 'Comments',
+        'main:comments:Com'   => 'Comments',
         'main:archives:Ca'    => 'Archives',
         'main:ipban:Cbi'      => 'Block IP',
         'main:morefields:Caf' => 'Additional fields',
@@ -1868,5 +1868,13 @@ function dashboard_script()
 // Since 2.0.1: Latest comments
 function dashboard_comments()
 {
-    echoheader('-@dashboard/style.css', 'Comments manager'); echo exec_tpl('dashboard/comments'); echofooter();
+    list($list, $count) = db_comm_lst();
+
+    $params = array
+    (
+        'list' => $list,
+        'count' => $count,
+    );
+
+    echoheader('-@dashboard/style.css', 'Comments manager'); echo exec_tpl('dashboard/comments', $params); echofooter();
 }
