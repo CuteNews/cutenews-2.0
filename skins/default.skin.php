@@ -8,7 +8,7 @@ $skin_prefix = "";
 // Skin MENU
 // ********************************************************************************
 
-$skin_menu = cn_get_menu() . '<div style="clear:both";></div>';
+$skin_menu = cn_get_menu() . '<div style="clear:both;"></div>';
 
 // ********************************************************************************
 // Skin HEADER
@@ -44,7 +44,7 @@ HTML;
 // Skin FOOTER
 // ********************************************************************************
 $skin_footer = <<<HTML
-        <div style="clear:both";></div>
+        <div style="clear:both;"></div>
     </div>
 </div>
 <div style="text-align: center;"><span style="color: #888888; font-size: 10px;">Execution time: {exec-time} s.</span>{copyrights}</div>
