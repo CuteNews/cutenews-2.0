@@ -2274,6 +2274,21 @@ function cn_rm_GET($e)
             unset($_GET[$id]);
 }
 
+// Since 2.0.1: Decode strings like a=b,b=c,d...
+function cn_params($params)
+{
+    $opts = array();
+    $vt = spsep($params);
+    foreach ($vt as $v0)
+    {
+        list($a, $b) = explode('=', $v0, 2);
+
+        if (is_null($b)) $b = TRUE;
+        $opts[$a] = $b;
+    }
+    return $opts;
+}
+
 // Since 2.0: modify $_GET (+/-) and result is url string
 function cn_url_modify()
 {
@@ -2295,6 +2310,7 @@ function cn_url_modify()
                 list($id, $var) = explode('=', $vs, 2);
                 if ($id == 'self') $SN = $var;
                 elseif ($id == 'reset') $GET = array();
+                elseif ($id == 'group') foreach ($vs as $a => $b) $GET[$a] = $b;
             }
         }
         // 2) Subtract
@@ -2868,6 +2884,7 @@ function cn_rewrite()
     $args     = func_get_args();
     $area     = array_shift($args);
     $rss_area = FALSE;
+    $postfix  = array();
 
     if (preg_match('/\/rss\.php/i', $PHP_SELF))
         $rss_area = TRUE;
@@ -2900,9 +2917,13 @@ function cn_rewrite()
     else
         $param3 = is_array($args[2]) ? $args[2] : array();
 
-    // Make postfix
-    $postfix = array();
-    foreach ($param3 as $pfx) if (REQ($pfx)) $postfix[] = $pfx.'='.urlencode(REQ($pfx));
+    // Make postfix from GET-parameter
+    foreach ($param3 as $id => $pfx)
+    {
+        if (is_numeric($id) && REQ($pfx)) $postfix[] = $pfx.'='.urlencode(REQ($pfx));
+        else $postfix[] = $id.'='.urlencode($pfx);
+    }
+
     $postfix = $postfix ? '?'.join('&amp;', $postfix) : '';
 
     // ----
@@ -3203,24 +3224,27 @@ function cn_snippet_ckeditor($ids = '')
 
     // show
     echo '<script src="'.getoption('http_script_dir').'/core/ckeditor/ckeditor.js"></script>';
-    echo '<script type="text/javascript">';
-    echo "(function() { var settings = {";
-    echo "skin: 'moono', width: 'auto', height: 350, customConfig: '', language: 'en', entities_latin: false, entities_greek: false, ";
-    echo "toolbar: [ ". hook('settings/CKEDITOR_customize', $CKBar) . " ], ";
+    echo '<script type="text/javascript">'."\n";
+    echo "(function() { var settings = {"."\n";
+    echo "skin: 'moono', width: 'auto', height: 350, customConfig: '', language: 'en', entities_latin: false, entities_greek: false, \n";
+    echo "toolbar: [ ". hook('settings/CKEDITOR_customize', $CKBar) . " ], \n";
 
-    echo 'filebrowserBrowseUrl:      "'.PHP_SELF.'?mod=media&opt=inline",';
-    echo 'filebrowserImageBrowseUrl: "'.PHP_SELF.'?mod=media&opt=inline",';
+    $add_opt = array();
+    $add_opt[] = 'filebrowserBrowseUrl: "'.PHP_SELF.'?mod=media&opt=inline"';
+    $add_opt[] = 'filebrowserImageBrowseUrl: "'.PHP_SELF.'?mod=media&opt=inline"';
 
-    echo hook('settings/CKEDITOR_filemanager');
-    echo '}; ';
+    $add_opt = hook('settings/CKEDITOR_filemanager', $add_opt);
+    echo join(', ', $add_opt);
+
+    echo '}; '."\n";
 
     // Smilies
-    echo 'CKEDITOR.config.smiley_path = "'.getoption('http_script_dir').'/skins/emoticons/"; ';
-    echo 'CKEDITOR.config.smiley_images = [ '.hook('settings/CKEDITOR_emoticons', $CKSmiles).' ];';
-    echo 'CKEDITOR.config.smiley_descriptions = [];';
+    echo 'CKEDITOR.config.smiley_path = "'.getoption('http_script_dir').'/skins/emoticons/"; '."\n";
+    echo 'CKEDITOR.config.smiley_images = [ '.hook('settings/CKEDITOR_emoticons', $CKSmiles).' ];'."\n";
+    echo 'CKEDITOR.config.smiley_descriptions = [];'."\n";
 
     $ids = spsep($ids);
-    foreach ($ids as $id) echo "CKEDITOR.replace( '".trim($id)."', ".hook('settings/CKEDITOR_SetsName', 'settings')." );";
+    foreach ($ids as $id) echo "CKEDITOR.replace( '".trim($id)."', ".hook('settings/CKEDITOR_SetsName', 'settings')." );"."\n";
 
     echo hook('settings/CKEDITOR_Settings');
 

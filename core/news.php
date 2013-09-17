@@ -348,6 +348,7 @@ function cn_modify_since($e)
     return join(' ', $res);
 }
 
+// Since 2.0.1
 function cn_modify_tagline($e)
 {
     global $template;
@@ -358,13 +359,7 @@ function cn_modify_tagline($e)
     $x = spsep($e['tg']);
     foreach ($x as $tag)
     {
-        $tag = trim($tag);
-
-        if (getoption('rw_engine'))
-            $url = cn_rewrite('tag', $tag);
-        else
-            $url = cn_url_modify("tag=$tag");
-
+        $tag  = trim($tag);
         $esrc = cn_get_template('tagline', $template);
 
         // tag selected?
@@ -373,7 +368,23 @@ function cn_modify_tagline($e)
         else
             $esrc = preg_replace('/\{tag\:selected\|(.*?)\}/i', '', $esrc);
 
-        $echo .= str_replace(array('{url}', '{tag}'), array($url, cn_htmlspecialchars($tag)), $esrc);
+        // get url tag
+        if (preg_match_all('/\{url(.*?)\}/i', $esrc, $c, PREG_SET_ORDER))
+        {
+            foreach ($c as $v)
+            {
+                if ($v[1]) $group = cn_params(substr($v[1], 1)); else $group = array();
+
+                if (getoption('rw_engine'))
+                    $url = cn_rewrite('tag', $tag, 0, $group);
+                else
+                    $url = cn_url_modify("tag=$tag", $group);
+
+                $esrc = str_replace($v[0], $url, $esrc);
+            }
+        }
+
+        $echo .= str_replace('{tag}', cn_htmlspecialchars($tag), $esrc);
     }
 
     return $echo;

@@ -113,7 +113,7 @@
             <?php if (empty($_POST['full_story'])) { ?><input type=button onClick="ShowOrHide('full-story','');" value="Toggle Full-Story"><?php } ?>
             <input type=submit name="do_editsave" style='font-weight: bold' title="Post the New Article" value="     <?php if (!$EDITMODE) echo 'Add News'; else echo 'Edit'; ?>     " accesskey="s">
         </div>
-        <button title="Preview the New Article" name="preview" value="preview" accesskey="p">Preview</button>
+        <input type="checkbox" name="preview" value="preview" style="border:0; background-color: transparent; vertical-align: middle;"> <span style="font-size: 14px;">Preview</span>
         <div style="clear: both"></div>
     </div>
 
