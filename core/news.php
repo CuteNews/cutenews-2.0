@@ -378,7 +378,7 @@ function cn_modify_tagline($e)
                 if (getoption('rw_engine'))
                     $url = cn_rewrite('tag', $tag, 0, $group);
                 else
-                    $url = cn_url_modify("tag=$tag", $group);
+                    $url = cn_url_modify("tag=$tag", array('group' => $group));
 
                 $esrc = str_replace($v[0], $url, $esrc);
             }
