@@ -138,14 +138,19 @@ function media_invoke()
             // action --> delete entries
             if ($do_action == 'delete')
             {
+                if (empty($rm))
+                {
+                    cn_throw_message('No one file selected', 'w');
+                }
+
                 foreach ($rm as $file)
                 {
                     if (file_exists($cfile = $dfile . $file))
                     {
                         if (is_dir($cfile))
-                            rmdir($cfile);
+                            @rmdir($cfile);
                         else
-                            unlink($cfile);
+                            @unlink($cfile);
                     }
 
                     if (file_exists($cfile))
@@ -213,7 +218,7 @@ function media_invoke()
                 }
                 else cn_throw_message('Select files to move', 'w');
             }
-            // action --> process move
+            // action: process move
             elseif ($pending == 'move')
             {
                 // ...
@@ -250,6 +255,105 @@ function media_invoke()
                     }
                 }
             }
+            // ------------------
+            elseif ($do_action == 'thumb')
+            {
+                $popup_form = '<div class="big_font">'.i18n('Make thumbnails').'</div>Tip: To resize image, set 0 to width, or height<p>';
+                $popup_form .= '<input type="hidden" name="thumb_rms" value="'.cn_htmlspecialchars(serialize($_POST['rm'])).'">';
+                $popup_form .= 'Width <input name="thumb_size_w" value="256"> ';
+                $popup_form .= 'Height <input name="thumb_size_h" value="256"></p>';
+            }
+            elseif ($pending == 'thumb')
+            {
+                $rms = unserialize(REQ('thumb_rms', 'POST'));
+
+                $wt = intval(REQ('thumb_size_w', 'POST'));
+                $ht = intval(REQ('thumb_size_h', 'POST'));
+
+                if ($wt == 0 && $ht == 0)
+                {
+                    cn_throw_message('Enter correct width or height', 'e');
+                }
+                else
+                {
+                    foreach ($rms as $vp)
+                    {
+                        $fn = $root_dir . '/' . $vp;
+                        $vi = cn_htmlspecialchars($vp);
+                        $ii = getimagesize($fn);
+
+                        list($w, $h) = $ii;
+
+                        if ($w == 0 || $h == 0)
+                        {
+                            cn_throw_message("Illegal image [$vi]", 'w');
+                            continue;
+                        }
+
+                        if (preg_match('/jpeg/i', $ii['mime']))
+                        {
+                            $callfi = 'imagejpeg';
+                            $di = imagecreatefromjpeg($fn);
+                        }
+                        elseif (preg_match('/png/i', $ii['mime']))
+                        {
+                            $callfi = 'imagepng';
+                            $di = imagecreatefrompng($fn);
+                        }
+                        elseif (preg_match('/gif/i', $ii['mime']))
+                        {
+                            $callfi = 'imagegif';
+                            $di = imagecreatefromgif($fn);
+                        }
+                        else
+                        {
+                            cn_throw_message("Unrecognized image type for $vi");
+                            continue;
+                        }
+
+                        // Autosize
+                        if ($wt == 0)
+                        {
+                            $resize = TRUE;
+                            $wt = $w * ($ht / $h);
+                        }
+                        elseif ($ht == 0)
+                        {
+                            $resize = TRUE;
+                            $ht = $h * ($wt / $w);
+                        }
+                        else
+                        {
+                            $resize = FALSE;
+                        }
+
+                        $dt = imagecreatetruecolor($wt, $ht);
+                        imagefilledrectangle($dt, 0, 0, $wt, $ht, 0xFFFFFF);
+
+                        // Calculate size factors
+                        $sf_x = $wt / $w;
+                        $sf_y = $ht / $h;
+
+                        $sf = max(array($sf_x, $sf_y));
+                        imagecopyresampled($dt, $di, ($wt - $w * $sf) / 2, ($ht - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
+
+                        if ($resize)
+                        {
+                            $callfi($dt, $root_dir . '/'.$vp);
+                            cn_throw_message("Image resized for [$vi]");
+                        }
+                        else
+                        {
+                            imagejpeg($dt, $root_dir . '/.thumb.'.$vp.'.jpeg');
+                            cn_throw_message("Thumbnail created for [$vi]");
+                        }
+
+                        imagedestroy($di);
+                        imagedestroy($dt);
+                    }
+                }
+            }
+            // ------------------
             // check for plugin
             elseif (!hook('media/post_action'))
             {
@@ -287,15 +391,19 @@ function media_invoke()
         {
             list($w, $h) = getimagesize("$udir/$path/$file");
 
+            $is_thumb = preg_match('/\.thumb\.(.*)\.jpeg/', $file);
+
             $files[] = array
             (
-                'name'  => $file,
-                'url'   => $edir . '/'. ($path? $path . '/' : '') . $file,
-                'local' => ($path? $path . '/' : '') . $file,
+                'name'          => $file,
+                'url'           => $edir . '/'. ($path? $path . '/' : '') . $file,
+                'thumb'         => file_exists($root_dir.'/.thumb.'.$file.'.jpeg') ? $edir . '/'. ($path? $path . '/' : '') . '.thumb.' . $file.'.jpeg' : '',
+                'local'         => ($path? $path . '/' : '') . $file,
                 'just_uploaded' => isset($just_uploaded[$file]) ? TRUE : FALSE,
-                'w'     => $w,
-                'h'     => $h,
-                'fs'    => round(filesize($file_location)/1024, 1),
+                'is_thumb'      => $is_thumb,
+                'w'             => $w,
+                'h'             => $h,
+                'fs'            => round(filesize($file_location)/1024, 1),
             );
         }
     }
@@ -304,7 +412,7 @@ function media_invoke()
     cn_bc_add('Dashboard', cn_url_modify(array('reset')));
     cn_bc_add('Media manager', cn_url_modify());
 
-    cn_assign("files, dirs, path, pathes, popup_form", $files, $dirs, $path, $pathes, $popup_form);
+    cn_assign("files, dirs, path, pathes, popup_form, root_dir", $files, $dirs, $path, $pathes, $popup_form, $root_dir);
 
     if ($opt === 'inline')
     {

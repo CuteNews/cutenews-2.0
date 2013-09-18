@@ -1,6 +1,6 @@
 <?php
 
-    list($files, $dirs, $path, $pathes, $popup_form) = _GL('files, dirs, path, pathes, popup_form');
+    list($files, $dirs, $path, $pathes, $popup_form, $root_dir) = _GL('files, dirs, path, pathes, popup_form, root_dir');
 
     $ckeditor = REQ('CKEditorFuncNum');
     $inline = REQ('opt', 'GETPOST') == 'inline' ? TRUE : FALSE;
@@ -136,7 +136,7 @@
         <!-- show dirs -->
         <?php foreach ($dirs as $dir) { $next_folder = join('/', array_merge( $cp, array($dir['name']))); ?>
             <tr>
-                <td align="center">&nbsp;</td>
+                <td align="center"><img src="skins/images/dir.png" /></td>
                 <td colspan="4"><a href="<?php echo cn_url_modify("folder=$next_folder"); ?>" style="color: #C04000"><b><?php echo $dir['name']; ?></b></a></td>
                 <td align="center"><input type="checkbox" name="rm[]" value="<?php echo cn_htmlspecialchars($dir['name']); ?>" /></td>
             </tr>
@@ -144,11 +144,17 @@
 
         <!-- show files -->
         <?php if (is_array($files)) foreach ($files as $file) { ?>
-            <tr <?php if ($file['just_uploaded']) echo 'style="background: #f0fff0"'; ?>>
+            <tr<?php
 
-                <td align="center"><a href="<?php echo $file['url']; ?>" target="_blank"><?php
+                    if ($file['is_thumb']) echo ' style="background: #f0f0f0; '.(getoption('show_thumbs') ? '' : 'display: none;').'" ';
+                    elseif ($file['just_uploaded']) echo ' style="background: #f0fff0" ';
+
+                ?>>
+                <td align="center"><a href="<?php echo $file['url']; ?>" target="_blank">
+                <?php
                     if ($file['w'] == 0) echo 'n/a';
-                    elseif ($file['w'] < 256) { ?><img src="<?php echo $file['url']; ?>" width="32" /><?php }
+                    elseif ($file['thumb']) { ?><img src="<?php echo $file['thumb']; ?>" width="32" /><?php }
+                    elseif ($file['w'] < 368 || $file['is_thumb']) { ?><img src="<?php echo $file['url']; ?>" width="32" /><?php }
                     else echo "view";
                 ?></a>
                 </td>
@@ -182,6 +188,7 @@
                 <option value="move">Move / Rename</option>
                 <option value="delete">Delete</option>
                 <option value="create">Create directory</option>
+                <option value="thumb">Thumbnail / Resize</option>
                 <?php hook('template/media/select_options'); ?>
             </select>
             <input type="submit" value="Run" />

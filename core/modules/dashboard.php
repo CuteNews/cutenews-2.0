@@ -168,6 +168,7 @@ function dashboard_sysconf()
             'auto_archive'          => array('Y/N', 'Automatic archiving every month'),
             'use_replacement'       => array('Y/N', 'Use word replace module'),
             'client_online'         => array('int', 'Expiration time client online|If 0, client online disabled'),
+            'show_thumbs'           => array('Y/N', 'Show thumbnail files in media gallery'),
 
             'uploads_dir'           => array('text', 'Server upload dir|Real path on server'),
             'uploads_ext'           => array('text', 'Frontend upload dir|Frontend path for uploads'),
