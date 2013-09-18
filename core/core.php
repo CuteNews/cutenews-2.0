@@ -3242,6 +3242,7 @@ function cn_snippet_ckeditor($ids = '')
     echo 'CKEDITOR.config.smiley_path = "'.getoption('http_script_dir').'/skins/emoticons/"; '."\n";
     echo 'CKEDITOR.config.smiley_images = [ '.hook('settings/CKEDITOR_emoticons', $CKSmiles).' ];'."\n";
     echo 'CKEDITOR.config.smiley_descriptions = [];'."\n";
+    echo "CKEDITOR.config.allowedContent = true;";
 
     $ids = spsep($ids);
     foreach ($ids as $id) echo "CKEDITOR.replace( '".trim($id)."', ".hook('settings/CKEDITOR_SetsName', 'settings')." );"."\n";

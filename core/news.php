@@ -351,12 +351,13 @@ function cn_modify_since($e)
 // Since 2.0.1
 function cn_modify_tagline($e)
 {
-    global $template;
+    global $template, $PHP_SELF;
 
     $tag_extrn = strtolower(trim(REQ('tag')));
 
-    $echo = '';
+    $echo = array();
     $x = spsep($e['tg']);
+
     foreach ($x as $tag)
     {
         $tag  = trim($tag);
@@ -373,7 +374,16 @@ function cn_modify_tagline($e)
         {
             foreach ($c as $v)
             {
+                $_phpself = $PHP_SELF; // save php-self
+
                 if ($v[1]) $group = cn_params(substr($v[1], 1)); else $group = array();
+
+                // manual php-self setting
+                if (isset($group['php_self']))
+                {
+                    $PHP_SELF = $group['php_self'];
+                    unset($group['php_self']);
+                }
 
                 if (getoption('rw_engine'))
                     $url = cn_rewrite('tag', $tag, 0, $group);
@@ -381,13 +391,14 @@ function cn_modify_tagline($e)
                     $url = cn_url_modify("tag=$tag", array('group' => $group));
 
                 $esrc = str_replace($v[0], $url, $esrc);
+                $PHP_SELF = $_phpself; // store php-self
             }
         }
 
-        $echo .= str_replace('{tag}', cn_htmlspecialchars($tag), $esrc);
+        $echo[] = str_replace('{tag}', cn_htmlspecialchars($tag), $esrc);
     }
 
-    return $echo;
+    return join(',', $echo);
 }
 
 function cn_modify_page_alias($e) { return $e['pg']; }
