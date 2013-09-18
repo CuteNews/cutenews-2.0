@@ -215,5 +215,57 @@ ________________________________________________________________________________
             $search_form_hide = true;
             include ('/home/yoursite/www/cnews/search.php');
             } ?></code>
+________________________________________________________________________________________________________________________
+
+5.1 The list of parameters before inlcude 'show_news.php'
+
+    DISPLAY
+    -------
+
+    <code>$template (1.4.x+)</code>         Use the template
+    <code>$PHP_SELF (1.4.x+)</code>         Point the name of the file that will be used for links, for example,
+                                            index.php, example.php, etc.
+
+    <code>$static (1.4.x+)</code>           The listing of the news is static, there is a listinf if active news
+    <code>$static_path (до 1.5.4)</code>    Old, used as $PHP_SELF
+    <code>$reverse (1.5.x+)</code>          Display the news in the reverse order
+    <code>$start_from (1.4.x+)</code>       Skip the number of news
+    <code>$number (1.4.x+)</code>           A number of news that will be displayed in the list
+    <code>$no_prev (1.5.2+)</code>          Remove the link Prev
+    <code>$no_next (1.5.2+)</code>          Remove the ink Next
+
+    FILTRATION
+    ----------
+
+    <code>$category (1.4.x+)</code>         Filtration by the displayed categories (id or name)
+    <code>$nocategory (1.5.3+)</code>       Remove some categories from the filtration
+    <code>$ucat (1.5.0+)</code>             User categories: show only those that can be found either in category &ndash;
+                                            nocategory or ucat
+
+    <code>$sortby (2.0+)</code>             Sorting by "date", "author", "comments"
+    <code>$dir (2.0+)</code>                The sorting direction: "", "A" (ascending), "D" (descdending)
+    <code>$user_by (2.0+)</code>            Filtration by a user name
+    <code>$page_alias (2.0+)</code>         Filtration by the unique field $page_alias
+    <code>$tag (2.0+)</code>                Filtration by one of the tags
+    <code>$archive (1.4.x+)</code>          Point an archive ID
+    <code>$only_active (1.4.x+)</code>      Show only active news, not archives
+
+    OTHER
+    -----
+
+    <code>$qhl (2.0+)</code>                Used by CN &ndash; highlighting the text by search
+
+
+5.2 Examples of using the templates [if]
+
+     Add links to different resources
+
+     * Create Additional field with the name resource, type image/resource
+     * Switch the support of pdf expansions in system configurations
+     * Enter to the template
+
+    <code>[if {resource}]PDF-resource: &lt;a href="{resource}">{resource}&lt;/a>[/if]</code>
+
+    if everything is done correctly you will see the link to the resource. 
 
 </pre></body></html>
