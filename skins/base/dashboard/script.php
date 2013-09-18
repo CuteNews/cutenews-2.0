@@ -1,7 +1,13 @@
 <?php cn_snippet_messages(); cn_snippet_bc(); ?>
+
+<ul class="sysconf_top">
+    <li class="selected"><a href="#">Scripts</a></li>
+    <!-- <li><a href="#">Routers</a></li> -->
+</ul>
+
 <form action="<?php echo PHP_SELF; ?>" method="POST">
 
-    <?php cn_form_open('mod, opt'); ?>
+    <?php cn_form_open('mod, opt, sub'); ?>
     <div><textarea name="text" style="width: 770px; height: 400px;"><?php echo cn_htmlspecialchars($__text); ?></textarea></div>
     <br/>
     <div class="panel">

@@ -45,9 +45,7 @@ function help_invoke_main()
 
     if ($section)
     {
-        echo exec_tpl('tiny_header', "header_style=help/style.css", "header_title=HELP - $section");
-        echo exec_tpl('help/main');
-        echo exec_tpl('tiny_footer');
+        echo exec_tpl('window', "style=help/style.css", "title=HELP - $section", 'content='.exec_tpl('help/main'));
     }
     else
     {

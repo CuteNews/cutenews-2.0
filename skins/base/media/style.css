@@ -12,11 +12,12 @@ table.std-table th { background: #4e4e4e; border: 1px solid #8e8e8e; color: whit
 .media_lft_button { margin: 8px 0 0 0; float: left; }
 .media_rgt_button { margin: 8px 0 0 0; float: right; }
 
-.panel { background: #f8ffe0; padding: 4px; border-radius: 6px; }
+.panel-media { background: #ffffe0; padding: 4px; margin: 0 0 8px 0; }
 
 .cn_breadcrumbs { margin: 0 0 8px 0; }
 .cn_breadcrumbs a { font-size: 15px; }
 
-.media_popup_form { background: #FFF0A0; padding: 10px; }
+.media_popup_form { background: #FFF0A0; padding: 10px; border-top: 1px solid #f0c000; }
+
 .big_font { font-size: 18px; }
 .indent { margin-left: 20px; }

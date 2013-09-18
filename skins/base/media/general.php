@@ -86,16 +86,41 @@
     } ?>
 </div>
 
+
+<!-- UPLOAD FORMS --->
+<form action="<?php echo PHP_SELF; ?>" method="POST" enctype="multipart/form-data"><?php cn_form_open($KeepString); ?>
+
+    <!-- image configs -->
+    <div class="panel-media">
+        <table>
+
+            <?php if (ini_get('allow_url_fopen')) { ?>
+                <tr><td>Upload by URL [<a href="#" title="Must be EXACT link to image, else not uploaded" onclick="return(tiny_msg(this));">?</a>]</td><td><input type="text" style="width: 400px;" name="upload_from_inet" /> (optional)</td></tr>
+            <?php } else { ?>Upload by url not allowed by server<?php } ?>
+
+            <?php if (!$ckeditor && $inline) { ?>
+                <tr><td>Image width</td><td><input type="text" style="width: 150px;" id="image_width" name="image_width" value="<?php echo intval(REQ('image_width')); ?>" /></td></tr>
+                <tr><td>Image height</td><td><input type="text" style="width: 150px;" id="image_height"  name="image_height" value="<?php echo intval(REQ('image_height')); ?>" /></td></tr>
+                <tr><td>Image alt</td><td><input type="text" style="width: 250px;" id="image_alt" name="image_alt" value="<?php echo cn_htmlspecialchars(REQ('image_alt')); ?>"/></td></tr>
+                <tr><td>Popup</td><td><input type="checkbox" id="image_popup" name="image_popup" <?php echo REQ('image_popup') ? 'checked' : ''; ?> value="Y" /></td></tr>
+            <?php } ?>
+
+        </table>
+
+    </div>
+
+    <div style="float: right">
+        <a href="#" onclick="return(add_file_node());">Add another file input box</a>
+        <input style="vertical-align: middle;" type="checkbox" name="overwrite" value="Y"> Overwrite
+        <input type="submit" name="upload" value="Upload file(s)"/>
+    </div>
+
+    <div id="file_node"><input type="file" name="upload_file[]" /></div>
+    <br/>
+</form>
+
 <!-- MEDIA FILES -->
 <form action="<?php echo PHP_SELF; ?>" method="POST"><?php cn_form_open($KeepString); ?>
-
-    <?php if ($popup_form) { ?>
-
-        <input type="hidden" name="pending" value="<?php echo cn_htmlspecialchars(REQ('do_action', 'POST')); ?>" />
-        <div class="media_popup_form"><?php echo $popup_form; ?> <input type="submit" value="Submit"></div>
-
-    <?php } ?>
-
 
     <table class="std-table wide" width="100%">
         <tr><th>ICON</th><th width="400px">Image</th> <th>Width, px</th> <th>Height, px</th> <th>Size, kb.</th> <th><input type="checkbox" name="master_box" title="Check All" onclick="check_uncheck_all('rm[]');" /></th></tr>
@@ -144,7 +169,13 @@
     </table>
 
     <!-- Action not work with popup -->
-    <?php if (!$popup_form) { ?>
+    <?php if ($popup_form) { ?>
+
+        <input type="hidden" name="pending" value="<?php echo cn_htmlspecialchars(REQ('do_action', 'POST')); ?>" />
+        <div class="media_popup_form"><?php echo $popup_form; ?> <input type="submit" value="Submit"></div>
+
+    <?php } else { ?>
+
         <div class="media_rgt_button">
             Action
             <select name="do_action">
@@ -155,41 +186,10 @@
             </select>
             <input type="submit" value="Run" />
         </div>
+
     <?php } ?>
+
 
 </form>
 
 <div style="clear: both;"></div>
-
-<!-- UPLOAD FORMS --->
-<form action="<?php echo PHP_SELF; ?>" method="POST" enctype="multipart/form-data"><?php cn_form_open($KeepString); ?>
-
-    <!-- image configs -->
-    <div class="panel" style="margin: 8px 0;">
-        <table>
-
-            <?php if (ini_get('allow_url_fopen')) { ?>
-                <tr><td>Upload by URL [<a href="#" title="Must be EXACT link to image, else not uploaded" onclick="return(tiny_msg(this));">?</a>]</td><td><input type="text" style="width: 400px;" name="upload_from_inet" /> (optional)</td></tr>
-            <?php } else { ?>Upload by url not allowed by server<?php } ?>
-
-            <?php if (!$ckeditor && $inline) { ?>
-                <tr><td>Image width</td><td><input type="text" style="width: 150px;" id="image_width" name="image_width" value="<?php echo intval(REQ('image_width')); ?>" /></td></tr>
-                <tr><td>Image height</td><td><input type="text" style="width: 150px;" id="image_height"  name="image_height" value="<?php echo intval(REQ('image_height')); ?>" /></td></tr>
-                <tr><td>Image alt</td><td><input type="text" style="width: 250px;" id="image_alt" name="image_alt" value="<?php echo cn_htmlspecialchars(REQ('image_alt')); ?>"/></td></tr>
-                <tr><td>Popup</td><td><input type="checkbox" id="image_popup" name="image_popup" <?php echo REQ('image_popup') ? 'checked' : ''; ?> value="Y" /></td></tr>
-            <?php } ?>
-
-        </table>
-
-    </div>
-
-    <div style="float: right">
-        <a href="#" onclick="return(add_file_node());">Add another file input box</a>
-        <input style="vertical-align: middle;" type="checkbox" name="overwrite" value="Y"> Overwrite
-    </div>
-
-    <div id="file_node"><input type="file" name="upload_file[]" /></div>
-    <br/>
-    <div><input type="submit" name="upload" value="Upload file(s)"/></div>
-
-</form>

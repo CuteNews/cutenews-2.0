@@ -197,7 +197,7 @@ function media_invoke()
                 if ($rm)
                 {
                     $popup_form = '<div class="big_font">'.i18n('Move files to').'</div>';
-                    $popup_form .= i18n('Tip: select folders to move to').'<br />';
+                    $popup_form .= i18n('Tip: You can select the folder to move the file').'<br />';
                     $popup_form .= '<table>';
 
                     foreach ($rm as $id => $fn)
@@ -308,11 +308,7 @@ function media_invoke()
 
     if ($opt === 'inline')
     {
-        cn_assign('header', 'Quick insert');
-
-        echo exec_tpl('tiny_header', 'header_style=media/style.css', 'header_title=Quick insert image');
-        echo exec_tpl('media/general');
-        echo exec_tpl('tiny_footer');
+        echo exec_tpl('window', 'title=Quick insert image', 'style=media/style.css', 'content='.exec_tpl('media/general'));
     }
     else
     {
