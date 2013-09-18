@@ -358,6 +358,9 @@ function cn_modify_tagline($e)
     $echo = array();
     $x = spsep($e['tg']);
 
+    $ix = 1;
+    $tc = count($x);
+
     foreach ($x as $tag)
     {
         $tag  = trim($tag);
@@ -395,10 +398,17 @@ function cn_modify_tagline($e)
             }
         }
 
+        if ($ix === $tc)
+            $esrc = preg_replace('/\{comma\|.*?\}/is', '', $esrc);
+        else
+            $esrc = preg_replace('/\{comma\|(.*?)\}/is', '\\1', $esrc);
+
         $echo[] = str_replace('{tag}', cn_htmlspecialchars($tag), $esrc);
+
+        $ix++;
     }
 
-    return join(',', $echo);
+    return join('', $echo);
 }
 
 function cn_modify_page_alias($e) { return $e['pg']; }
