@@ -688,7 +688,8 @@ function db_comm_sync($id, $comm_id)
     $chain = bt_get_id('lc:top', 'comm');
     if (is_null($chain)) $chain = array(array(), null, 0); // entries, << back
 
-    $chain[0][] = "$id:$comm_id";
+    // Save ID, CommentId, referer
+    $chain[0][] = "$id:$comm_id:".$_REQUEST['referer'];
 
     // Is over limit (64 entries by cluster)
     if (count($chain[0]) > 64)
@@ -703,6 +704,24 @@ function db_comm_sync($id, $comm_id)
 
     $chain[2]++;
     bt_set_id('lc:top', $chain, 'comm');
+}
+
+// Since 2.0.1
+function db_comm_delete($id, $comm_id)
+{
+    $nloc = db_get_nloc($id);
+    $db   = db_news_load($nloc);
+    $bt   = bt_get_id('lc:top', 'comm');
+
+    // Action delete if exists
+    if (isset($db[$id]['co'][$comm_id]))
+    {
+        $bt[2]--;
+        unset($db[$id]['co'][$comm_id]);
+    }
+
+    bt_set_id('lc:top', $bt, 'comm');
+    db_save_news($db, $nloc);
 }
 
 // Since 2.0.1
@@ -724,9 +743,9 @@ function db_comm_lst($start_from = 0, $clusters = 1)
 
     foreach ($bc as $citem)
     {
-        list($_id, $_cid) = explode(':', $citem);
+        list($_id, $_cid, $_ref) = explode(':', $citem, 3);
         $blk = db_news_load(db_get_nloc($_id));
-        $cb[] = array(intval($_id), $blk[$_id]['co'][$_cid]);
+        $cb[] = array(intval($_id), intval($_cid), $blk[$_id]['co'][$_cid], $_ref);
     }
 
     return array($cb, $cn);

@@ -41,20 +41,8 @@ if ($action == 'comment_process')
 {
     cn_dsi_check();
 
-    $nloc = db_get_nloc($id);
-    $db = db_news_load($nloc);
-
     list($comm_delete) = GET('comm_delete');
-    if (is_array($comm_delete))
-    {
-        foreach ($comm_delete as $cid)
-        {
-            if (isset($db[$id]['co'][$cid]))
-                unset($db[$id]['co'][$cid]);
-        }
-    }
-
-    db_save_news($db, $nloc);
+    if (is_array($comm_delete)) foreach ($comm_delete as $cid) db_comm_delete($id, $cid);
 
     // Redirect...
     echo '<script type="text/javascript">window.location="'.addslashes(REQ('referer')).'";</script>';

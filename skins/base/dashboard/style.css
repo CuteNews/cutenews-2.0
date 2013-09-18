@@ -56,3 +56,5 @@ tr.row_selected * { color: black; }
 
 .cn_breadcrumbs { margin: 0 0 8px 0; }
 .cn_breadcrumbs a { font-size: 15px; }
+
+tr.unabled { color: #a0a0a0; }

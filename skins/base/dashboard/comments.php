@@ -1,12 +1,26 @@
+<?php cn_snippet_bc(); ?>
+
+<ul class="sysconf_top">
+    <li class="selected"><a href="#">Latest comments</a></li>
+</ul>
+
 <table class="std-table" width="100%">
-    <tr> <th>Comment</th> <th>DateTime</th> <th>IP</th> <th>Email</th> <th>User</th></tr>
-<?php foreach ($__list as $item) { if ($item[1]['id']) { ?>
-    <tr>
-        <td><a target="_blank" href="example.php?id=<?php echo intval($item[0]); ?>&amp;edit_id=<?php echo intval($item[1]['id']); ?>"><?php echo cn_htmlspecialchars(word_truncate($item[1]['c'])); ?></a></td>
-        <td align="center"><?php echo date('Y-m-d H:i:s', $item[1]['id']); ?></td>
-        <td align="center"><?php echo cn_htmlspecialchars($item[1]['ip']); ?></td>
-        <td><?php echo cn_htmlspecialchars($item[1]['e']); ?></td>
-        <td><?php echo cn_htmlspecialchars($item[1]['u']); ?></td>
+    <tr> <th width="1">DateTime</th> <th>Comment</th>  <th>IP</th> <th>Email</th> <th>User</th></tr>
+<?php foreach ($__list as $item) { ?>
+    <tr <?php if (!$item[2]['id']) echo ' class="unabled" '; ?>>
+        <td width="1" align="center"><nobr><?php echo date('Y-m-d H:i:s', $item[1]); ?></nobr></td>
+        <td><?php
+            if (!$item[2]['id'])
+                echo ' ---comment deleted--- ';
+            else
+                echo '<a target="_blank" href="'.$item[3].'">'.cn_htmlspecialchars(word_truncate($item[2]['c'])).'</a>';
+            ?>
+        </td>
+        <td align="center"><?php echo cn_htmlspecialchars($item[2]['ip']); ?></td>
+        <td><?php echo cn_htmlspecialchars($item[2]['e']); ?></td>
+        <td><?php echo cn_htmlspecialchars($item[2]['u']); ?></td>
     </tr>
-<?php } } ?>
+<?php } ?>
 </table>
+
+<p>Total written comments: <b><?php echo $__count; ?></b></p>
