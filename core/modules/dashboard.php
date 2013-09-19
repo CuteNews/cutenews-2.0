@@ -148,6 +148,8 @@ function dashboard_sysconf()
 
             '_GENERAL'              => array('title', 'General site settings'),
             'http_script_dir'       => array('text', 'Full URL to CuteNews directory|example: http://yoursite.com/cutenews'),
+            'main_site'             => array('text', 'URL to you site|example: http://yoursite.com/ (optional)'),
+
             'skin'                  => array('select', 'CuteNews skin', $all_skins),
             'cn_language'           => array('select', 'CuteNews internationalization', $lng),
             'useutf8'               => array('Y/N', 'Use UTF-8 for ACP|with this option, admin panel uses utf-8 charset'),

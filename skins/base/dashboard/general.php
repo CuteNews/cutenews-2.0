@@ -71,8 +71,7 @@
             <a href="example.php" target="blank">Example</a> &middot;
             <a href="docs/readme.html">Readme</a> &middot;
             <a href="docs/usage.html">Usage</a> &middot;
-            <a href="docs/release.html">Release notes</a> &middot;
-            <a href="http://<?php echo $_SERVER['SERVER_NAME']; ?>" target="_blank">Visit site</a>
+            <a href="docs/release.html">Release notes</a>
 
         </div>
 

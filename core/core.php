@@ -2349,11 +2349,20 @@ function cn_get_menu()
         'logout'    => array('', 'Logout', 'logout'),
     ));
 
+    if (getoption('main_site'))
+        $modules['my_site'] = getoption('main_site');
+
     $result = '';
     $mod = REQ('mod', 'GPG');
 
     foreach ($modules as $mod_key => $var)
     {
+        if (!is_array($var))
+        {
+            $result .= '<a class="nav" href="'.cn_htmlspecialchars($var).'" target="_blank">Visit site</a>';
+            continue;
+        }
+
         list($acl, $name, $title, $app) = $var;
 
         if ($acl && !test($acl))
