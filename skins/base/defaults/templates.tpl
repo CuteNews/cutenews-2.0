@@ -49,7 +49,7 @@
  </form>
 
 *tagline
- <a href="{url}" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>
+ <a href="{url}" target="_blank" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>{comma| }
 
 *print
  <html>
@@ -105,7 +105,7 @@
 *print
 
 *tagline
- <a href="{url}" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>
+ <a href="{url}" target="_blank" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>{comma| }
 
 #rss
 *active

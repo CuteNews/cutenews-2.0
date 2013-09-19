@@ -2903,7 +2903,7 @@ function cn_rewrite()
         $prefix = array();
         foreach ($plist as $_id) if ($_id)
         {
-            if (preg_match('/^([^.]+)/', $_id, $c)) $prefix[] = $c[1];
+            if (preg_match('/^(.*)\./', $_id, $c)) $prefix[] = $c[1];
             elseif ($_id) $prefix[] = $_id;
         }
         $prefix = '/' . join('/', $prefix);
