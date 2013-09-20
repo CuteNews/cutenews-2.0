@@ -456,7 +456,7 @@ function db_index_update_overall($source = '')
         $cc = db_make_archive(0, ctime());
         cn_throw_message('Autoarchive performed');
 
-        if (getoption('notify_status') && getoption('notify_archive'))
+        if (getoption('notify_archive'))
             cn_send_mail(getoption('notify_email'), i18n("Auto archive news"), i18n("Active news has been archived (%1 articles)", $cc));
 
         // Refresh overall index

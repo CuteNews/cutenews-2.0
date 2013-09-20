@@ -124,7 +124,7 @@ function add_news_invoke()
                 db_update_aux($entry, 'add');
 
                 // Notify for unapproved
-                if (getoption('notify_status') && getoption('notify_unapproved') && test('Bs'))
+                if (getoption('notify_unapproved') && test('Bs'))
                 {
                     cn_send_mail
                     (

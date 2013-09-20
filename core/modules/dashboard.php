@@ -210,7 +210,6 @@ function dashboard_sysconf()
 
         'notify' => array
         (
-            'notify_status'     => array('Y/N', 'Notifications - Active/Disabled|global status of notifications'),
             'notify_registration' => array('Y/N', 'Notify of new registrations|automatic registration of new users'),
             'notify_comment'    => array('Y/N', 'Notify of new comments|when new comment is added'),
             'notify_unapproved' => array('Y/N', 'Notify of unapproved news|when unapproved article is posted (by journalists)'),

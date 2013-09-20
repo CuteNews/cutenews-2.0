@@ -370,7 +370,7 @@ function maintenance_migrate()
                 }
 
                 $_ynb  = 'reverse_active,full_popup,show_comments_with_full,reverse_comments,only_registered_comment,allow_url_instead_mail,';
-                $_ynb .= 'show_full_with_comments,comments_popup,notify_status,auto_archive,';
+                $_ynb .= 'show_full_with_comments,comments_popup,auto_archive,';
                 $_ynb .= 'notify_registration,notify_comment,notify_archive,notify_unapproved,use_fbcomments,fb_inactive,use_fblike,use_twitter,fblike_send_btn,fblike_show_faces,tw_large';
                 $_ynb = spsep($_ynb);
 

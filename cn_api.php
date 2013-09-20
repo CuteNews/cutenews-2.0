@@ -29,8 +29,18 @@ function cn_api_get_entry($id = NULL)
     $id = cn_id_alias($id);
     $db = db_news_load(db_get_nloc($id));
 
+    // Other meta-information
     if (isset($db[$id]))
+    {
+        $_cot = array();
+        $_cat = cn_get_categories(true);
+        $_cts = spsep($db[$id]['c']);
+
+        foreach ($_cts as $cid) $_cot[$cid] = $_cat[$cid]['name'];
+
+        $db[$id][':cot'] = $_cot;
         return $db[$id];
+    }
     else
         return array();
 }

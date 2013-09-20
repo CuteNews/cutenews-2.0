@@ -228,7 +228,7 @@ db_comm_sync($id, $cid);  // update latest comments
 if ( hook('add_comment_checker', FALSE) ) return FALSE;
 
 // Notify for New Comment
-if (getoption('notify_comment') and getoption('notify_status'))
+if (getoption('notify_comment'))
 {
     $url     = $_SERVER['HTTP_REFERER'];
     $date    = date(getoption('timestamp_active'), ctime());

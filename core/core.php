@@ -929,7 +929,6 @@ function cn_config_load()
         // 'phpself_paginate'              => '',
 
         // Notifications
-        'notify_status'                 => 0,
         'notify_registration'           => 0,
         'notify_comment'                => 0,
         'notify_unapproved'             => 0,
@@ -2359,7 +2358,7 @@ function cn_get_menu()
     {
         if (!is_array($var))
         {
-            $result .= '<a class="nav" href="'.cn_htmlspecialchars($var).'" target="_blank">Visit site</a>';
+            $result .= '<a class="nav" href="'.cn_htmlspecialchars($var).'" target="_blank">'.i18n('Visit site').'</a>';
             continue;
         }
 
@@ -2767,7 +2766,7 @@ function cn_register_form($admin = TRUE)
                     cn_save_session();
 
                     // Send notify about register
-                    if (getoption('notify_status') && getoption('notify_registration'))
+                    if (getoption('notify_registration'))
                     {
                         cn_send_mail(getoption('notify_email'), i18n("New registration"), i18n("User %1 (email: %2) registered", $regusername, $regemail));
                     }
