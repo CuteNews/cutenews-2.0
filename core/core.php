@@ -1003,6 +1003,28 @@ function cn_config_load()
         setoption("#grp", $cfg['grp']);
 }
 
+// Since 2.0.1: Filter magic quotes gpc
+function cn_filter_magic_quotes($in = null, $lv = 0)
+{
+    if ($lv == 0)
+    {
+        $_GET = cn_filter_magic_quotes($_GET, 1);
+        $_POST = cn_filter_magic_quotes($_POST, 1);
+        $_COOKIE = cn_filter_magic_quotes($_COOKIE, 1);
+
+        return TRUE;
+    }
+    elseif (is_array($in))
+    {
+        foreach ($in as $a => $b) $in[$a] = cn_filter_magic_quotes($b, $lv + 1);
+        return $in;
+    }
+    else
+    {
+        return stripslashes($in);
+    }
+}
+
 // Since 2.0: Save whole config
 function cn_config_save($cfg = null)
 {

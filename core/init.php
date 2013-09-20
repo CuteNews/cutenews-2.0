@@ -6,7 +6,6 @@ if (substr(PHP_VERSION, 0, 5) < '4.1.0')
 
 // definitions
 error_reporting(E_ALL ^ E_NOTICE);
-ini_set('magic_quotes_gpc', 0);
 
 define('EXEC_TIME',     microtime(true));
 define('VERSION',       '2.0');
@@ -22,6 +21,9 @@ require_once SERVDIR . '/core/core.php';
 require_once SERVDIR . '/core/security.php';
 require_once SERVDIR . '/core/news.php';
 require_once SERVDIR . '/core/captcha/captcha.php';
+
+// magic quotes = ON, filtering it
+if (ini_get('magic_quotes_gpc')) cn_filter_magic_quotes();
 
 // catch errors
 set_error_handler("user_error_handler");
