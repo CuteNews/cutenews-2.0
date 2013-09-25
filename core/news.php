@@ -388,7 +388,15 @@ function cn_modify_tagline($e)
                     unset($group['php_self']);
                 }
 
-                if (getoption('rw_engine'))
+                // Manual rewrite disable
+                $disable_rw = FALSE;
+                if ($group[':disable_rw'])
+                {
+                    $disable_rw = TRUE;
+                    unset($group[':disable_rw']);
+                }
+
+                if (getoption('rw_engine') && !$disable_rw)
                     $url = cn_rewrite('tag', $tag, 0, $group);
                 else
                     $url = cn_url_modify("tag=$tag", array('group' => $group));

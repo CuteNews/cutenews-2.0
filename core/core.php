@@ -2038,8 +2038,11 @@ function cn_translate_active_news($entry, $translate)
 {
     global $PHP_SELF, $_bc_PHP_SELF;
 
-    // If PHP_SELF is not changed
+    // Reset: If PHP_SELF is not changed
     $PHP_SELF = $_bc_PHP_SELF;
+
+    // Disable Rewrite (once)
+    mcache_get(':disable_rw', FALSE);
 
     if (empty($translate) || !is_array($translate))
         return null;
@@ -2059,6 +2062,7 @@ function cn_translate_active_news($entry, $translate)
     {
         list($ID, $value) = explode('=', $sh, 2);
         if ($ID == 'php_self') $PHP_SELF = $value;
+        if ($ID == ':disable_rw') mcache_get(':disable_rw', TRUE);
     }
 }
 
