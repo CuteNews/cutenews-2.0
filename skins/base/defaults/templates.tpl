@@ -77,7 +77,7 @@
 *comment
 
  <div style="width: 100%; margin-bottom:20px;">
-    <div style="border-bottom:1px solid black;">[comment_delete]%cbox[/comment_delete] by <strong>{author}</strong> @ {date} [edited](<i>Edited: %edited</i>)[/edited] [comment_edit][Edit comment][/comment_edit]</div>
+    <div style="border-bottom:1px solid black;">[delete]%cbox[/delete] by <strong>{author}</strong> @ {date} [edited](<i>Edited: %edited</i>)[/edited] [edit][Edit comment][/edit]</div>
     <div style="padding: 2px; background-color:#F9F9F9">{comment}</div>
  </div>
 
