@@ -9,7 +9,6 @@ define('ACL_LEVEL_JOURNALIST',    3);
 define('ACL_LEVEL_COMMENTER',     4);
 define('ACL_LEVEL_BANNED',        5);
 
-
 // Since 2.0: Check users exists. If no, require install script
 function db_installed_check()
 {
@@ -212,6 +211,193 @@ function db_user_list()
 }
 
 // ------------------------------------------------------------------------------------------------------------ NEWS ---
+
+// Since 2.0.2: Mapper block index
+function db_get_mapper($target_type = '')
+{
+    // Default mapper: get all blocks
+    if (!$target_type)
+    {
+        $timet = array();
+        $files = scan_dir(SERVDIR . '/cdata/news', '\-\d+\.php');
+
+        // Sort block by desc
+        foreach ($files as $date) if (preg_match('/\d+\-\d+\-\d+/', $date, $c)) $timet[ $c[0] ] = strtotime($c[0]) ;
+        arsort($timet);
+
+        return $timet;
+    }
+
+    $mapper = cn_touch_get('/cdata/news/mapper.php');
+
+    return isset($mapper[$target_type]) ? $mapper[$target_type] : array();
+}
+
+function db_sql_quotes($q)
+{
+    $q = trim($q);
+    if ($q[0] == '"' || $q[0] == "'") $q = substr($q, 1, -1);
+    return $q;
+}
+
+// Since 2.0.2: Parse simple SQL
+function db_sql_parse($sql)
+{
+    $start_from = 0;
+    $limit      = NULL;
+    $attr       = array( 'select' => '', 'from' => '', 'where' => '', 'order_by' => '', 'order_dir' => 'ASC', 'limit' => '', 'into' => '', 'values' => '', '#' => '' );
+
+    $pc = '';
+    $psql = explode(" ", $sql);
+    foreach ($psql as $v)
+    {
+        $n = strtoupper($v);
+
+        if ($n == 'SELECT')
+        {
+            $pc = 'select';
+            $attr['#'] = 'SELECT';
+            continue;
+        }
+        elseif ($n == 'UPDATE')
+        {
+            $pc = 'update';
+            $attr['#'] = 'UPDATE';
+            continue;
+        }
+        elseif ($n == 'INSERT')
+        {
+            $pc = 'insert';
+            $attr['#'] = 'INSERT';
+            continue;
+        }
+        elseif ($n == 'DELETE')
+        {
+            $pc = 'delete';
+            $attr['#'] = 'DELETE';
+            continue;
+        }
+        // ----
+        elseif ($n == 'INTO')   { $pc = 'into';     continue; }
+        elseif ($n == 'VALUES') { $pc = 'values';   continue; }
+        elseif ($n == 'FROM')   { $pc = 'from';     continue; }
+        elseif ($n == 'WHERE')  { $pc = 'where';    continue; }
+        elseif ($n == 'ORDER')  { $pc = 'order_by'; continue; }
+        elseif ($n == 'LIMIT')  { $pc = 'limit';    continue; }
+        elseif ($n == 'BY' && $pc == 'order_by') continue;
+        elseif ($n == 'DESC' && $pc == 'order_by')
+        {
+            $attr['order_dir'] = 'DESC';
+            continue;
+        }
+
+        $attr[$pc] .= "$v ";
+    }
+
+    $attr['select']     = trim($attr['select']);
+    $attr['from']       = trim($attr['from']);
+    $attr['where']      = trim($attr['where']);
+    $attr['order_by']   = trim($attr['order_by']);
+    $attr['limit']      = trim($attr['limit']);
+
+    // ---- DECODE LIMIT / WHERE ----
+
+    if ($attr['limit'])
+    {
+        $cl = explode(',', $attr['limit']);
+        if (count($cl) == 1)
+        {
+            $limit = intval($cl[0]);
+        }
+        elseif (count($cl) == 2)
+        {
+            $start_from = intval($cl[0]);
+            $limit      = intval($cl[1]);
+        }
+    }
+
+    $attr['select:start'] = $start_from;
+    $attr['select:limit'] = $limit;
+    $attr['select:field'] = explode(',', $attr['select']);
+
+    $where = array();
+    $or = preg_split('/ OR /is', $attr['where']);
+    foreach ($or as $_and)
+    {
+        $aw = array();
+        $and = preg_split('/ AND /is', $_and);
+        foreach ($and as $v)
+        {
+            if (preg_match('/^(.*)=(.*)$/s', $v, $c))        $aw[] = array('=', trim($c[1]), db_sql_quotes($c[2]));
+            elseif (preg_match('/^(.*)<>(.*)$/s', $v, $c))   $aw[] = array('<>', trim($c[1]), db_sql_quotes($c[2]));
+            elseif (preg_match('/^(.*)>(.*)$/s', $v, $c))    $aw[] = array('>', trim($c[1]), db_sql_quotes($c[2]));
+            elseif (preg_match('/^(.*)<(.*)$/s', $v, $c))    $aw[] = array('<', trim($c[1]), db_sql_quotes($c[2]));
+            // elseif (preg_match('/^(.*) IN \((.*)\)$/is', $v, $c)) $aw[] = array('I', trim($c[1]), trim($c[2]));
+            // elseif (preg_match('/^(.*) LIKE (.*)$/is', $v, $c)) $aw[] = array('L', trim($c[1]), trim($c[2]));
+            // elseif (preg_match('/^(.*) REGEX (.*)$/is', $v, $c)) $aw[] = array('R', trim($c[1]), trim($c[2]));
+            else $aw[] = array('*', $v);
+        }
+
+        $where[] = $aw;
+    }
+
+    $attr['select:where'] = $where;
+
+    return $attr;
+}
+
+// Since 2.0.2: Test item for given where
+function db_where_test($where, $entry)
+{
+    foreach ($where as $ands)
+    {
+        $AND = 1;
+        foreach ($ands as $IF)
+        {
+            if ($IF[0] == '=' && $entry[ $IF[1] ] !== $IF[2]) { $AND = 0; break; }
+            elseif ($IF[0] == '<' && $entry[ $IF[1] ] >= $IF[2]) { $AND = 0; break; }
+            elseif ($IF[0] == '>' && $entry[ $IF[1] ] <= $IF[2]) { $AND = 0; break; }
+            elseif ($IF[0] == '<>' && $entry[ $IF[1] ] === $IF[2]) { $AND = 0; break; }
+        }
+        if ($AND) return TRUE;
+    }
+
+    return FALSE;
+}
+
+// Since 2.0.2: Select news from block
+function db_SQL_select_news($blk, $attr)
+{
+    $ls = array();
+    foreach ($blk as $id => $item) if (db_where_test($attr['where'], $item)) $ls[$id] = $item;
+    return $ls;
+}
+
+// Since 2.X: @TODO Future implementation
+// @param $mapper -- list days blocks from db_get_mapper
+
+function db_query_select($sql, $mapper = array())
+{
+    $attr = db_sql_parse($sql);
+
+    // default mapper
+    if (!$mapper) $mapper = db_get_mapper();
+
+    // === SELECT ===
+    if ($attr['select'])
+    {
+        // Sort entries by date desc
+        foreach ($mapper as $date => $_time)
+        {
+            $dm = cn_touch_get('/cdata/news/'.$date.'.php');
+            krsort($dm);
+
+            $_ent = db_SQL_select_news($dm, $attr);
+        }
+    }
+
+    return NULL;
+}
 
 // Since 2.0: Tranform $ID to date
 function db_get_nloc($id)

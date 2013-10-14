@@ -377,9 +377,12 @@ function cn_modify_tagline($e)
         {
             foreach ($c as $v)
             {
-                $_phpself = $PHP_SELF; // save php-self
+                $disable_rw = FALSE;
+                $_phpself   = $PHP_SELF; // save php-self
+                $_get       = $_GET;
 
-                if ($v[1]) $group = cn_params(substr($v[1], 1)); else $group = array();
+                // Additional parameters
+                $group = $v[1] ? cn_params(substr($v[1], 1)) : array();
 
                 // manual php-self setting
                 if (isset($group['php_self']))
@@ -389,12 +392,14 @@ function cn_modify_tagline($e)
                 }
 
                 // Manual rewrite disable
-                $disable_rw = FALSE;
                 if ($group[':disable_rw'])
                 {
                     $disable_rw = TRUE;
                     unset($group[':disable_rw']);
                 }
+
+                // Tagline - remove ID
+                unset($_GET['id']);
 
                 if (getoption('rw_engine') && !$disable_rw)
                     $url = cn_rewrite('tag', $tag, 0, $group);
@@ -402,7 +407,8 @@ function cn_modify_tagline($e)
                     $url = cn_url_modify("tag=$tag", array('group' => $group));
 
                 $esrc = str_replace($v[0], $url, $esrc);
-                $PHP_SELF = $_phpself; // store php-self
+                $PHP_SELF = $_phpself;  // store php-self
+                $_GET     = $_get;      // store GET
             }
         }
 
