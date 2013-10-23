@@ -732,8 +732,15 @@ function dashboard_userman()
         // Add-Edit
         else
         {
-            // User not exist, add
-            if (!db_user_by_name($user_name, TRUE))
+            $user_data = db_user_by_name($user_name);
+
+            if (REQ('edit'))
+            {
+                if ($user_data === null)
+                    cn_throw_message("User not exists", 'e');
+            }
+            // Add user
+            else
             {
                 // Check user
                 if (!$user_name)
@@ -741,6 +748,9 @@ function dashboard_userman()
 
                 if (!$user_pass)
                     cn_throw_message("Fill required field: password", 'e');
+
+                if ($user_data !== null)
+                    cn_throw_message("Username already exist", 'e');
 
                 // Invalid email
                 if (!check_email($user_email))
@@ -758,7 +768,7 @@ function dashboard_userman()
             if (cn_get_message('e', 'c') == 0)
             {
                 // Edit user [user exist]
-                if (db_user_by_name($user_name, TRUE))
+                if (REQ('edit'))
                 {
                     db_user_update($user_name, "email=$user_email", "nick=$user_nick", "acl=$user_acl");
 

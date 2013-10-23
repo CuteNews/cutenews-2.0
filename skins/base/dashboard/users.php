@@ -53,7 +53,8 @@ cn_snippet_bc();
                         <option value="<?php echo $grp_id; ?>"<?php if ($user_acl == $grp_id) echo ' selected="selected"'; ?>><?php echo cn_htmlspecialchars(ucfirst($item['N'])); ?></option>
                     <?php } ?>
                 </select>
-                <input type="submit" value="Add or Edit user" />
+                <button name="add" value="add">Add</button>
+                <?php if ($user_name) { ?><button name="edit" value="edit">Edit</button><?php } ?>
             </td>
 
         </tr>
