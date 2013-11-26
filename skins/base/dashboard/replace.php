@@ -1,9 +1,19 @@
 <?php
 
-list($wlist, $word, $replace) = _GL('wlist, word, replace');
+list($wlist, $word, $replace, $is_repl_opt) = _GL('wlist, word, replace, repopt');
 
 cn_snippet_bc();
 
+?>
+<?php
+    if(!$is_repl_opt){
+?>
+<div style="color:#FF0000; font-size: 10px;">
+    For working word replacement need turn on option: Use word replace module.<br/>
+    For more information contact with site administrator.
+</div>
+<?php
+    }
 ?>
 <form action="<?php echo PHP_SELF;?>" method="POST">
 

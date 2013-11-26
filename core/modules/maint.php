@@ -480,7 +480,7 @@ function maintenance_migrate()
         {
             if ($version == '1.5.x')
                 $data_dir = $old_dir . '/cdata/news.txt';
-            elseif ($version == '1.5.x')
+            elseif ($version == '1.4.x')
                 $data_dir = $old_dir . '/data/news.txt';
 
             // ---

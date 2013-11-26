@@ -1,7 +1,7 @@
 <?php
 
 list($users, $section, $st, $per_page, $grp) = _GL('users, section, st, per_page, grp');
-list($user_name, $user_nick, $user_email, $user_acl, $delete) = _GL('user_name, user_nick, user_email, user_acl');
+list($user_name, $user_nick, $user_email, $user_acl, $is_edit, $delete) = _GL('user_name, user_nick, user_email, user_acl, is_edit');
 
 cn_snippet_messages();
 cn_snippet_bc();
@@ -21,12 +21,17 @@ cn_snippet_bc();
         </tr>
 
         <tr>
-            <td align="right">Password</td>
-            <td><input style="width: 350px;" type="password" name="user_pass" value=""/> <?php if ($user_name) { ?>write password to change<?php } ?></td>
+            <td align="right">Password <?php if (!$user_name||($user_name&&!$is_edit)) { ?><span class="required">*</span><?php } ?></td>
+            <td><input style="width: 350px;" type="password" name="user_pass" value=""/> 
+                <?php if ($user_name&&$is_edit) { ?>
+                write password to change<br/>
+                <span style="color: #808080; font-size:10px;">password not changed if field stay blank</span>
+                <?php } ?>                
+            </td>
         </tr>
 
         <tr>
-            <td align="right">Confirm</td>
+            <td align="right">Confirm <?php if (!$user_name||($user_name&&!$is_edit)) { ?><span class="required">*</span><?php } ?></td>
             <td><input style="width: 350px;" type="password" name="user_confirm" value=""/></td>
         </tr>
 
@@ -54,7 +59,7 @@ cn_snippet_bc();
                     <?php } ?>
                 </select>
                 <button name="add" value="add">Add</button>
-                <?php if ($user_name) { ?><button name="edit" value="edit">Edit</button><?php } ?>
+                <?php if ($user_name && $is_edit) { ?><button name="edit" value="edit">Edit</button><?php } ?>
             </td>
 
         </tr>

@@ -185,7 +185,8 @@
         <div class="media_rgt_button">
             Action
             <select name="do_action">
-                <option value="move">Move / Rename</option>
+                <option value="move">Move</option>
+                <option value="rename">Rename</option>
                 <option value="delete">Delete</option>
                 <option value="create">Create directory</option>
                 <option value="thumb">Thumbnail / Resize</option>

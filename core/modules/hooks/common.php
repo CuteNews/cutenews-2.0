@@ -187,7 +187,10 @@ if (isset($_POST['widget_personal_keep']))
             $login = $_REQ['widget_personal_username'];
             $pass  = $_REQ['widget_personal_password'];
 
-            $user = member_get($login);
+            // Get User Session
+            $_SESS['user'] = $login;
+            $user = member_get();
+
             if ($user['acl'] == ACL_LEVEL_ADMIN)
             {
                 cn_front_message("Admin login denied from this place", 'login');
@@ -202,8 +205,13 @@ if (isset($_POST['widget_personal_keep']))
                 }
                 else
                 {
+                    $_SESS['user'] = null;
                     cn_front_message('Invalid login or password', 'login');
                 }
+            }
+            else
+            {
+                $_SESS['user'] = null;
             }
         }
         else cn_front_message("CSRF attempt!", 'login');

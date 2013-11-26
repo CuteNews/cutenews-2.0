@@ -1,11 +1,16 @@
 #default
 *active
  <div style="width: 100%; margin-bottom:30px;">
-     <div style="float: right;">[print]printable version[/print]</div>
-     <div><strong>[link]{title}[/link]</strong></div>
-     <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{short-story}</div>
+     <div style="clear:both;">
+          
+        <div style="word-wrap:break-word; width:300px; float:left;"><strong>[link]{title}[/link]</strong></div>
+         <div style="text-align:right;">[print]printable version[/print]</div>      
+     </div>
+     <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{short-story}
+         <div style="margin-top:10px;">[full-link target=_blank]Read more... [/full-link]</div>
+     </div>
      <div style="margin: 0 0 8px 0;">{tagline}</div>
-     <div style="float: right;">[full-link target=_blank]Read more [/full-link]  [com-link]{comments-num} Comments[/com-link]</div>
+     <div style="float: right;">[com-link]{comments-num} Comments[/com-link]</div>
      <div><em>Posted on {date} by {author}</em></div>
      {fb-comments} {fb-like} {gplus} {twitter}
  </div>
@@ -30,9 +35,9 @@
     <tr><td width="60">Name:</td><td>{input_username} {remember_me}</td></tr>
     <tr><td>E-mail:</td><td>{input_email} (optional)</td></tr>
     <tr><td>Smile:</td><td>{smilies}</td></tr>
-    [captcha]<tr><td>Captcha</td><td>{captcha}</td></tr>[/captcha]
     <tr><td colspan="2">{input_commentbox}</td></tr>
-    <tr><td colspan="2">[submit]Add comment[/submit]</td></tr>
+    [captcha]<tr><td>Captcha</td><td>{captcha}</td></tr>[/captcha]    
+    <tr><td colspan="2" align="right">[submit]Add comment[/submit]</td></tr>
  </table>
 
 *prev_next

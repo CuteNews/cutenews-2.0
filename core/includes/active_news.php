@@ -49,7 +49,6 @@ $_source = 'A2';
 if ($archive) $_source = 'archive';
 elseif ($only_active) $_source = '';
 
-$number++;
 
 // Make settings
 $opts = array
@@ -85,7 +84,7 @@ foreach ($entries as $entry)
 
 $_show_rows = count($echo);
 if (($count_news = count($entries)) == 0) echo i18n('No entries to show');
-if ($count_news == $number) unset($echo[$count_news-1]);
+if ($count_news == $number+1) unset($echo[$count_news-1]);
 
 // Re-Request this parameters for news listing
 cn_set_GET('source,number,start_from,reverse,static,sortby,dir,per_page,archive,category,nocategory,ucat,template=Default,page_alias,only_active,user_by');
@@ -103,7 +102,7 @@ if (!$start_from && ($_show_rows < $number))
 // in case is has pagination
 if ($number && $_enable_pagination)
 {
-    $PSTF = array('category');
+    $PSTF = array('category' => '');
     $out = cn_get_template('prev_next', $template);
 
     // <!--- PREV
@@ -166,10 +165,33 @@ if ($number && $_enable_pagination)
     {
         $out = preg_replace('/\[prev\-link\](.*)\[\/prev\-link\]/is', $PREV, $out);
         $out = preg_replace('/\[next\-link\](.*)\[\/next\-link\]/is', $NEXT, $out);
-        $out = str_replace('{pages}', intval($start_from / ($number - 1)), $out);
+        
+        $pages=  round(cn_get_news_count()/(($number-1)==0?1:($number-1)),0,PHP_ROUND_HALF_UP);
+        $links='';
+        for($i=0;$i<$pages;$i++)
+        {
+            $_next_num=($number-1)*$i;
+            $url='#';
+            if (getoption('rw_engine'))
+            {
+                if ($tag)
+                    $url = cn_rewrite('tag', $tag, $_next_num, $PSTF);
+                else
+                    $url = cn_rewrite('list', $_next_num, $archive, $PSTF);
+            }
+            else $url = cn_url_modify("start_from=$_next_num");            
+            if($start_from!=$_next_num)
+            {
+                $links.='<a href="'.$url.'">'.($i+1).'</a>&nbsp;';
+            }
+            else
+            {
+                $links.=($i+1).'&nbsp;';
+            }
+        }
+        
+        $out = str_replace('{pages}', $links, $out); 
 
         echo $out;
     }
 }
-
-$number--;

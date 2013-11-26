@@ -32,9 +32,17 @@ $total_comments = count($comments);
 $com = array();
 global $_comment_iterator;
 
+$user_encoding=getoption('frontend_encoding');
+$is_encode=($user_encoding!='UTF-8')&&function_exists('iconv');
 /* Comment struct: ID => [u]ser, [c]comment text, [e]mail, [ip] */
 foreach ($comments as $comment)
 {
+    if($is_encode)
+    {
+        $bkp=$comment['c'];
+        $comment['c']=iconv('UTF-8',$user_encoding.'//TRANSLIT',$comment['c']);        
+        if(!$comment['c']) $comment['c']=$bkp;
+    }
     $com[] = entry_make($comment, 'comment', $template, 'comm');
     $_comment_iterator++;
 }
@@ -137,8 +145,18 @@ if ($member && test('Mac') || !$member)
     echo '<input type="hidden" name="referer" value="'.cn_htmlspecialchars($_SERVER['REQUEST_URI']).'" />';
 
     $edit_id = REQ('edit_id');
-    if ($edit_id) echo '<input type="hidden" name="edit_id" value="'.intval($edit_id).'" />';
+    if ($edit_id) echo '<input id="edt_comm_mode" type="hidden" name="edit_id" value="'.intval($edit_id).'" />';
 
+    if($is_encode)
+    {
+        $comments=$entry['co'];
+        foreach ($comments as $item)
+        {            
+            $ni= iconv('UTF-8',$user_encoding.'//TRANSLIT',$item['c']);                            
+            if($ni) $entry['co'][$item['id']]['c']=$ni;
+        }
+        
+    }
     $echo = entry_make($entry, 'form', $template, 'comm');
 
     // Keep [bb]codes[/bb]

@@ -71,7 +71,7 @@ cn_snippet_bc();
 
         <tr>
             <td align="right" valign="top" style="padding: 8px 0 0 0;">Parent</td>
-            <td><select name="category_parent">
+            <td><select name="category_parent" style="width: 350px;">
                     <option value="0">-- None --</option>
                     <?php foreach ($categories as $id => $category) if ($category_id != $id) { ?><option <?php if ($category_parent == $id) echo 'selected'; ?> value="<?php echo $id; ?>"><?php echo cn_htmlspecialchars($category['name']); ?></option><?php } ?>
                 </select>

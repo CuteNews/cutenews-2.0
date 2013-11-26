@@ -181,7 +181,7 @@ if ($flood_time = getoption('flood_time'))
     // Flood detected
     if ($found)
     {
-        echo '<div class="cn_error_comment">'.i18n('Flood protection activated! You have to wait %1 seconds after your last comment before posting again at this article', $flood_time).'</div>';
+        echo '<div class="cn_error_comment">'.i18n('Flood protection activated! You have to wait %1 seconds after your last comment before posting again at this article', $flood_time).'<a href="'.$refer.'"> Go back</a></div>';
         return FALSE;
     }
 }
@@ -189,6 +189,25 @@ if ($flood_time = getoption('flood_time'))
 // YEAH! Do add comment!
 $nloc = db_get_nloc($id);
 $db   = db_news_load($nloc);
+
+//check user login 
+if (!$logged_as_member)
+{
+    $is_true_user=TRUE;
+    foreach ($db[$id]['co'] as $dnews)
+    {
+        if ($dnews['u']==$name && $dnews['e'] != $mail)
+        {
+            $is_true_user=FALSE;
+            break;
+        }
+    }
+    if(!$is_true_user)
+    {
+        echo '<div class="cn_error_comment">'.i18n('This user name alredy exist, choose another').'. <a href="'.$refer.'">Go back</a></div>';
+        return FALSE;
+    }
+}
 
 // Can edit comment?
 $acl_edit_comment = FALSE;
@@ -208,6 +227,17 @@ else
 {
     $cid = ctime();
     while (isset($db['co'][$cid])) $cid++;
+}
+
+//convert to right encoding
+if(getoption('frontend_encoding')!='UTF-8'&&function_exists('iconv'))
+{
+    $bkp=$comment;
+    $comment=  iconv(getoption('frontend_encoding'),'UTF-8//TRANSLIT' , $comment);
+    if(!$comment)
+    {
+        $comment=$bkp;
+    }
 }
 
 // ID => [u]ser, [c]comment text, [e]mail, [ip] */

@@ -2,6 +2,84 @@
 
 add_hook('index/invoke_module', '*media_invoke');
 
+function resize_image($source,$nw,$nh)
+{   
+    $result=array('msg'=>'','status'=>TRUE);
+    $path_parts=  pathinfo($source);  
+    $ii = getimagesize($source);   
+    list($w, $h) = $ii;
+    
+    if($w==0 || $h==0)
+    {
+        $result['msg']='Illegal image ['.$path_parts['basename'].']';
+        $result['status']=FALSE;
+        return $result;
+    }
+    
+    //check file type
+    $callfi=''; $di=NULL;
+    if (preg_match('/jpeg/i', $ii['mime']))
+    {
+        $callfi = 'imagejpeg';
+        $di = imagecreatefromjpeg($source);
+    }
+    elseif (preg_match('/png/i', $ii['mime']))
+    {
+        $callfi = 'imagepng';
+        $di = imagecreatefrompng($source);
+    }
+    elseif (preg_match('/gif/i', $ii['mime']))
+    {
+        $callfi = 'imagegif';
+        $di = imagecreatefromgif($source);
+    }
+    else
+    {
+        $result['msg']='Unrecognized image type for '.$path_parts['basename'];
+        $result['status']=FALSE;
+        return $result;
+    }
+    
+    // Autosize
+    $resize = FALSE;
+    if ($nw == 0)
+    {
+        $resize = TRUE;
+        $nw = $w * ($nh / $h);
+    }
+    elseif ($nh == 0)
+    {
+        $resize = TRUE;
+        $nh = $h * ($nw / $w);
+    }
+
+    $dt = imagecreatetruecolor($nw, $nh);
+    imagefilledrectangle($dt, 0, 0, $nw, $nh, 0xFFFFFF);
+
+    // Calculate size factors
+    $sf_x = $nw / $w;
+    $sf_y = $nh / $h;
+
+    $sf = max(array($sf_x, $sf_y));
+    imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
+
+    if ($resize)
+    {
+        $callfi($dt, $source);
+        $result['msg']='Image resized for ['.$path_parts['basename'].']';
+    }
+    else
+    {          
+        imagejpeg($dt, $path_parts['dirname'] . '/.thumb.'.$path_parts['filename'].'.jpeg');
+        $result['msg']= 'Thumbnail created for ['.$path_parts['basename'].']';
+    }
+
+    imagedestroy($di);
+    imagedestroy($dt);   
+    
+    return $result;
+}
+
 function media_invoke()
 {
     $popup_form = '';
@@ -38,7 +116,8 @@ function media_invoke()
 
         // Allowed Exts.
         $AE = spsep(getoption('allowed_extensions'));
-
+        //generate thumbnail after upload
+        $thumbnail_with_upload=  getoption('thumbnail_with_upload');
         // UPLOAD FILES
         if (REQ('upload','POST'))
         {
@@ -63,7 +142,7 @@ function media_invoke()
                         $fw = fopen($upload_from_inet, 'r');
                         ob_start(); fpassthru($fw); $file_image = ob_get_clean();
                         fclose($fw);
-
+                      
                         // write2disk
                         $w = fopen($c_file, 'w+');
                         fwrite($w, $file_image);
@@ -74,6 +153,11 @@ function media_invoke()
                         if ($w && $h)
                         {
                             cn_throw_message('File uploaded');
+                            if($thumbnail_with_upload)
+                            {
+                                $resize_result=resize_image($c_file, 365, 0);
+                                cn_throw_message($resize_result['msg'],$resize_result['status']?'n':'w');
+                            }                            
                         }
                         else
                         {
@@ -122,6 +206,12 @@ function media_invoke()
                     {
                         $just_uploaded[$name] = TRUE;
                         cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
+
+                        if($thumbnail_with_upload)
+                        {
+                            $resize_result=resize_image($c_file, 365, 0);
+                            cn_throw_message($resize_result['msg'],$resize_result['status']?'n':'w');
+                        }
                     }
                     else
                         cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded!', 'e');
@@ -197,12 +287,12 @@ function media_invoke()
                 $popup_form = '';
             }
             // ------------------
-            elseif ($do_action == 'move')
+            elseif ($do_action == 'rename')
             {
                 if ($rm)
                 {
-                    $popup_form = '<div class="big_font">'.i18n('Move files to').'</div>';
-                    $popup_form .= i18n('Tip: You can select the folder to move the file').'<br />';
+                    $popup_form = '<div class="big_font">'.i18n('Rename file to').'</div>';
+                    $popup_form .= i18n('Tip: Write new file name').'<br />';
                     $popup_form .= '<table>';
 
                     foreach ($rm as $id => $fn)
@@ -211,18 +301,18 @@ function media_invoke()
                         $popup_form .= '<tr><td align="right" class="indent"><b>'.$hfn.'</b><td>';
                         $popup_form .= '<td><input type="hidden" name="ids['.$id.']" value="'.$hfn.'"/>&rarr;</td>';
                         $popup_form .= '<td><input style="width: 300px;" type="text" name="place['.$id.']" value="'.$hfn.'" /> ';
-                        $popup_form .= '<nobr><input type="checkbox" name="moveup['.$id.']" value="Y" /> Move up</nobr></td></tr>';
+                        $popup_form .= '</td></tr>';
                     }
 
                     $popup_form .= '</table>';
                 }
-                else cn_throw_message('Select files to move', 'w');
+                else cn_throw_message('Select files to rename', 'w');
             }
             // action: process move
-            elseif ($pending == 'move')
+            elseif ($pending == 'rename')
             {
                 // ...
-                list($ids, $place, $moveup) = GET('ids, place, moveup', 'POST');
+                list($ids, $place) = GET('ids, place', 'POST');
 
                 // prevent illegal moves
                 $safe_dir = scan_dir($root_dir);
@@ -233,28 +323,112 @@ function media_invoke()
                 {
                     if (in_array(md5($file), $safe_dir))
                     {
-                        $NF = '';;
-                        $filename = preg_replace('/\.\//i', '', $place[$id]);
+                        $filename =$place[$id]; 
+                        if (strpos($filename, '\\') || strpos($filename, '/'))
+                        {
+                            cn_throw_message(i18n('The name of file [%1] should not contain special characters',cn_htmlspecialchars($file)), 'e');
+                            continue;
+                        }
+                        $renameto = $root_dir . '/' . $filename;
+
+                        // do move
+                        if (rename($root_dir . '/' . $file, $renameto))
+                            cn_throw_message(i18n('File [%1] renamed to [%2]', cn_htmlspecialchars($file), cn_htmlspecialchars($filename)) );
+                        else
+                            cn_throw_message(i18n('File [%1] not renamed', cn_htmlspecialchars($file)), 'e');
+                    }
+                }
+            }
+             // ------------------
+            elseif ($do_action == 'move')
+            {
+                if ($rm)
+                {
+                    $popup_form = '<div class="big_font">'.i18n('Move files to').'</div>';
+                    $popup_form .= i18n('Tip: You can select the folder to move the file').'<br />';
+                    $popup_form .= '<table>';
+                    $folders=array();
+                    $dirs=  scan_dir($root_dir);
+                    foreach($dirs as $entry)
+                    {
+                        if(is_dir($root_dir.'/'. $entry)&&!($entry==='..'||$entry==='.'))
+                        {
+                            $folders[]=$entry;
+                        }
+                    }                                        
+                    foreach ($rm as $id => $fn)
+                    {
+                        $hfn = cn_htmlspecialchars($fn);
+                        $popup_form .= '<tr><td align="right" class="indent"><b>'.$hfn.'</b><td>';
+                        $popup_form .= '<td><input type="hidden" name="ids['.$id.']" value="'.$hfn.'"/>&rarr;</td>';
+                        $popup_form .= '<td>';
+                        $cnt_folders=count($folders);
+                        if($cnt_folders!=0&&!($cnt_folders==1 && in_array($hfn, $folders)))
+                        {
+                            $popup_form .= '<select name="place_folder">';
+                            foreach ($folders as $dirn)
+                            {
+                                if($dirn!=$hfn)
+                                {
+                                    $popup_form .= '<option value="'.$dirn.'">'.$dirn.'</option>';
+                                }
+                            }
+                            $popup_form .= '</select>';                        
+                        }
+                        if($root_dir!=$udir)
+                        {
+                            $popup_form .= '<nobr><input type="checkbox" name="moveup['.$id.']" value="Y" /> Move up</nobr>';
+                        }
+                        else 
+                        {
+                            $popup_form .= '<nobr> X Move up (You are in root folder)</nobr>';
+                        }
+                        $popup_form .='</td></tr>';
+                    }
+
+                    $popup_form .= '</table>';
+                }
+                else cn_throw_message('Select files to move', 'w');
+            }
+            // action: process move
+            elseif ($pending == 'move')
+            {
+                // ...
+                list($ids, $place_folder, $moveup) = GET('ids, place_folder, moveup', 'POST');
+
+                // prevent illegal moves
+                $safe_dir = scan_dir($root_dir); 
+                foreach ($safe_dir as $id => $v) $safe_dir[$id] = md5($v);
+
+                // do move all files / dirs
+                foreach ($ids as $id => $file)
+                {
+                    if (in_array(md5($file), $safe_dir))
+                    {
+                        $NF = '';
+                        $foldername= preg_replace('/\.\//i', '', $place_folder);
 
                         // move this file up
                         if (isset($moveup[$id]) && count($pathes) > 0)
+                        {
                             $nwfolder = dirname($root_dir);
+                            $foldername='up folder';
+                        }
                         else
                         {
-                            $nwfolder = $root_dir. ( $NF = isset($rm[0]) ? '/'.$rm[0] : '' );
-                            if ($rm[0]) $NF = $rm[0].'/';
-                        }
-
-                        $moveto = $nwfolder . '/' . $filename;
+                            $nwfolder = $root_dir. ( $NF = isset($rm[0]) ? '/'.$rm[0] : '' ) . '/' . $foldername;
+                            if ($rm[0]) $NF = $rm[0].'/' ;
+                        }   
+                        $moveto = $nwfolder . '/' . $file;
 
                         // do move
                         if (rename($root_dir . '/' . $file, $moveto))
-                            cn_throw_message(i18n('File [%1] moved to [%2]', cn_htmlspecialchars($file), cn_htmlspecialchars( $NF . $filename)) );
+                            cn_throw_message(i18n('File [%1] moved to [%2]', cn_htmlspecialchars($file), cn_htmlspecialchars($foldername)) );
                         else
                             cn_throw_message(i18n('File [%1] not moved', cn_htmlspecialchars($file)), 'e');
                     }
                 }
-            }
+            }                      
             // ------------------
             elseif ($do_action == 'thumb')
             {
@@ -266,10 +440,10 @@ function media_invoke()
             elseif ($pending == 'thumb')
             {
                 $rms = unserialize(REQ('thumb_rms', 'POST'));
-
+                
                 $wt = intval(REQ('thumb_size_w', 'POST'));
                 $ht = intval(REQ('thumb_size_h', 'POST'));
-
+                
                 if ($wt == 0 && $ht == 0)
                 {
                     cn_throw_message('Enter correct width or height', 'e');
@@ -277,79 +451,19 @@ function media_invoke()
                 else
                 {
                     foreach ($rms as $vp)
-                    {
+                    {                        
                         $fn = $root_dir . '/' . $vp;
-                        $vi = cn_htmlspecialchars($vp);
-                        $ii = getimagesize($fn);
 
-                        list($w, $h) = $ii;
-
-                        if ($w == 0 || $h == 0)
+                        $resize_result=  resize_image($fn, $wt, $ht);
+                        if($resize_result['status'])
                         {
-                            cn_throw_message("Illegal image [$vi]", 'w');
-                            continue;
-                        }
-
-                        if (preg_match('/jpeg/i', $ii['mime']))
-                        {
-                            $callfi = 'imagejpeg';
-                            $di = imagecreatefromjpeg($fn);
-                        }
-                        elseif (preg_match('/png/i', $ii['mime']))
-                        {
-                            $callfi = 'imagepng';
-                            $di = imagecreatefrompng($fn);
-                        }
-                        elseif (preg_match('/gif/i', $ii['mime']))
-                        {
-                            $callfi = 'imagegif';
-                            $di = imagecreatefromgif($fn);
+                            cn_throw_message($resize_result['msg']);
                         }
                         else
                         {
-                            cn_throw_message("Unrecognized image type for $vi");
-                            continue;
-                        }
-
-                        // Autosize
-                        if ($wt == 0)
-                        {
-                            $resize = TRUE;
-                            $wt = $w * ($ht / $h);
-                        }
-                        elseif ($ht == 0)
-                        {
-                            $resize = TRUE;
-                            $ht = $h * ($wt / $w);
-                        }
-                        else
-                        {
-                            $resize = FALSE;
-                        }
-
-                        $dt = imagecreatetruecolor($wt, $ht);
-                        imagefilledrectangle($dt, 0, 0, $wt, $ht, 0xFFFFFF);
-
-                        // Calculate size factors
-                        $sf_x = $wt / $w;
-                        $sf_y = $ht / $h;
-
-                        $sf = max(array($sf_x, $sf_y));
-                        imagecopyresampled($dt, $di, ($wt - $w * $sf) / 2, ($ht - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
-
-                        if ($resize)
-                        {
-                            $callfi($dt, $root_dir . '/'.$vp);
-                            cn_throw_message("Image resized for [$vi]");
-                        }
-                        else
-                        {
-                            imagejpeg($dt, $root_dir . '/.thumb.'.$vp.'.jpeg');
-                            cn_throw_message("Thumbnail created for [$vi]");
-                        }
-
-                        imagedestroy($di);
-                        imagedestroy($dt);
+                            cn_throw_message($resize_result['msg'],'w');
+                            continue;                                                       
+                        }                                    
                     }
                 }
             }
@@ -392,12 +506,12 @@ function media_invoke()
             list($w, $h) = getimagesize("$udir/$path/$file");
 
             $is_thumb = preg_match('/\.thumb\.(.*)\.jpeg/', $file);
-
+            
             $files[] = array
             (
                 'name'          => $file,
                 'url'           => $edir . '/'. ($path? $path . '/' : '') . $file,
-                'thumb'         => file_exists($root_dir.'/.thumb.'.$file.'.jpeg') ? $edir . '/'. ($path? $path . '/' : '') . '.thumb.' . $file.'.jpeg' : '',
+                'thumb'         => file_exists($root_dir.'/.thumb.'.pathinfo($file,PATHINFO_FILENAME).'.jpeg') ? $edir . '/'. ($path? $path . '/' : '') . '.thumb.' . pathinfo($file,PATHINFO_FILENAME).'.jpeg' : '',
                 'local'         => ($path? $path . '/' : '') . $file,
                 'just_uploaded' => isset($just_uploaded[$file]) ? TRUE : FALSE,
                 'is_thumb'      => $is_thumb,

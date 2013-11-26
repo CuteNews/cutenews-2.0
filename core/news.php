@@ -659,7 +659,7 @@ function cn_modify_bb_youtube($e, $t) { return cn_modify_s2bb_youtube($t); }
 // COMMENTS ------------------------------------------------------------------------------------------------------------
 function cn_modify_comm_author($e)
 {
-    $hide = FALSE;
+    //in comments e-mail mast hide
     $user = db_user_by_name($e['u']);
 
     if (!$user) $user = array
@@ -670,22 +670,11 @@ function cn_modify_comm_author($e)
         'nick'   => ''
     );
 
-    // User hide own email
-    if ($user['e-hide']) $hide = TRUE;
-
     // Got nick?
     $username = $user['nick'] ? $user['nick'] : $user['name'];
 
-    // User exists
-    if ($user['name'])
-    {
-        if ($hide)
-            return cn_htmlspecialchars($username);
-        else
-            return '<a href="mailto:'.cn_htmlspecialchars($user['email']).'">'.$username.'</a>';
-    }
-
-    return 'Anonymous';
+            // User exists
+    return $user['name']?cn_htmlspecialchars($username):'Anonymous';
 }
 
 function cn_modify_comm_date($e)

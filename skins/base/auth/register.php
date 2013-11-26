@@ -14,17 +14,17 @@
         </tr>
 
         <tr>
-            <td width=80>Username: <span class="required">*</span></td>
+            <td width=85>Username: <span class="required">*</span></td>
             <td colspan="2"><input tabindex="1" type="text" name=regusername value="<?php echo cn_htmlspecialchars($regusername); ?>" style="width:134px" size="20"></td>
         </tr>
 
         <tr>
-            <td width=80>Nickname:</td>
+            <td width=85>Nickname:</td>
             <td colspan="2"><input tabindex="1" type="text" name=regnickname value="<?php echo cn_htmlspecialchars($regnickname); ?>" style="width:134px" size="20"></td>
         </tr>
 
         <tr>
-            <td width=80>Password: <span class="required">*</span></td>
+            <td width=85>Password: <span class="required">*</span></td>
             <td>
                 <div><input tabindex="1" type="password" name=regpassword id="regpassword" onkeyup="password_strength();" style="width:134px" size="20"></div>
                 <div id="password_strength"></div></td>
@@ -32,22 +32,22 @@
         </tr>
 
         <tr>
-            <td width=80>Confirm:  <span class="required">*</span></td>
+            <td width=85>Confirm:  <span class="required">*</span></td>
             <td colspan="2"><input tabindex="1" type="password" name="confirm" style="width:134px" size="20"></td>
         </tr>
 
         <tr>
-            <td width=80>Email: <span class="required">*</span></td>
+            <td width=85>Email: <span class="required">*</span></td>
             <td colspan="2"><input tabindex="1" type="text" name="regemail" value="<?php echo cn_htmlspecialchars($regemail); ?>" style="width:134px" size="20"></td>
         </tr>
 
         <tr>
-            <td width=80>Captcha: <span class="required">*</span></td>
+            <td width=85>Captcha: <span class="required">*</span></td>
             <td colspan="2"><input tabindex="1" type="text" name="captcha" style="width:134px" size="20"></td>
         </tr>
 
         <tr>
-            <td width=80><a href="#" style="border-bottom: 1px dotted #000080;" onclick="getId('capcha').src='captcha.php?r='+Math.random(); return(false);">Refresh code</a></td>
+            <td width=85><a href="#" style="border-bottom: 1px dotted #000080;" onclick="getId('capcha').src='captcha.php?r='+Math.random(); return(false);">Refresh code</a></td>
             <td colspan="2"><img src="captcha.php" id="capcha" alt=""></td>
         </tr>
 

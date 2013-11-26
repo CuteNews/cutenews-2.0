@@ -2,7 +2,7 @@
 
     // initialize
     list($preview_html, $vTitle, $vPage, $categories, $vCategory, $gstamp, $archive_id) = _GL('preview_html, vTitle, vPage, categories, vCategory, gstamp, archive_id');
-    list($vShort, $EDITMODE, $vFull, $vUseHtml, $is_draft, $vConcat, $vTags) = _GL('vShort, EDITMODE, vFull, vUseHtml, is_draft, vConcat, vTags');
+    list($vShort, $EDITMODE, $vFull, $is_active_html, $vUseHtml, $is_draft, $vConcat, $vTags) = _GL('vShort, EDITMODE, vFull, is_active_html, vUseHtml, is_draft, vConcat, vTags');
     list($_dateD, $_dateM, $_dateY, $_dateH, $_dateI, $_dateS) = make_postponed_date($gstamp);
     list($morefields) = _GL('morefields');
     list($id) = GET('id', "GETPOST");
@@ -60,8 +60,10 @@
                 <div class="panel category-panel">
                     <?php foreach ($categories as $catid => $cat_data) { ?>
                         <span class="category-item">
-                            <input type="checkbox" name="category[]" <?php if ($vCategory && in_array($catid, $vCategory)) echo 'checked'; ?> value="<?php echo $catid;?>" class="chkbox-fix" style="float: left;" />
-                            <span style="float: left; padding: 1px 0 0 2px;"><?php echo cn_htmlspecialchars($cat_data['name']); ?></span>
+                             <input id="chkbx<?php echo $catid ?>" type="checkbox" name="category[]" <?php if ($vCategory && in_array($catid, $vCategory)) echo 'checked'; ?> value="<?php echo $catid;?>" class="chkbox-fix"/>
+                             <label for="chkbx<?php echo $catid ?>">   
+                                    <?php echo cn_htmlspecialchars($cat_data['name']); ?>
+                             </label>
                         </span>
                     <?php } ?>
                     <div style="clear: both;"> </div>
@@ -106,7 +108,7 @@
 
     <div class="section">
 
-        <div style="float: right">
+        <div style="float: right">            
             <?php if ($EDITMODE && test('Nud') && $archive_id == 0) { ?>
                 <input type="button" onClick="if (confirm('Please confirm')) { window.location = '<?php echo cn_url_modify('action=delete', cn_snippet_digital_signature('a')); ?>'; return true; } else return false;" value="Delete">
             <?php } ?>
@@ -148,13 +150,16 @@
         <div>
             <?php hook('template/addedit_news_opts'); ?>
 
-            <div>
-                <?php if ($CKEDITOR_Active == 0) { ?>
+            <div>                
+                <?php if ($CKEDITOR_Active == 0 && $is_active_html) { ?>                
                     <div><label for='html'> <input id='html' class="chkbox-fix" type="checkbox" value="1" name="if_use_html" <?php if ($vUseHtml) echo 'checked'; ?>> Use HTML in this article</label></div>
                 <?php } else { ?>
-                    <div><label for='html'> <input id='html' class="chkbox-fix" type="checkbox" value="1" name="if_use_html" checked="checked" disabled="disabled"> Use HTML in this article</label></div>
+                    <?php if($is_active_html) { ?>                         
+                        <div><label for='html'> <input id='html' class="chkbox-fix" type="checkbox" value="1" name="if_use_html" checked="checked" disabled="disabled"> Use HTML in this article</label></div>
+                    <?php } else { ?>
+                        <input type="hidden" name="if_use_html" value="1"/>
+                    <?php } ?>
                 <?php } ?>
-
                 <div><label for='html'> <input id='concat' class="chkbox-fix" type="checkbox" value="Y" name="concat" <?php if ($vConcat) echo 'checked'; ?>> Concate short and full story</label></div>
             </div>
             <br/>

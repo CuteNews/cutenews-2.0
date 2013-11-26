@@ -107,7 +107,7 @@ function dashboard_invoke()
     $drafts = intval(array_sum($meta_draft['locs']));
 
     if ($drafts && test('Cvn'))
-        $greeting_message = i18n('There is %1 news in draft', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
+        $greeting_message = i18n('News in draft: %1', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
     else
         $greeting_message = i18n('Have a nice day!');
 
@@ -148,13 +148,27 @@ function dashboard_sysconf()
 
             '_GENERAL'              => array('title', 'General site settings'),
             'http_script_dir'       => array('text', 'Full URL to CuteNews directory|example: http://yoursite.com/cutenews'),
-            'main_site'             => array('text', 'URL to you site|example: http://yoursite.com/ (optional)'),
+            'main_site'             => array('text', 'URL to your site|example: http://yoursite.com/ (optional)'),
 
             'skin'                  => array('select', 'CuteNews skin', $all_skins),
             'cn_language'           => array('select', 'CuteNews internationalization', $lng),
             'useutf8'               => array('Y/N', 'Use UTF-8 for ACP|with this option, admin panel uses utf-8 charset'),
             'utf8html'              => array('Y/N', "Convert UTF8 symbols to HTML entities|E.g. &aring to &amp;aring;"),
             'comment_utf8html'      => array('Y/N', 'Convert UTF8 symbols for comments|if this option is set, utf-8 entities convert to html entities'),
+            'frontend_encoding'     => array('select','Frontend encoding|encoding that used on your site',array(
+                'UTF-8'=>'UTF-8','UCS-4'=>'UCS-4','UCS-4BE'=>'UCS-4BE','UCS-4LE'=>'UCS-4LE','UCS-2'=>'UCS-2','UCS-2BE'=>'UCS-2BE','UCS-2LE'=>'UCS-2LE',
+                'UTF-32'=>'UTF-32','UTF-32BE'=>'UTF-32BE','UTF-32LE'=>'UTF-32LE','UTF-16'=>'UTF-16','UTF-16BE'=>'UTF-16BE',
+                'UTF-16LE'=>'UTF-16LE','UTF-7'=>'UTF-7','UTF7-IMAP'=>'UTF7-IMAP','ASCII'=>'ASCII','EUC-JP'=>'EUC-JP','SJIS'=>'SJIS','eucJP-win'=>'eucJP-win',
+                'SJIS-win'=>'SJIS-win','ISO-2022-JP'=>'ISO-2022-JP','ISO-2022-JP-MS'=>'ISO-2022-JP-MS','CP932'=>'CP932',
+                'CP51932'=>'CP51932','JIS'=>'JIS','JIS-ms'=>'JIS-ms','CP866'=>'CP866','CP949'=>'CP949',
+                'CP1251'=>'CP1251','CP1252'=>'CP1252','CP50220'=>'CP50220','CP50220raw'=>'CP50220raw','CP50221'=>'CP50221','CP50222'=>'CP50222',
+                'ISO-8859-1'=>'ISO-8859-1','ISO-8859-2'=>'ISO-8859-2','ISO-8859-3'=>'ISO-8859-3','ISO-8859-4'=>'ISO-8859-4',
+                'ISO-8859-5'=>'ISO-8859-5','ISO-8859-6'=>'ISO-8859-6',
+                'ISO-8859-7'=>'ISO-8859-7','ISO-8859-8'=>'ISO-8859-8','ISO-8859-9'=>'ISO-8859-9','ISO-8859-10'=>'ISO-8859-10','ISO-8859-13'=>'ISO-8859-13',
+                'ISO-8859-14'=>'ISO-8859-14','ISO-8859-15'=>'ISO-8859-15','EUC-CN'=>'EUC-CN','CP936'=>'CP936','HZ'=>'HZ',
+                'EUC-TW'=>'EUC-TW','CP950'=>'CP950','BIG-5'=>'BIG-5',
+                'EUC-KR'=>'EUC-KR','ISO-2022-KR'=>'ISO-2022-KR','KOI8-R'=>'KOI8-R'
+            )),
             'use_wysiwyg'           => array('Y/N', 'Use CKEditor in news'),
             'ckeditor2template'     => array('Y/N', 'Use CKEditor for templates'),
             'date_adjust'           => array('int', 'Time adjustment|in minutes; eg. : 180 = +3 hours; -120 = -2 hours'),
@@ -171,7 +185,7 @@ function dashboard_sysconf()
             'use_replacement'       => array('Y/N', 'Use word replace module'),
             'client_online'         => array('int', 'Expiration time client online|If 0, client online disabled'),
             'show_thumbs'           => array('Y/N', 'Show thumbnail files in media gallery'),
-
+            'thumbnail_with_upload'  => array('Y/N', 'Generate thumbnail after upload big image'),
             'uploads_dir'           => array('text', 'Server upload dir|Real path on server'),
             'uploads_ext'           => array('text', 'Frontend upload dir|Frontend path for uploads'),
         ),
@@ -179,6 +193,7 @@ function dashboard_sysconf()
         'news' => array
         (
             'search_hl'             => array('Y/N', 'Highlight search'),
+            'news_title_max_long'   => array('int', 'Max. Length of news title in characters|enter <b>0</b> to disable chacking.'),
             'active_news_def'       => array('int', 'Count active news, by default|If 0, show all list, with archives'),
             'reverse_active'        => array('Y/N', 'Reverse News|if yes, older news will be shown on the top'),
             'full_popup'            => array('Y/N', 'Show full story in popup|full Story will be opened in PopUp window'),
@@ -716,7 +731,8 @@ function dashboard_userman()
     $section  = intval($section);
     $st       = intval($st);
     $grp      = getoption('#grp');
-
+    $is_edit  = FALSE; //visability Edit btton
+    
     if (request_type('POST'))
     {
         cn_dsi_check();
@@ -737,7 +753,10 @@ function dashboard_userman()
             if (REQ('edit'))
             {
                 if ($user_data === null)
+                {
+                    $is_edit=FALSE;
                     cn_throw_message("User not exists", 'e');
+                }
             }
             // Add user
             else
@@ -751,7 +770,9 @@ function dashboard_userman()
 
                 if ($user_data !== null)
                     cn_throw_message("Username already exist", 'e');
-
+                
+                if ($user_confirm != $user_pass)
+                    cn_throw_message('Confirm not match', 'e');
                 // Invalid email
                 if (!check_email($user_email))
                 {
@@ -792,25 +813,19 @@ function dashboard_userman()
                 }
                 // Add user
                 else
-                {
+                {                 
                     if ($user_id = db_user_add($user_name, $user_acl))
                     {
-                        if ($user_confirm == $user_pass)
+                        if (db_user_update($user_name, "email=$user_email", "nick=$user_nick", 'pass='.SHA256_hash($user_pass), "acl=$user_acl"))
                         {
-                            if (db_user_update($user_name, "email=$user_email", "nick=$user_nick", 'pass='.SHA256_hash($user_pass), "acl=$user_acl"))
-                            {
-                                cn_throw_message("User created successfully");
-                            }
-                            else
-                                cn_throw_message("Can't update user", 'e');
+                            $is_edit=TRUE;
+                            cn_throw_message("User created successfully");
                         }
                         else
-                        {
-                            cn_throw_message('Confirm not match', 'e');
-                        }
+                            cn_throw_message("Can't update user", 'e');
                     }
                     else
-                    {
+                    {                            
                         cn_throw_message("User not added: internal error", 'e');
                     }
                 }
@@ -846,15 +861,16 @@ function dashboard_userman()
         $user_nick  = $user['nick'];
         $user_email = $user['email'];
         $user_acl   = $user['acl'];
+        $is_edit=TRUE;
     }
 
     // By default for section
     if (!$user_acl) $user_acl = $section;
 
     cn_assign('users, section, st, per_page, grp', $userlist, $section, $st, $per_page, $grp);
-    cn_assign('user_name, user_nick, user_email, user_acl', $user_name, $user_nick, $user_email, $user_acl);
+    cn_assign('user_name, user_nick, user_email, user_acl, is_edit', $user_name, $user_nick, $user_email, $user_acl, $is_edit);
 
-    echoheader('-@dashboard/style.css', "Users"); echo exec_tpl('dashboard/users'); echofooter();
+    echoheader('-@dashboard/style.css', "Users manager"); echo exec_tpl('dashboard/users'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1166,7 +1182,7 @@ function dashboard_ipban()
     }
 
     cn_assign('list', $ipban);
-    echoheader('-@dashboard/style.css', 'IP Ban'); echo exec_tpl('dashboard/ipban'); echofooter();
+    echoheader('-@dashboard/style.css', 'Block IP'); echo exec_tpl('dashboard/ipban'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1179,6 +1195,7 @@ function dashboard_logs()
 
     $skip = FALSE;
     $num = 20;
+    $isfin=FALSE;
     $n = 0;
 
     $st = REQ('st');
@@ -1251,8 +1268,10 @@ function dashboard_logs()
 
         fclose($r);
     }
-
-    cn_assign('logs, st, num, section', $logs, $st, $num, $section);
+    //disable pagination
+    if(count($logs)<=$st || count($logs)<=$num) $isfin=TRUE;
+    
+    cn_assign('logs, st, num, isfin, section', $logs, $st, $num, $isfin, $section);
     echoheader('-@dashboard/style.css', 'System logs'); echo exec_tpl('dashboard/logs'); echofooter();
 }
 
@@ -1335,7 +1354,7 @@ function dashboard_archives()
 
     cn_assign('arch_list, archive_id', $arch_list, $req_archive_id);
     cn_assign('f_date_d, f_date_m, f_date_y, t_date_d, t_date_m, t_date_y', $f_date_d, $f_date_m, $f_date_y, $t_date_d, $t_date_m, $t_date_y);
-    echoheader('-@dashboard/style.css', 'System logs'); echo exec_tpl('dashboard/archives'); echofooter();
+    echoheader('-@dashboard/style.css', 'Arhives'); echo exec_tpl('dashboard/archives'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1437,7 +1456,7 @@ function dashboard_widgets()
         $plugin_current = $s_plugin;
 
     cn_assign('widgets, plugins, widget_settings, widget_current, plugin_current, s_widget', $widgets, $plugins, $widget_settings, $widget_current, $plugin_current, $s_widget);
-    echoheader('-@dashboard/style.css', 'Widgets'); echo exec_tpl('dashboard/widgets'); echofooter();
+    echoheader('-@dashboard/style.css', 'Plugins'); echo exec_tpl('dashboard/widgets'); echofooter();
 }
 
 
@@ -1496,7 +1515,7 @@ function dashboard_morefields()
 
     cn_assign('list', $list);
     cn_assign('type, name, desc, meta, group, req', $type, $name, $desc, $meta, $group, $req);
-    echoheader('-@dashboard/style.css', 'More fields'); echo exec_tpl('dashboard/morefields'); echofooter();
+    echoheader('-@dashboard/style.css', 'Additional fields'); echo exec_tpl('dashboard/morefields'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1685,7 +1704,7 @@ function dashboard_group()
 
 
     cn_assign('grp, group_name, group_id, group_grp, group_system, access, form_desc', $grp, $group_name, $group_id, $group_grp, $group_system, $access, $form_desc);
-    echoheader('-@dashboard/style.css', 'Account groups'); echo exec_tpl('dashboard/group'); echofooter();
+    echoheader('-@dashboard/style.css', 'Groups'); echo exec_tpl('dashboard/group'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1716,9 +1735,9 @@ function dashboard_wreplace()
 
     // Require additional data
     if ($word) $replace = $wlist[$word];
-
-    cn_assign('wlist, word, replace', $wlist, $word, $replace);
-    echoheader('-@dashboard/style.css', 'Word replacements'); echo exec_tpl('dashboard/replace'); echofooter();
+    $is_replace_opt=getoption('use_replacement');
+    cn_assign('wlist, word, replace, repopt', $wlist, $word, $replace, $is_replace_opt);
+    echoheader('-@dashboard/style.css', 'Replace words'); echo exec_tpl('dashboard/replace'); echofooter();
 }
 
 // =====================================================================================================================
@@ -1887,6 +1906,6 @@ function dashboard_comments()
         'list' => $list,
         'count' => $count,
     );
-
-    echoheader('-@dashboard/style.css', 'Comments manager'); echo exec_tpl('dashboard/comments', $params); echofooter();
+    
+    echoheader('-@dashboard/style.css', 'Comments'); echo exec_tpl('dashboard/comments', $params); echofooter();
 }

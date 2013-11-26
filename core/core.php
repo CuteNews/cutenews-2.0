@@ -896,9 +896,11 @@ function cn_config_load()
     $default_conf = array
     (
         'skin'                          => 'default',
+        'frontend_encoding'             => 'UTF-8',
         'useutf8'                       => 1,
         'utf8html'                      => 1,
         'wysiwyg'                       => 0,
+        'news_title_max_long'           => 100,
         'date_adjust'                   => 0,
         'smilies'                       => 'smile,wink,wassat,tongue,laughing,sad,angry,crying',
         'allow_registration'            => 1,
@@ -911,7 +913,7 @@ function cn_config_load()
         'show_comments_with_full'       => 1,
         'timestamp_active'              => 'd M Y',
         'use_captcha'                   => 1,
-        'reverse_comments'              => 0,
+        'reverse_c  omments'            => 0,
         'flood_time'                    => 15,
         'comment_max_long'              => 1500,
         'comments_per_page'             => 5,
@@ -924,6 +926,7 @@ function cn_config_load()
         'mon_list'                      => 'January,February,March,April,May,June,July,August,September,October,November,December',
         'week_list'                     => 'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
         'active_news_def'               => 20,
+        'thumbnail_with_upload'          => 0,
         // 'phpself_full'                  => '',
         // 'phpself_popup'                 => '',
         // 'phpself_paginate'              => '',
@@ -938,7 +941,7 @@ function cn_config_load()
         // Social buttons
         'i18n'                          => 'en_US',
         'gplus_width'                   => 350,
-        'fb_comments'                   => 10,
+        'fb_comments'                   => 3,
         'fb_box_width'                  => 550,
 
         // CKEditor settings
@@ -1166,7 +1169,7 @@ function format_size($file_size)
 // Since 2.0: Short message form
 function msg_info($title, $go_back = null)
 {
-    echoheader('info', i18n("Action info"));
+    echoheader('info', i18n("Permission check"));
 
     if ($go_back === null) $go_back = $_POST['__referer'];
     if (empty($go_back)) $go_back = PHP_SELF;
@@ -2829,8 +2832,26 @@ function cn_register_form($admin = TRUE)
 // Since 2.0: Cutenews HtmlSpecialChars
 function cn_htmlspecialchars($str)
 {
-    $key = array('&' => '&amp;', '"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
+    $key = array('"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
+    preg_match('/(&amp;)+?/', $str,$matches);
+    if(count($matches)==0) $key['&']='&amp;';
     return str_replace(array_keys($key), array_values($key), $str);
+}
+
+/*
+ * Since 2.0: Clear html from tags and javascript
+ * 
+ * @param string $str text for claring
+ * 
+ * @return string clear html text
+ */
+function cn_htmlclear($str)
+{
+    $allow_tags='<p><strong><br><a><div><i><b><u><span><ul><li><ol><table><tbody><td><tr><em><s><blockquote><img><h1><h2><h3><h4><h5><pre><address>';
+    $stripped=strip_tags($str,$allow_tags);
+    
+    $no_js=preg_replace('/on.*=.*("|\')/si','',$stripped);
+    return $no_js;
 }
 
 // Since 2.0: Check CSRF challenge
@@ -2954,8 +2975,14 @@ function cn_rewrite()
     // Make postfix from GET-parameter
     foreach ($param3 as $id => $pfx)
     {
-        if (is_numeric($id) && REQ($pfx)) $postfix[] = $pfx.'='.urlencode(REQ($pfx));
-        else $postfix[] = $id.'='.urlencode($pfx);
+        if (is_numeric($id) && REQ($pfx))
+        {
+            $postfix[] = $pfx.'='.urlencode(REQ($pfx));
+        }
+        elseif ($pfx !== '')
+        {
+            $postfix[] = $id.'='.urlencode($pfx);
+        }
     }
 
     $postfix = $postfix ? '?'.join('&amp;', $postfix) : '';
@@ -3634,4 +3661,9 @@ function cn_snippet_search_hl($text, $qhl)
     }
 
     return $text;
+}
+
+function cn_get_news_count()
+{
+    return db_count_news();
 }

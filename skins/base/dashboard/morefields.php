@@ -42,7 +42,7 @@ cn_snippet_bc();
             </td>
         </tr>
         <tr>
-            <td align="right">Name</td>
+            <td align="right">Name <span class="required">*</span></td>
             <td><input type="text" style="width: 250px;" name="name" value="<?php echo cn_htmlspecialchars($name); ?>"/></td>
         </tr>
         <tr>

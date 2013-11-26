@@ -64,14 +64,14 @@ $category   = cn_get_categories();
                     <td>By user</td>
                 </tr>
                 <tr>
-                    <td><select name="add_category_filter">
+                    <td><select name="add_category_filter" style="width: 420px;">
                         <option value="0">--</option>
                         <?php foreach ($category as $catid => $cat) echo '<option value="'.$catid.'">'.cn_htmlspecialchars($cat['name']).'</option>'; ?>
                         </select>
                     </td>
 
 
-                    <td><select name="add_user_filter">
+                    <td><select name="add_user_filter" style="width:200px;">
                             <option value="">--</option>
                             <?php foreach ($userlist as $user => $num) echo '<option value="'.cn_htmlspecialchars($user).'">'.cn_htmlspecialchars($user).' ('.$num.')</option>'; ?>
                         </select>
@@ -147,12 +147,12 @@ $category   = cn_get_categories();
                 <table class="std-table" width="100%">
                     <tr><th><nobr><a href="<?php echo cn_url_modify('cat_filter'); ?>">All categories</a></nobr></th></tr>
                     <tr>
-                        <td>
+                        <td >
                             <div><a <?php if ($cat_filter === '-') echo 'class="bold" '; ?>href="<?php echo cn_url_modify('cat_filter=-'); ?>">Free news only</a></div>
                             <hr/>
                             <?php
                                 foreach ($category as $id => $cat)
-                                    echo '<div><a '.($id == $cat_filter ? 'class="bold" ' : '').'href="'.cn_url_modify("cat_filter=$id").'">'.cn_htmlspecialchars($cat['memo'] ? $cat['memo'] : $cat['name']).'</b></div>';
+                                    echo '<div style="word-wrap:break-word; width: 200px;"><a '.($id == $cat_filter ? 'class="bold" ' : '').'href="'.cn_url_modify("cat_filter=$id").'">'.cn_htmlspecialchars($cat['memo'] ? $cat['memo'] : $cat['name']).'</b></div>';
                             ?>
                         </td>
                     </tr>
@@ -184,12 +184,14 @@ $category   = cn_get_categories();
 
                             <?php hook('template/editnews/list_item_before', array($ID, $entry)); ?>
                             <td>
+                                <div style="word-wrap:break-word; width:200px;">
                                 <?php if ($entry['can']) {
 
                                     $title = $entry['title'] ? $entry['title'] : '<no title:'.$entry['id'].'>';
                                     ?>
                                     <a title="<?php echo cn_htmlspecialchars($title.($entry['pg'] ? ' ('.$entry['pg'].')' : '')); ?>" href="<?php echo cn_url_modify('action=editnews', "id=$ID"); ?>"><?php echo cn_htmlspecialchars($title); ?></a>
                                 <?php } else echo cn_htmlspecialchars($entry['title']); ?>
+                                </div>
                             </td>
                             <td align='center'><?php echo count($entry['co']); ?></td>
                             <td align='center'><?php

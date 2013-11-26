@@ -63,7 +63,7 @@
         .sidebar { width: 300px; float: right;  padding: 0; }
         .sidebar h3 { margin: 4px 0; padding: 3px; background: #2060A0; font-weight: normal; color: white; }
 
-        .pagedata { float: left; width: 665px; padding: 0 10px 0 0; border-right: 1px dotted #888888;   }
+        .pagedata { float: left; width: 665px; padding: 0 10px 0 0; border-right: 1px dotted #888888; overflow: hidden; }
 
         input { border-radius: 3px; }
         input.text { background: #ffffff; border: 1px solid gray; }
@@ -83,9 +83,19 @@
         .cn_tag_item.cn_tag_selected { background: #ffffff; color: black; }
 
         .cn_search_hl { font-weight: bold; color: #008; }
-
+        .blocking_posting_comment, .cn_error_comment{ font-weight: bold; color: #F00;}
         //-->
     </style>
+    <script>
+        window.onload=function()
+        {
+            var edt_comm_mode=document.getElementById('edt_comm_mode');
+            if(edt_comm_mode!=null)
+            {
+                window.scrollTo(0,9999);
+            }
+        }
+    </script>
 </head>
 <body>
 
