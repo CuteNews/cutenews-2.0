@@ -1721,7 +1721,7 @@ function REQ($var, $method = 'GETPOST')
 function member_get()
 {
     global $_SESS;
-
+    
     // Not authorized
     if (empty($_SESS['user']))
         return NULL;
@@ -2832,10 +2832,16 @@ function cn_register_form($admin = TRUE)
 // Since 2.0: Cutenews HtmlSpecialChars
 function cn_htmlspecialchars($str)
 {
-    $key = array('"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
+    $key = array('&'=>'&amp;','"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
     preg_match('/(&amp;)+?/', $str,$matches);
-    if(count($matches)==0) $key['&']='&amp;';
+    if(count($matches)!=0) array_shift($key);
     return str_replace(array_keys($key), array_values($key), $str);
+}
+
+function cn_unhtmlspecialchars($str)
+{
+    $key=array( '&quot;'=>'"' ,   '&#039;'=>"'",   '&lt;'=>'<',   '&gt;'=>'>', '&amp;'=>'&');
+    return str_replace(array_keys($key),  array_values($key), $str);
 }
 
 /*

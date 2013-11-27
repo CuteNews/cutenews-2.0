@@ -146,7 +146,7 @@ if ($member && test('Mac') || !$member)
 
     $edit_id = REQ('edit_id');
     if ($edit_id) echo '<input id="edt_comm_mode" type="hidden" name="edit_id" value="'.intval($edit_id).'" />';
-
+        
     if($is_encode)
     {
         $comments=$entry['co'];
