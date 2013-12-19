@@ -1,0 +1,271 @@
+<html>
+<head>
+    <title>Usage CuteNews</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <style type="text/css">
+        body pre { font-family: "Monospace", "Courier new", serif; font-size: 14px; line-height: 1.25em; }
+        code { color: #000080; font-weight: bold; }
+    </style>
+</head>
+<body><pre>
+
+1.1 The use of embedded code
+
+    CuteNews has been designed to provide the most convenient process of embedding code into the site.
+    The server must support PHP to run the script. The launch is to be made in a file of php extension accordingly.
+
+    An example of embedding code:
+
+    /folder/where/located/yourfile.php
+
+        +---------------------------------------------------+
+        | &lt;html> &lt;head> .... &lt;body> ... YOUR SITE           |
+        | ...                                               |
+        | &lt;?php CN_INCLUDE1; ?>                             |
+        | ...                                               |
+        |                         +----------------------+  |
+        | Content                 | &lt;?php CN_INCLUDE2;?> |  |
+        | Content                 |                      |  |
+        | Content                 |                      |  |
+        |                         |                      |  |
+        |                         +----------------------+  |
+        |                                                   |
+        | +-----------------------------------------------+ |
+        | + Footer         &lt;?php CN_INCLUDE3;?>           + |
+        | +-----------------------------------------------+ |
+        +---------------------------------------------------+
+
+    Page layout is selected arbitrarily here. There are three CN_INCLUDE blocks. Every block is placed separately and it
+    shows a defined template, which was selected in the parameters of its show. For example, CN_INCLUDE1 block shows
+    full type news, CN_INCLUDE2 - static news, CN_INCLUDE3 - archives of the headlines pattern.
+
+    When clicking the &ldquo;Read More&rdquo; or &ldquo;Comments&rdquo; links, the usual page update is provided, but with the transfer of other
+    parameters.
+
+    If the module is static, then the changes in his body will not happen; if it is dynamic, as CN_INCLUDE1, the
+    corresponding content will be shown. This means that if there is subaction=showcomments in a GET-query, the template
+    will be changed to full news with comments.
+
+    This is the simplest way to embed news. If you are an experienced php user, you can make more changes in the same
+    block, as well as modify block options depending on the data taking from the GET/POST query.
+
+
+1.2 How to embed news
+
+    First of all, check the files and folders structure on the server. It is better to use absolute paths, if possible.
+
+    For example:
+
+    - /home/userdir/www/news/           - There is code of the CuteNews Administration Panel saved in this folder.
+    - /home/userdir/www/my_script.php   - This folder contains script, which we call.
+
+    my_script.php:
+
+        <code>&lt;html>&lt;body>&lt;h1>Hi, World!&lt;/h1> &lt;?php include ('/home/userdir/www/news/show_news.php'); ?> &lt;/body>&lt;/html></code>
+
+    Using this example code, you will call the correct script and the build-in news will be successfully displayed.
+    Please note that the script show_news.php can't be called directly! In the case of calling it directly you will
+    face the 503 error.
+
+1.3 Archives
+
+    Archives are displayed in the same way as news. In the absence of the $archive option a list of archives will be
+    displayed. It is important to remember that the embedded code with the archives will display full story, if certain
+    parameters are passed.
+
+    It is recommended to hidden the direct code inclusion with archives and to install static=true, if it is placed in
+    the sidebar.
+
+    For example:
+
+        The code <code>&lt;?php include ('show_archives.php'); ?></code> is embedded into the sidebar.
+        If you click the &ldquo;Read more&rdquo; link, the full news will  be displayed in the sidebar instead of list of archives.
+
+1.4 RSS
+
+    RSS feed can be configured via Administration Panel in the Options > Integration Wizards >
+    RSS Setup and Integration.
+
+    It is necessary to follow the instructions which are presented in the Wizards.
+________________________________________________________________________________________________________________________
+
+2.1 Embedding search form
+
+    This can be done in two ways:
+
+    1) By using the code <code>&lt;?php include('search.php'); ?></code>
+
+        If =true for the $search_form_hide option is selected before include('search.php'), the form of the search
+        query will not be displayed in search results.
+
+    2) By placing an arbitrary search form  anywhere
+
+        <code>&lt;form action="url_where_the code_is"> and insert this code where you want to see the search results:
+            &lt;?php if ($_REQUEST['do'] == "search" or $_REQUEST['dosearch'] == "yes")
+            { $subaction = "search"; $dosearch = "yes"; include("search.php"); } ?></code>
+
+    Once the values  $do = 'search' и dosearch = 'yes' have been shown in the URL- or Post query, search results will
+    be displayed.
+
+2.2 Facebook comments form
+
+    To start using this form you need to add your Facebook AppID to the Options > System Configurations > Facebook.
+
+    It is possible to embed Facebook comments form by adding the following META-tag:
+
+        <code>&lt;meta property="fb:admins" content="012345678901234"/></code>
+
+    inside the &lt;head> tag to the template displayed on the web site. Where 012345678901234 is a numeric user ID on
+    Facebook. Embedding this meta tag allows you to administer comments.
+
+2.3 Custom date formatting
+
+    Insert code {month} into the template - the month will be shown as configured at ACP.
+
+________________________________________________________________________________________________________________________
+
+3.1 Plug-ins
+
+    Plug-in files are loaded from the folder ./cdata/plugins every time you call a page that uses the CuteNews engine.
+    It is necessary to register internal hooks for plug-ins by using the callback-functions.
+
+    All plugins located at /cdata/plugins directory with *.php extension.
+________________________________________________________________________________________________________________________
+
+4.1 Standard forms for the web site news construction
+
+    The preliminary testing information: CuteNews is installed in the catalog: /home/yoursite/www/cnews.
+
+
+4.2 The simplest form
+
+    Script location: yoursite.com/index.php
+    Code:
+
+        ...
+        <code>&lt;?php include ('cnews/show_news.php'); ?></code>
+        ...
+
+    This allows to show the active news. By clicking the comments form or the &ldquo;Read more&rdquo; link you will see the full
+    text of an article with the comments.
+
+
+4.3 News are displayed in another folder
+
+    Absolute server path:   /home/yoursite/www/
+    Script location:        yoursite.com/mynews/index.php
+
+    Code:
+
+        ...
+        <code>&lt;?php include ('/home/yoursite/www/cnews/show_news.php'); ?></code>
+        ...
+
+    This allows to show active news in the same folder from which they are called.
+
+
+4.4 Display news from every block at the main web page.
+
+    For example, the box with Headlines templates is available in the sidebar or footer. These blocks can be called by
+    using the $static = true option. It is necessary to display news at the main web page by clicking the Sidebar link.
+
+    File 1:
+
+        Absolute server path:   /home/yoursite/www/
+        Script location:        yoursite.com/pages/lines/index.php
+
+        Code embedded in the sidebar:
+
+        <code>&lt;?php
+
+            $static = true;
+            $static_path = '/index.php';
+            $template = 'Headlines';
+            include ('/home/yoursite/www/cnews/show_news.php');
+
+            ?></code>
+
+    File 2:
+
+        Absolute server path:   home/yoursite/www/
+        Script location:        yoursite.com/index.php
+
+        Code embedded in the sidebar:
+
+            <code>&lt;?php include ('/home/yoursite/www/cnews/show_news.php'); ?></code>
+
+4.5 The search form is embedded in the sidebar, but you need to display search results in the news block:
+
+    <code>&lt;form action="URL, where you want the search results to be displayed">
+
+        &lt;input type="hidden" name="dosearch" value="yes" />  &lt;!-- indication of $dosearch option required -->
+        &lt;input type="text" name="story" value="" />          &lt;!-- specify the search form -->
+
+        &lt;/form></code>
+
+    In the script where search is being performed allow search by dosearch
+
+        <code>&lt;?php if ( isset($_REQUEST['dosearch']) && $_REQUEST['dosearch'] = 'yes')
+            include ('/home/yoursite/www/cnews/search.php'); ?></code>
+
+    If hidden of the search form is required, you will need to add $search_form_hide:
+
+        <code>&lt;?php if ( isset($_REQUEST['dosearch']) && $_REQUEST['dosearch'] = 'yes')
+            {
+            $search_form_hide = true;
+            include ('/home/yoursite/www/cnews/search.php');
+            } ?></code>
+________________________________________________________________________________________________________________________
+
+5.1 The list of parameters before include 'show_news.php'
+
+    DISPLAY
+    -------
+
+    <code>$template (1.4.x+)</code>         Use the template
+    <code>$PHP_SELF (1.4.x+)</code>         Point the name of the file that will be used for links, for example,
+                                            index.php, example.php, etc.
+
+    <code>$static (1.4.x+)</code>           The listing of the news is static, there is a listinf if active news
+    <code>$static_path (до 1.5.4)</code>    Old, used as $PHP_SELF
+    <code>$reverse (1.5.x+)</code>          Display the news in the reverse order
+    <code>$start_from (1.4.x+)</code>       Skip the number of news
+    <code>$number (1.4.x+)</code>           A number of news that will be displayed in the list
+    <code>$no_prev (1.5.2+)</code>          Remove the link Prev
+    <code>$no_next (1.5.2+)</code>          Remove the ink Next
+
+    FILTRATION
+    ----------
+
+    <code>$category (1.4.x+)</code>         Filtration by the displayed categories (id or name)
+    <code>$nocategory (1.5.3+)</code>       Remove some categories from the filtration
+    <code>$ucat (1.5.0+)</code>             User categories: show only those that can be found either in category &ndash;
+                                            nocategory or ucat
+
+    <code>$sortby (2.0+)</code>             Sorting by "date", "author", "comments"
+    <code>$dir (2.0+)</code>                The sorting direction: "", "A" (ascending), "D" (descdending)
+    <code>$user_by (2.0+)</code>            Filtration by a user name
+    <code>$page_alias (2.0+)</code>         Filtration by the unique field $page_alias
+    <code>$tag (2.0+)</code>                Filtration by one of the tags
+    <code>$archive (1.4.x+)</code>          Point an archive ID
+    <code>$only_active (1.4.x+)</code>      Show only active news, not archives
+
+    OTHER
+    -----
+
+    <code>$qhl (2.0+)</code>                Used by CN &ndash; highlighting the text by search
+
+
+5.2 Examples of using the templates [if]
+
+     Add links to different resources
+
+     * Create Additional field with the name resource, type image/resource
+     * Switch the support of pdf expansions in system configurations
+     * Enter to the template
+
+    <code>[if {resource}]PDF-resource: &lt;a href="{resource}">{resource}&lt;/a>[/if]</code>
+
+    if everything is done correctly you will see the link to the resource. 
+
+</pre></body></html>

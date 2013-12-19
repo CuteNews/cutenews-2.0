@@ -1,0 +1,31 @@
+.category-item {   
+    margin-bottom: 0px; 
+    padding: 0 10px 0 0; 
+    float: left; 
+}
+
+.category-item label{
+    cursor: pointer; 
+    position: relative;
+    display: inline-block;   
+}
+
+.chkbox-fix { 
+    border:0; 
+    background-color:transparent;
+    position: relative;
+    vertical-align: middle;  
+}
+
+.ballon { margin: 4px 0 16px 0; line-height: 1em; }
+.ballon img { vertical-align: middle; }
+
+.section { margin: 0 0 8px 0; display: block; }
+.section .name { font-size: 11px; color: #777777; text-transform:uppercase; margin: 0 0 3px 0; }
+.section textarea { width: 100%; }
+
+#options { padding: 16px 0 0 0; }
+
+.req { color: red; }
+.expand_toggle { background: #f0f8f0; padding: 4px; margin: 4px 4px 0 4px; border-radius: 6px; text-align: right; }
+.expand_field { background: #fffff0; padding: 4px; margin: 0 4px 4px 4px; }

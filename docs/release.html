@@ -1,0 +1,239 @@
+<html>
+<head>
+    <title>CuteNews Release Notes</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <style type="text/css">
+        body pre { font-family: "Monospace", "Courier new", serif; font-size: 14px; line-height: 1.25em; }
+        code { color: #000080; font-weight: bold; }
+    </style>
+</head>
+<body><pre>
+
+Requirements
+
+    - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
+    - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
+
+CuteNews 2.0 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+    Since we had launched CuteNews 1.5.3 some fundamental architecture and modules changes occurred.
+
+    <u>The main architecture changes.</u>
+
+        <b>Preview</b>
+
+        The main changes concerned news, users and settings storage systems. News is saved in cdata/news. Indexes and
+        databases were developed for the acceleration of news access. The news grouped by days are stored separately.
+
+        The usage of indexes helps users accelerate news access. The amount of active news in an index doesn't matter.
+        While successive reading the listing appears in a moment even if there are 100000 news items of different sizes.
+        But also we should mention the points that can brake the process of news output:
+
+        * It cuts the capacity by half because of news reverse when the program requests for indexes in full;
+        * It cuts the capacity by half after the filtration process or sorting: category, userid, comments count;
+        * It cuts the capacity by half after the requests for non-standard fields, like tags.
+
+        So it's recommended to archive news once a month because of the tables' size, it will prevent the access speed
+        from problems. Or you can use another storage system (like MySQL, but it's not available yet).
+
+        The change of the power adapter of a database is available. 'coreflat' in the version 2.0.
+
+        Users and news are saved in the subfolder 'users'. For users storage are used the indicial file and unique cross
+        indexes of an id, username, email that are saved together with users data.
+
+        There is protection from damaging files in multiple competing entries, which helps to avoid data corruption of
+        news, users and system configurations while multiple rewriting of the file as it was previously.
+
+        The configurations like templates, settings or blocked ip or user are stored in the protected file conf.php.
+        You can easily delete it but in this case you lose all the settings.
+
+        <b>Extension {placeholders}</b>
+
+        A different system of recognition of {placeholders} and [bb-tags] operates in the CN 2.0. Any {placeholder} and
+        [bb-tags] in news will be replaced by " " empty tags as it can be important to avoid XSS and unlocked plugins.
+
+        <b>Security</b>
+
+        In this version of the Cutenews insecure characters are escaped with the help of cn_htmlspecialchars, it helps
+        to avoid XSS and displaying of the incorrecr encoding. There is a function of hiding the position of a Cutenews
+        folder: 1) emoticons can be serialized in the way that allow hiding the source; 2) a download folder can be
+        indicated at any specified place.
+
+        The only way to know the location of a CN admin folder is the link 'register'. But it can be given by a
+        web master only.
+
+    <u>CKEditor</u>
+
+        The module CKEditor has been updated with the usage of the moono theme. Some in-built js-plugins for CKEditor
+        were added.
+
+    <u>Rights system/ user groups</u>
+
+        One of the innovations is the new group division and the possibility to change their settings. In the previous
+        versions of Cutenews there are only 4 groups of users: Administrator, Editor, Journalist and Commenter. Now
+        there is one more group named Ban and you can add your groups. System groups can't be deleted but can be changed.
+        You can reset all settings by default.
+
+        Each group has its own set of rights, divided into 4 subgroups Configs, News, Comments, Behavior.
+
+        You can't change admin rigths, his rigths can be only inherited. For inheritance of rights you need to select a
+        specific group, and enter a different name - the group will be created with the same rights.
+
+        For full / partial cascading rights to other groups, you can create subgroups (the field 'consist').
+
+        It allows news editing. If the Editor is included into the group 'Journalist' so the right to edit news that is
+        written by the Journalist is given only when the Editor is marked to have this right (edit group). There is a
+        field 'edit all' that allows the Editor to edit all groups' news.
+
+    <u>Modules changes</u>
+
+        <b>Backup</b>
+
+        Backups are recorded via ZIP module, the same thing is about unpacking. You can record backups by your own.
+
+        Text translation module (localization)
+
+        The translation in the new CN version is implemented as a module. It should be noted that phrases are encoded by
+        special tokens so it's impossible to know the original phrase. For the encoding of a new token you should enter
+        the phrase that is found inside the function i18n (not all the phrases can be translated) and then enter the
+        translated meaning. If there are substitutes %1, %2... %N in a phrase, they also can be used in the translated
+        phrase.
+
+        For instance, the token S620P616F600 codes the phrase 'Search Performed For'.
+
+
+        <b>Media manager</b>
+
+        Media manager was greatly improved, now it's possible to create subfolders, move files, upload images by a URL.
+        A preview form was added as an icon next to a file's name. With this manager you can insert icons for
+        categories, images to articles and extended fields.
+
+
+        <b>System configuration</b>
+
+        In the system configuration section CKEditor was added that allows correcting buttons location on the
+        panel without any problems.
+
+
+        <b>Extended fields</b>
+
+        The advantage of the extended fields in the new version is the fact that they have different types: selectbox,
+        text, image, price, checkbox. The field {avatar} was removed as it can be configured through  extended fields.
+        The fields can be grouped in any order marking compulsory or not.
+
+        With extended fields combined with the construction [if]...[/if] for templates it's possible to create
+        programmed blocks of average complexity in templates themselves. For instance, to show this or that part of
+        news when a certain checkbox is locked ot show an avatar if you have it, etc.
+        Example: <b>[if {avatar}]</b>&lt;img src="{avatar}"/&gt;<b>[/if]</b>
+
+
+        <b>Templates</b>
+
+        Two fields were added for templates: search form and print. The sub-template 'search form' allows managing a
+        search form as you wish, 'print' allows setting the view of images for printing.
+
+
+        <b>Categories</b>
+
+        Two improvements: opportunity to choose groups where this category will be shown, and the field 'memo' for
+        explanation of a category.
+
+        Categories have a name, an icon, and a list of groups. The category where a user enters will be shown.
+
+        If a category has groups 'Editor' and 'Journalist' so 'Commenter' can't see the news of the same category.
+
+        If the news has several categories and one of them doesn't allow a user to see it so he/she can't do it anyway.
+        Listing of groups for a category does not depend on the level of user privileges, as only an administrator can
+        create categories, but a group can be displayed only when it has a right to "show in category".
+
+
+    <u>Rewrite module</u>
+
+        Now mod_rewrite is available not as a plug-in (as in previous versions) but is integrated in the core of
+        Cutenews. It allows avoiding incompatibility errors. For rewrite settings you need:
+
+        The file .htaccess should be available at the root pf the site (if there is no such file, create it);
+
+        Go to Dashboard > System configurations > Rewrite, lock 'Use rewrite engine';
+
+        Point the correct route to the file where the news is shown. It's example.php by default, but you should
+        change it with your own, for example index.php.;
+
+        Point 'Rewrite prefix' and click 'Save'.
+
+        After all these actions shortened links should appear on the site and their recognition should work.
+        If Rewrite was previously used so you can save it. An example of the file .htaccess. Imagine that the folder
+        with Cutenews is named 'Cutenews' and the prefix used is "/news/"
+            <b style="color: #505080;">
+            RewriteEngine ON
+
+            # Here the re-direct to an admin panel is made
+            RewriteRule ^/?CuteNews/$ /CuteNews/index.php [L,R]
+
+            # Your own rewrite
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_URI} !^/news
+            RewriteRule ^(.*)$ /index.php?my_rewrite=$1 [L]
+
+            # --- CUTENEWS[ST]
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^(.*)$ /CuteNews/show_news.php?cn_rewrite_url=$1 [L]
+            # --- CUTENEWS[ED]</b>
+
+    <u>Installation and migration</u>
+
+        The installation is different now. If in the index of a users there is no any note (cdata/users.txt) the
+        installation file will work that checks the recording function in the main folders and fills the first data for
+        an administrator.
+
+        Migration is always preformed after the installation in the module 'Maintenance'. See usage.html, cutephp.com,
+        the section Upgrade.
+
+        It should be noted that if the encoding was to 1.5.x or 1.4.x, for example, CP1251 (Windows-1251) or ISO,
+        then while migration it is necessary to specify this encoding.
+
+CuteNews 1.5.3 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+1.0 Requirements
+
+    - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
+    - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
+
+2.0 Safety improvements
+
+A   In order to authenticate and verify the security algorithm used XXTEA session Cookies. The essence of the method
+    implementation:
+
+    1. In the session is added REMOTE_ADDR to block repeated requests;
+    2. Serialize $_SESS array into serialized string;
+    3. Serialized string is encrypted using a randomly selected XXTEA with &ldquo;salt&rdquo; for the site;
+    4. Encrypting a string is passed to the Cookies named `session`.
+
+    What it gives?
+
+    Protection against CSRF and open view of identification user data. In order to properly encrypt data and send them
+    fraudulent manner, you need a &ldquo;salt&rdquo; and the IP address of the sender. Salt is unique for each site and set consists
+    of a 512-bit encryption. The probability of selection of the cipher salt is actually zero. Each time you update a
+    random number issued to confirm the return to the user, which is stored in an encrypted session.
+
+    You also cannot resend the same token to another IP-address, since the encrypted data is IP-address of the sender
+    and any attempt to send the wrong line leads to unlogin.
+
+    However, nothing can protect any data from the session, and &ldquo;listening&rdquo; to, if not using a secure https-connection.
+    To install it you have to buy a registrar certificate for your domain. Read more here
+    http://en.wikipedia.org/wiki/HTTP_Secure
+
+B   CAPTCHA
+
+    The main problem in the web space is still spam. For writing news comments and for account registration captcha has
+    been added, which uses session encryption mechanism through the Cookies, so that hacking by robot is impossible,
+    too. The information is stored securely.
+
+C   A function cleaning almost every XSS written by an offender in the comments or posts has been created.
+
+D   Enhanced protection from the folder view with .htaccess has been added.
+
+</pre></body></html>

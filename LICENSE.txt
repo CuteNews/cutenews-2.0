@@ -1,0 +1,63 @@
+CutePHP.com Software License Agreement
+
+1. This Software License Agreement is a legal agreement between you,
+the end-user ("Licensee"), and Authors of software ("Authors"). By
+using our software or storing it on a computer hard drive (or other
+type of media), you are agreeing to be bound by the terms of this
+Agreement.
+
+2. CutePHP Software IS DISTRIBUTED "AS IS". NO WARRANTY OF ANY KIND IS
+EXPRESSED OR IMPLIED. You Use our software AT YOUR OWN RISK. CutePHP
+Authors hereby disclaim all warranties and guarantees regarding the
+use, or the results of use, of the software in terms of correctness,
+accuracy, reliability or otherwise. The Authors will not be responsible
+for any incidental, consequential, direct or indirect damages. You
+also agree that the disclaimer is the complete and exclusive statement
+of agreement between the parties and supersede all proposals or prior
+agreements, oral or written, and any other communications between the
+parties relating to the subject matter of the disclaimer.
+
+3. All copyrights to "CutePHP.com" are exclusively owned by CutePHP
+Development Team.
+
+4. You can use CutePHP.com Software for free as long as you do not
+remove / edit, and keep visible the "Powered by..." line (displayed
+on every page where the script is included) without the explicit
+written permission of CutePHP.com or payed registration.
+The Software is licensed only to you. You may not rent, lease,
+sublicense, sell, assign, pledge, transfer or otherwise dispose of the
+Software in any form, on a temporary or permanent basis, without the
+prior written consent of CutePHP.com
+
+5. Users may modify software code for their personal use (at their own
+risk), but any altered code must not be redistributed or resold in any
+form without the explicit written permission of CutePHP.com
+
+6. Registered Users/Customers (purchased-license holders) are allowed
+to remove the 'Powered by...' line.
+
+6.1 All customers must include the URL of the domain where the Script
+will be used. This is done through the Customer Area at CutePHP.com
+
+6.2 Customers are allowed to install the script only on the domain
+stated in their license. This means that the Licensee can install the
+script only on one domain per license purchased. Multiple instances of
+the script (installations) are allowed in the scope of the licensed
+domain.
+
+6.3 Once you are in receipt of our software, License fees are
+non-refundable. We encourage you to verify (by installing the free
+version) that the software is working on your server and no problems
+are occurring.
+
+6.4 Un-Official technical support will be provided in our forums from
+voluntary members to both Registered and Un-Registered Users.
+
+6.5 CutePHP.com Software includes CKEditor and class "zipfile" by
+Joshua Townsend, which is an open-source product.
+
+TERMINATION
+This Agreement will terminate automatically upon failure to comply
+with the limitations described herein or on written notice from an
+authorized representative of CutePHP.com. On termination, you must
+destroy all copies of the Software within 48 hours.

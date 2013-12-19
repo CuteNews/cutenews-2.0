@@ -1,0 +1,23 @@
+body { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.31em; }
+
+a:active,a:visited,a:link { color: #446688; text-decoration: none; font-size: 12px; }
+a:hover { color: #00004F; text-decoration: none; font-size: 12px; }
+
+table.std-table { border-collapse: collapse; }
+table.std-table td, table.std-table th { padding: 3px; margin: 0; border: 1px solid #eeeeee; }
+table.std-table th { background: #4e4e4e; border: 1px solid #8e8e8e; color: white; }
+
+.media_path { background: #f0f0e0; padding: 4px; margin: 0 0 0 0; border-top: 1px solid #c0c080; }
+
+.media_lft_button { margin: 8px 0 0 0; float: left; }
+.media_rgt_button { margin: 8px 0 0 0; float: right; }
+
+.panel-media { background: #ffffe0; padding: 4px; margin: 0 0 8px 0; }
+
+.cn_breadcrumbs { margin: 0 0 8px 0; }
+.cn_breadcrumbs a { font-size: 15px; }
+
+.media_popup_form { background: #FFF0A0; padding: 10px; border-top: 1px solid #f0c000; }
+
+.big_font { font-size: 18px; }
+.indent { margin-left: 20px; }
