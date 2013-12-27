@@ -1462,6 +1462,7 @@ function make_postponed_date($gstamp = 0)
     $day    = date('j', $gstamp);
     $month  = date('n', $gstamp);
     $year   = date('Y', $gstamp);
+    $ml     = explode(',', getoption('mon_list'));
 
     for ($i = 1; $i < 32; $i++)
     {
@@ -1472,8 +1473,16 @@ function make_postponed_date($gstamp = 0)
     for ($i = 1; $i < 13; $i++)
     {
         $timestamp = mktime(0, 0, 0, $i, 1, 2003);
-        if ($month == $i) $_dateM .= "<option selected value=$i>". date("M", $timestamp) ."</option>";
-        else              $_dateM .= "<option value=$i>". date("M", $timestamp) ."</option>";
+        $curr_mont = date('n', $timestamp) - 1;
+
+        if ($ml && isset($ml[ $curr_mont]))
+            $month_name = $ml[ $curr_mont ];
+        else
+            $month_name = date("M", $timestamp);
+
+        // ---
+        if ($month == $i) $_dateM .= "<option selected value=$i>" . $month_name . "</option>";
+        else              $_dateM .= "<option value=$i>" . $month_name . "</option>";
     }
 
     for ($i = 2003; $i < (date('Y') + 8); $i++)
