@@ -514,15 +514,17 @@ function db_index_add($id, $category, $uid, $source = '')
     return rename($dest, $fn);
 }
 
-function db_count_news($by='date')
+function db_count_news($by = 'date')
 {
-    $idx=  db_index_load_cnt('key:val+', $by);
-    $val_key=  db_pvt_get_valueble_key($idx['format']);
-    $sum=0;
+    $sum = 0;
+    $idx =  db_index_load_cnt('key:val+', $by);
+    $val_key = db_pvt_get_valueble_key($idx['format']);
+
     foreach ($idx['idx'] as $item)
     {
-        $sum+=intval($item[$val_key]);
+        $sum += intval($item[$val_key]);
     }
+
     return $sum;
 }
 

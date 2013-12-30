@@ -78,13 +78,14 @@ cn_rm_GET('no_prev,no_next,source,number,start_from,reverse,static,sortby,dir,pe
 foreach ($entries as $entry)
 {
     cn_translate_active_news($entry, $translate);
-
     $echo[] = entry_make($entry, 'active', $template);
 }
 
-$_show_rows = count($echo);
-if (($count_news = count($entries)) == 0) echo i18n('No entries to show');
-if ($count_news == $number+1) unset($echo[$count_news-1]);
+// No Entries
+if (($_show_rows = count($echo)) == 0) echo i18n('No entries to show');
+
+// Count showed rows
+$_cn = cn_get_news_count();
 
 // Re-Request this parameters for news listing
 cn_set_GET('source,number,start_from,reverse,static,sortby,dir,per_page,archive,category,nocategory,ucat,template=Default,page_alias,only_active,user_by');
@@ -95,18 +96,18 @@ echo join('', $echo);
 // Get config
 $_enable_pagination = getoption('disable_pagination') ? FALSE : TRUE;
 
-// No pagination
-if (!$start_from && ($_show_rows < $number))
+// No pagination, if showed rows less than number
+if ($_cn <= $number || !$number)
     $_enable_pagination = FALSE;
 
-// in case is has pagination
-if ($number && $_enable_pagination)
+// in case of pagination
+if ($_enable_pagination)
 {
     $PSTF = array('category' => '');
     $out = cn_get_template('prev_next', $template);
 
     // <!--- PREV
-    $_prev_num = $start_from - $number + 1;
+    $_prev_num = $start_from - $number;
 
     // Back to previous page
     if ($_prev_num > 0)
@@ -120,10 +121,10 @@ if ($number && $_enable_pagination)
         }
         else $url = cn_url_modify("start_from=$_prev_num");
 
-        $PREV = '<a href="'.$url.'">\\1</a>';
+        $PREV = '<a class="cn-previous-news" href="'.$url.'">\\1</a>';
     }
     // Back to first page
-    elseif ($start_from && $start_from <= ($number - 1))
+    elseif ($start_from)
     {
         if (getoption('rw_engine'))
         {
@@ -134,7 +135,7 @@ if ($number && $_enable_pagination)
         }
         else $url = cn_url_modify('start_from');
 
-        $PREV = '<a href="'.$url.'">\\1</a>';
+        $PREV = '<a class="cn-previous-news" href="'.$url.'">\\1</a>';
     }
     else
     {
@@ -142,9 +143,10 @@ if ($number && $_enable_pagination)
     }
 
     // NEXT --->
-    if ($number && $_show_rows == $number)
+    if ($number && ($start_from + $number < $_cn))
     {
-        $_next_num = $start_from + $number - 1;
+        $_next_num = $start_from + $number;
+
         if (getoption('rw_engine'))
         {
             if ($tag)
@@ -154,24 +156,35 @@ if ($number && $_enable_pagination)
         }
         else $url = cn_url_modify("start_from=$_next_num");
 
-        $NEXT = '<a href="'.$url.'">\\1</a>';
+        $NEXT = '<a class="cn-next-news" href="'.$url.'">\\1</a>';
     }
     else $NEXT = '\\1';
 
-    // Special settings
+    // Settings for Prev and Next
     if ($no_prev) $PREV = '';
     if ($no_next) $NEXT = '';
+
+    // One is has
     if (!$no_prev || !$no_next)
     {
+        $links  = '';
         $out = preg_replace('/\[prev\-link\](.*)\[\/prev\-link\]/is', $PREV, $out);
         $out = preg_replace('/\[next\-link\](.*)\[\/next\-link\]/is', $NEXT, $out);
-        
-        $pages=  round(cn_get_news_count()/(($number-1)==0?1:($number-1)),0,PHP_ROUND_HALF_UP);
-        $links='';
-        for($i=0;$i<$pages;$i++)
+
+        // Get page count, if $number is present
+        $pages  = $number ? (intval($_cn / $number) + (($_cn % $number == 0) ? 0 : 1)) : 0;
+
+        // Limits
+        $limit_skip   = false;
+        $page_limits  = getoption('pagination_pages') ? getoption('pagination_pages') : 10;
+        $current_page = intval($start_from / $number);
+        $limit_left   = $current_page - $page_limits;
+        $limit_right  = $current_page + $page_limits;
+
+        for ($i = 0; $i < $pages; $i++)
         {
-            $_next_num=($number-1)*$i;
-            $url='#';
+            $_next_num = $number * $i;
+
             if (getoption('rw_engine'))
             {
                 if ($tag)
@@ -179,19 +192,29 @@ if ($number && $_enable_pagination)
                 else
                     $url = cn_rewrite('list', $_next_num, $archive, $PSTF);
             }
-            else $url = cn_url_modify("start_from=$_next_num");            
-            if($start_from!=$_next_num)
+            else
             {
-                $links.='<a href="'.$url.'">'.($i+1).'</a>&nbsp;';
+                $url = cn_url_modify("start_from=$_next_num");
+            }
+
+            if ($limit_skip == false && ($limit_left >= $i || $i > $limit_right))
+            {
+                $links .= '<span class="cn-page-skip">...</span> ';
+                $limit_skip = true;
+            }
+            elseif ($start_from != $_next_num)
+            {
+                $links .= '<a class="cn-page-news" href="'.$url.'">'.($i+1).'</a> ';
+                $limit_skip = false;
             }
             else
             {
-                $links.=($i+1).'&nbsp;';
+                $links .= '<span class="cn-current-page-news">'.($i+1).'</span> ';
+                $limit_skip = false;
             }
         }
         
-        $out = str_replace('{pages}', $links, $out); 
-
+        $out = str_replace('{pages}', $links, $out);
         echo $out;
     }
 }

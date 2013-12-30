@@ -10,7 +10,7 @@ check_direct_including('search.php');
 
 // Variables by default
 list($template, $dosearch, $search, $user, $archives) = GET('template, dosearch, search, user, archives');
-list($search_st, $number) = GET('search_st, number');
+list($search_st, $number) = GET('search_st, number', 'GPG');
 list($_fd, $_fm, $_fy) = GET('from_date_day, from_date_month, from_date_year');
 list($_td, $_tm, $_ty) = GET('to_date_day, to_date_month, to_date_year');
 
@@ -85,6 +85,7 @@ if ($dosearch)
 
     $news = db_index_load('');
     $c_time = ctime();
+    $itemid = 0;
 
     if (strlen($search) < 3)
     {
@@ -140,7 +141,7 @@ if ($dosearch)
                 // Call: id, archiveid, template
                 if (getoption('rw_engine'))
                 {
-                    $url = cn_rewrite('full_story', $id);
+                    $url = cn_rewrite('full_story', cn_put_alias($id));
                     if (getoption('search_hl')) $url .= "?qhl=".urlencode($search);
                 }
                 else
@@ -151,6 +152,7 @@ if ($dosearch)
                         $url = cn_url_modify($_static_qr, 'id='.$id);
                 }
 
+                $itemid++;
                 echo "<div class='cutenews_search_item'>$itemid <b><a href='$url'>$title</a></b> (". date("d F, Y", $id) .")</div>";
 
                 $_number--;
@@ -188,9 +190,11 @@ if ($dosearch)
         }
 
         echo '<div class="cn_paginate_search">';
+        $__PHP_SELF = $PHP_SELF; $PHP_SELF = $_SERVER['SCRIPT_NAME'];
         if ($search_st - $number >= 0 && $number) echo ' <a href="'.cn_url_modify('search_st='.($search_st - $number)).'">&lt;&lt; Prev</a> ';
         if ($search_st) echo ' (skip <b class="search_skip">'.$search_st.'</b> items) ';
         if ($_next_link) echo ' <a href="'.cn_url_modify('search_st='.($search_st + $number)).'">Next &gt;&gt;</a>';
+        $PHP_SELF = $__PHP_SELF; unset($__PHP_SELF);
         echo '</div>';
     }
 
