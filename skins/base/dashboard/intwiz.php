@@ -98,7 +98,7 @@ cn_snippet_bc();
             <td><b>Categories to Show News From:</b></td>
             <td rowspan="2" align="center">
 
-                <?php if (REQ('w_category')) { ?>
+                <?php if ($categories) { ?>
 
                     <select <?php if (REQ('w_allcategory')) echo 'style="display: none;"'; else echo 'style="display: block;"'; ?> name="w_category[]" id="category" multiple="">
                         <?php if (is_array($categories)) foreach ($categories as $id => $cat) { ?>
@@ -231,7 +231,7 @@ cn_snippet_bc();
             <td valign="top"><b>Show articles only from these categories:</b></td>
             <td align="center" rowspan="2">
 
-                <?php if (REQ('rss_allcategory')) { ?>
+                <?php if ($categories) { ?>
 
                     <select <?php if (REQ('rss_allcategory')) echo 'style="display: none;"'; else echo 'style="display: block;"'; ?> name="rss_category[]" id="category" multiple="">
                         <?php if (is_array($categories)) foreach ($categories as $id => $cat) { ?>
