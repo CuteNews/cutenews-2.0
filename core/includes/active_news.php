@@ -96,6 +96,10 @@ echo join('', $echo);
 // Get config
 $_enable_pagination = getoption('disable_pagination') ? FALSE : TRUE;
 
+// Enable ignore rewrite for pagination
+$_ignore_rewrite    = isset($ignore_rewrite) && $ignore_rewrite ? true : false;
+$ignore_rewrite     = false;
+
 // No pagination, if showed rows less than number
 if ($_cn <= $number || !$number)
     $_enable_pagination = FALSE;
@@ -112,7 +116,7 @@ if ($_enable_pagination)
     // Back to previous page
     if ($_prev_num > 0)
     {
-        if (getoption('rw_engine'))
+        if (getoption('rw_engine') && !$_ignore_rewrite)
         {
             if ($tag)
                 $url = cn_rewrite('tag', $tag, $_prev_num, $PSTF);
@@ -126,7 +130,7 @@ if ($_enable_pagination)
     // Back to first page
     elseif ($start_from)
     {
-        if (getoption('rw_engine'))
+        if (getoption('rw_engine') && !$_ignore_rewrite)
         {
             if ($tag)
                 $url = cn_rewrite('tag', $tag, $PSTF);
@@ -147,7 +151,7 @@ if ($_enable_pagination)
     {
         $_next_num = $start_from + $number;
 
-        if (getoption('rw_engine'))
+        if (getoption('rw_engine') && !$_ignore_rewrite)
         {
             if ($tag)
                 $url = cn_rewrite('tag', $tag, $_next_num, $PSTF);
@@ -185,7 +189,7 @@ if ($_enable_pagination)
         {
             $_next_num = $number * $i;
 
-            if (getoption('rw_engine'))
+            if (getoption('rw_engine') && !$_ignore_rewrite)
             {
                 if ($tag)
                     $url = cn_rewrite('tag', $tag, $_next_num, $PSTF);
