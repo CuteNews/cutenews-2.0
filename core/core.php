@@ -1525,26 +1525,92 @@ function mcache_set($name, $var)
     $_CN_SESS_CACHE[$name] = $var;
 }
 
-// Since 1.5.0: Truncate word by length
-function word_truncate($text, $length = 75)
+// Since 2.0: "Clever" Truncature for HTML tags
+function clever_truncate($html, $ln = 75)
 {
-    $wrp = '';
-    $ln = 0;
-    $cmt = preg_split("/\s/", $text);
+    // Result
+    $R = '';
 
-    foreach ($cmt as $cm)
+    // Word Count
+    $C = 0;
+
+    // IS HTML
+    if (preg_match_all('/<([^>]+)>/s', $html, $fetch, PREG_SET_ORDER))
     {
-        $ln += strlen($cm);
-        if ($length < $ln)
+        // Tag depth
+        $D = array();
+
+        // Next In
+        $N = 0;
+
+        // List of single html tags
+        $SGL = array('img', 'br', 'area', 'base', 'basefont', 'bgsound', 'col', 'command', 'embed', 'hr', 'input', 'isindex', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr');
+
+        foreach ($fetch as $ft)
         {
-            $wrp .= '...';
-            break;
+            // Get inner tag
+            $T = trim($ft[1]);
+
+            // Search next HTML tag
+            $S = strpos($html, $ft[0], $N);
+
+            // String before
+            $SE = trim(substr($html, $N, $S - $N));
+            $N  = $S + strlen($ft[0]);
+
+            // Tag detection
+            $G = strtolower($ft[1]);
+
+            $W2 = explode(' ', $SE);
+            if ($SE) foreach ($W2 as $w) if (trim($w))
+            {
+                $C++; $R .= " $w ";
+
+                // Close ALL tags before and exit
+                if ($C == $ln) { $R .= '...'; foreach ($D as $t) $R .= "</$t>"; return $R; }
+            }
+
+            // Append next tag
+            $R .= $ft[0];
+
+            if ($T[0] === '/')
+            {
+                // Overflow protection
+                if (count($D)) array_shift($D);
+            }
+            // Is not single hmtl tag
+            elseif (!in_array($G, $SGL) && !preg_match('/\/\s*>/', $ft[0]))
+            {
+                if (preg_match('/^\w+/', $G, $c))
+                    array_unshift($D, $c[0]);
+                else array_unshift($D, NULL);
+            }
         }
 
-        $wrp .= $cm." ";
+        // Estimated...
+        $SE = substr($html, $N);
+        $W2 = explode(' ', $SE);
+        if ($SE) foreach ($W2 as $w) if (trim($w))
+        {
+            $C++; $R .= " $w ";
+            if ($C == $ln) { $R .= '...'; break; }
+        }
+
+        // HTML autocomplete
+        foreach ($D as $t) $R .= "</$t>";
+    }
+    // Text
+    elseif ($html)
+    {
+        $W2 = explode(' ', $html);
+        foreach ($W2 as $_id => $w) if (trim($w))
+        {
+            $C++; $R .= $_id ? " $w" : "$w";
+            if ($C == $ln) return "$R...";
+        }
     }
 
-    return $wrp;
+    return $R;
 }
 
 // Since 2.0: Get option from #CFG or [%site][<opt_name>]

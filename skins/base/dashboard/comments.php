@@ -13,7 +13,7 @@
             if (!$item[2]['id'])
                 echo ' ---comment deleted--- ';
             else
-                echo '<a target="_blank" href="'.$item[3].'">'.cn_htmlspecialchars(word_truncate($item[2]['c'])).'</a>';
+                echo '<a target="_blank" href="'.$item[3].'">'.cn_htmlspecialchars(clever_truncate($item[2]['c'])).'</a>';
             ?>
         </td>
         <td align="center"><?php echo cn_htmlspecialchars($item[2]['ip']); ?></td>

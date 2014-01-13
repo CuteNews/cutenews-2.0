@@ -28,7 +28,7 @@ echo '<p><b>PATH:</b> root/'.cn_htmlspecialchars($path ? $path : '').'</p>';
                 }
                 elseif (strlen($v) > 128)
                 {
-                    echo cn_htmlspecialchars(word_truncate($v, 128));
+                    echo cn_htmlspecialchars(clever_truncate($v, 128));
                     $edit = TRUE;
                 }
                 else

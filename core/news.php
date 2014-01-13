@@ -620,7 +620,7 @@ function cn_modify_bb_edit($e, $t, $bb)
 function cn_modify_bb_truncate($e, $t, $o)
 {
     $num = intval(preg_replace('/[^0-9]/', '', $o));
-    return word_truncate($t, $num);
+    return clever_truncate($t, $num);
 }
 
 // make mail
