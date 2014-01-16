@@ -3388,14 +3388,17 @@ function cn_snippet_ckeditor($ids = '')
     echo "skin: 'moono', width: 'auto', height: 350, customConfig: '', language: 'en', entities_latin: false, entities_greek: false, \n";
     echo "toolbar: [ ". hook('settings/CKEDITOR_customize', $CKBar) . " ], \n";
 
-    $add_opt = array();
-    $add_opt[] = 'filebrowserBrowseUrl: "'.PHP_SELF.'?mod=media&opt=inline"';
-    $add_opt[] = 'filebrowserImageBrowseUrl: "'.PHP_SELF.'?mod=media&opt=inline"';
+    $add_opt  = array();
+    $compound = array();
+
+    $add_opt['filebrowserBrowseUrl'] = PHP_SELF.'?mod=media&opt=inline';
+    $add_opt['filebrowserImageBrowseUrl'] = PHP_SELF.'?mod=media&opt=inline';
 
     $add_opt = hook('settings/CKEDITOR_filemanager', $add_opt);
-    echo join(', ', $add_opt);
+    foreach ($add_opt as $I => $V) $compound[] = "$I: \"$V\"";
 
-    echo '}; '."\n";
+    // Insert updated FileBrowser
+    echo join(', ', $compound) . '};' . "\n";
 
     // Smilies
     echo 'CKEDITOR.config.smiley_path = "'.getoption('http_script_dir').'/skins/emoticons/"; '."\n";
