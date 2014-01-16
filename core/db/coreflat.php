@@ -374,53 +374,6 @@ function db_index_meta_load($source = '', $load_users = FALSE)
     return $ls;
 }
 
-// Since 2.0: Update external (e.g. tags)
-function db_update_aux($entry, $type = 'add', $storent = array())
-{
-    // --- do update tags
-    $tags = cn_touch_get('/cdata/news/tagcloud.php');
-
-    $tg = spsep($entry['tg']);
-    foreach ($tg as $i => $v) $tg[$i] = trim($v);
-
-    // Update tags require diffs
-    if ($type == 'update')
-    {
-        $st = spsep($storent['tg']);
-        foreach ($st as $i => $v) $st[$i] = trim($v);
-
-        $tdel = array_diff($st, $tg);
-        $tadd = array_diff($tg, $st);
-
-        // add & delete
-        foreach ($tadd as $tag) $tags[$tag]++;
-        foreach ($tdel as $tag)
-        {
-            $tags[$tag]--;
-            if ($tags[$tag] <= 0) unset($tags[$tag]);
-        }
-    }
-    else
-    {
-        foreach ($tg as $tag)
-        {
-            // Add news
-            if ($type == 'add')
-            {
-                $tags[$tag]++;
-            }
-            // Delete news
-            elseif ($type == 'delete')
-            {
-                $tags[$tag]--;
-                if ($tags[$tag] <= 0) unset($tags[$tag]);
-            }
-        }
-    }
-
-    cn_fsave('/cdata/news/tagcloud.php', $tags);
-}
-
 // Since 2.0: Update overall data about index
 function db_index_update_overall($source = '')
 {
@@ -514,147 +467,6 @@ function db_index_add($id, $category, $uid, $source = '')
     return rename($dest, $fn);
 }
 
-function db_count_news($by = 'date')
-{
-    $sum = 0;
-    $idx =  db_index_load_cnt('key:val+', $by);
-    $val_key = db_pvt_get_valueble_key($idx['format']);
-
-    foreach ($idx['idx'] as $item)
-    {
-        $sum += intval($item[$val_key]);
-    }
-
-    return $sum;
-}
-
-/*
- * Since 2.0: Load index by format
- * 
- * @param string $source index name
- * @param string $format keys position in index
- * 
- * @return array result index with elements maped by format
- */
-function db_index_load_cnt($format='key:subj+', $source='date')
-{
-    $format_keys=  explode(':', 'id:'.$format);
-    $res_idx=array('format'=>$format_keys,'type'=>$source, 'idx'=>array());
-    
-    $reader=fopen(db_index_file_detect('group_index_'.$source.'_cnt'),'r');
-    while($item= trim(fgets($reader)))
-    {
-        if(trim($item)=='') continue;
-        $elems=  explode(':', $item);
-        $res_idx['idx'][$elems[0]]=  array_combine($format_keys, $elems);
-    }
-    fclose($reader);
-    return $res_idx;
-}
-
-/*
- * Since 2.0: Add item to index
- * 
- * @param array $idx index to add
- * @param array $item added element
- * @param false|true $overwrite overwrite element if it exist on index
- * 
- * @return false|true if fail return false
- */
-function db_index_add_cnt($idx,$item,$overwrite=FALSE)
-{
-    $add_id=  db_pvt_get_id($item);
-    $add_item=array('id'=>$add_id);
-    foreach ($item as $key=>$val)
-    {
-        $add_item[$key]=$val;
-    }
-    $is_exist=array_key_exists($add_id, $idx['idx']);
-    if($is_exist&&!$overwrite)
-    {
-        return FALSE;
-    }
-    $idx['idx'][$add_id]= $add_item;
-    return $idx;
-}
-
-/*
- * Since 2.0: Close and save index to file
- * 
- * @param array $idx saved index
- * 
- * @return void
- */
-function db_index_close_cnt($idx)
-{
-    $fn=  db_index_file_detect('group_index_'.$idx['type'].'_cnt');
-    $bkp= db_make_bk($fn);
-    $write_idx='';
-    foreach ($idx['idx'] as $val)
-    {
-        $write_idx.=join(':',$val)."\n";
-    }
-    $w=  fopen($bkp, 'w+');
-    fwrite($w, $write_idx);
-    fclose($w);
-    rename($bkp, $fn);
-}
-
-/*
- * Since 2.0: Utitlt, generate id for index by element content
- * 
- * @param array $item element od index
- * 
- * @return void
- */
-function db_pvt_get_id($item)
-{    
-    return base_convert(array_shift($item), 36, 10);
-}
-
-/*
- * Since 2.0: Execute operation with valuable elemets of index
- * 
- * @param array $idx index
- * @param array $operand elemet of index
- * @param true|false $add_new regulate will be add new element to index if it not exist
- * 
- * @return array result index
- */
-function db_index_operation($idx,$operand,$add_new=TRUE)
-{
-    $op_id=  db_pvt_get_id($operand);
-    $key=  db_pvt_get_valueble_key($idx['format']);
-    if(array_key_exists($op_id, $idx['idx']))
-    {              
-        $idx['idx'][$op_id][$key]=  intval($idx['idx'][$op_id][$key])+$operand[$key];
-        if($idx['idx'][$op_id][$key]<0){$idx['idx'][$op_id][$key]=0;}
-    }
-    elseif($add_new&&$operand[$key]>=0)
-    {
-        $idx=db_index_add_cnt($idx, $operand,TRUE);
-    }
-    return $idx;
-}
-
-/*
- * Since 2.0: Serch in format string valueble key marked as +
- * 
- * @param array $format_keys splited format string
- * 
- * @return string key
- */
-function db_pvt_get_valueble_key($format_keys)
-{
-    $res_key='';
-    foreach ($format_keys as $item)
-    {
-        if(!strpos($item,'+')) continue;
-        $res_key=$item;
-        break;
-    }
-    return $res_key;
-}
 
 // ------------------------------------------------------------------------------------------------ ARCHIVES -----------
 
@@ -894,4 +706,334 @@ function db_comm_lst($start_from = 0, $clusters = 1)
     }
 
     return array($cb, $cn);
+}
+
+class FlatDB
+{
+    // news_id storage
+    var $stor = array();
+
+    // Since 2.0: Get detailed info about table / tables
+    function db__show_table( $table = NULL )
+    {
+        $_st = array();
+        $DB  = SERVDIR . '/cdata/news';
+
+        if (is_null($table))
+        {
+            $_sd = scan_dir($DB, '\.db$');
+            foreach ($_sd as $v) $_st[] = preg_replace('/\.db$/i', '', $v);
+            return $_st;
+        }
+        else
+        {
+            // file .frm
+            return $_st;
+        }
+    }
+
+    // Since 2.0: Seek index at idx table
+    function db_seek_index( $FKEY, $tbl )
+    {
+        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
+        $rd = fopen($fn, 'r'); fseek($rd, 0, SEEK_SET);
+
+        while ($row = trim(fgets($rd)))
+        {
+            list($fv, $data) = explode('|', $row, 2);
+            if ($fv == $FKEY) { fclose($rd); return $data; }
+        }
+
+        fclose($rd);
+        return NULL;
+    }
+
+    // Since 2.0: UPDATE/DELETE index
+    function db_update_index( $FKEY, $vm, $tbl )
+    {
+        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
+        $fk = SERVDIR . "/cdata/news/$tbl.idx." . mt_rand(0, 10000);
+
+        $rd = fopen($fn, 'r');
+        $wt = fopen($fk, 'w+');
+
+        while ($row = trim(fgets($rd)))
+        {
+            list($fv) = explode('|', $row, 2);
+
+            if ($fv == $FKEY)
+            {
+                if (!is_null($vm)) fwrite($wt, "$FKEY|$vm\n");
+            }
+            else
+            {
+                fwrite($wt, "$row\n");
+            }
+        }
+
+        fclose($rd);
+        fclose($wt);
+
+        // Replace previous data
+        return rename($fk, $fn);
+    }
+
+    // Since 2.0: Insert index to DB, save index order [descending]
+    function db_insert_index( $FKEY, $vm, $tbl )
+    {
+        $DIS = FALSE;
+        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
+        $fk = SERVDIR . "/cdata/news/$tbl.idx." . mt_rand(0, 10000);
+
+        $r = fopen($fn, 'r');
+        $w = fopen($fk, 'w+');
+
+        while ($row = trim(fgets($r)))
+        {
+            list($fv) = explode('|', $row, 2);
+
+            if ($fv < $FKEY && $DIS == false)
+            {
+                $DIS = TRUE;
+                fwrite($w, "$FKEY|$vm\n");
+            }
+
+            fwrite($w, "$row\n");
+        }
+
+        // At end...
+        if ($DIS == FALSE) fwrite($w, "$FKEY|$vm\n");
+
+        fclose($w);
+        fclose($w);
+
+        // Replace previous data
+        return rename($fk, $fn);
+    }
+
+    // ------------------------------------------
+
+    // Since 2.0: Add news_id to separated categories
+    function cn_add_categories( $comma_cat, $news_id )
+    {
+        // Append indexes to specific categories
+        $cat_ids = $comma_cat ? explode(',', $comma_cat) : array(0);
+
+        foreach ($cat_ids as $CID)
+        {
+            $opt = $this->db_seek_index($CID, 'cat');
+
+            if (is_null($opt))
+            {
+                $this->db_insert_index($CID, $news_id, 'cat');
+            }
+            else
+            {
+                $opt = explode(',', $opt); $opt[] = $news_id;
+                $this->db_update_index($CID, join(',', $opt), 'cat');
+            }
+        }
+    }
+
+    // Since 2.0: Remove from index separated categories
+    function cn_remove_categories( $comma_cat, $news_id )
+    {
+        // Get previous categories entry
+        $cat_pre = $comma_cat ? explode(',', $comma_cat) : array(0);
+
+        foreach ($cat_pre as $CID)
+        {
+            $opt = $this->db_seek_index($CID, 'cat');
+            if (is_null($opt)) continue;
+
+            // Remove from flat id list
+            $opt = explode(',', $opt);
+            $opt = array_flip($opt);
+            unset($opt[ $news_id ]);
+
+            // Remove, if not exists
+            $Da = count($opt) ? join(',', array_flip($opt)) : NULL;
+
+            $this->db_update_index($CID, $Da, 'cat');
+        }
+    }
+
+    // Since 2.0: Date is UNIX_TIMESTAMP
+    function cn_update_date( $next_id, $prev_id = 0, $comments = 0 )
+    {
+        // No changes
+        if ($next_id && $next_id == $prev_id) return;
+
+        // Update current (for comments count)
+        if (is_null($prev_id)) $this->db_update_index($next_id, NULL, 'date');
+        // Remove previous, if exists
+        elseif ($prev_id) $this->db_update_index($prev_id, NULL, 'date');
+
+        // Add / Update
+        if ($next_id)
+        {
+            $this->db_insert_index($next_id, $comments, 'date');
+        }
+    }
+
+    // Since 2.0: Link news with user
+    function cn_user_sync( $user, $news_id, $prev_id = 0 )
+    {
+        $opt = $this->db_seek_index($user, 'users');
+
+        if (is_null($opt))
+        {
+            $this->db_insert_index($user, $news_id, 'users');
+        }
+        else
+        {
+            $opt = explode(',', $opt);
+
+            if ($prev_id)
+            {
+                $opt = array_flip($opt);
+                unset($opt[$prev_id]);
+
+                // No one news by user, remove db row
+                if (count($opt) == 0) $opt = NULL; else $opt = join(',', array_flip($opt));
+            }
+            else
+            {
+                $opt[] = $news_id;
+                $opt = join(',', $opt);
+            }
+
+            $this->db_update_index($user, $opt, 'users');
+        }
+    }
+
+    // ---------------------------------------------------------
+
+    // Since 2.0: Add to tag DB
+    function cn_add_tags($comma_taglist, $news_id)
+    {
+        $tag_ids = $comma_taglist ? explode(',', $comma_taglist) : array();
+
+        foreach ($tag_ids as $tag)
+        {
+            $tag = trim($tag);
+            $opt = $this->db_seek_index($tag, 'tags');
+
+            if (is_null($opt))
+            {
+                $this->db_insert_index($tag, $news_id, 'tags');
+            }
+            else
+            {
+                $opt = explode(',', $opt);
+                $opt[] = $news_id;
+
+                $this->db_update_index($tag, join(',', $opt), 'tags');
+            }
+        }
+    }
+
+    // Since 2.0: Remove from index separated tags
+    function cn_remove_tags( $comma_taglist, $news_id )
+    {
+        if ($comma_taglist === '') return;
+        $tag_ids = explode(',', $comma_taglist);
+
+        foreach ($tag_ids as $tag)
+        {
+            $tag = trim($tag);
+            $opt = $this->db_seek_index($tag, 'tags');
+            if (is_null($opt)) continue;
+
+            // Remove from flat id list
+            $opt = array_flip( explode(',', $opt) );
+            unset($opt[ $news_id ]);
+
+            // Remove, if not exists
+            $Da = count($opt) ? join(',', array_flip($opt)) : NULL;
+            $this->db_update_index($tag, $Da, 'tags');
+        }
+    }
+
+    // ------------------------------------
+
+    // Since 2.0: Load all news from DB
+    // $target means section, where * - active news
+
+    function loadall()
+    {
+        $r = fopen(SERVDIR . "/cdata/news/date.idx", 'r');
+
+        while ($row = trim(fgets($r)))
+        {
+            list($ts) = explode('|', $row);
+
+            $this->stor[] = $ts;
+        }
+
+        fclose($r);
+
+        return $this->stor;
+    }
+
+    // Since 2.0: Weed by comma separated categories
+    // $comma_cats = '0' search all news without category
+
+    function find_category( $cc )
+    {
+        // Receive ids by category
+        foreach ($cc as $cid)
+        {
+            $rid = $this->db_seek_index($cid, 'cat');
+            if (!is_null($rid)) // Category is exists
+            {
+                $this->stor = array_intersect($this->stor, explode(',', $rid));
+            }
+        }
+
+        $this->stor = array_unique($this->stor);
+        rsort( $this->stor );
+    }
+
+    // Since 2.0: Weed by user (at ->stor must be data)
+    function weed_user( $uc )
+    {
+        if (count($uc) == 0) return;
+
+        $UList = array();
+        foreach ($uc as $u)
+        {
+            $U = $this->db_seek_index($u, 'users');
+            if (is_null($U)) continue;
+
+            $UList = array_merge($UList, explode(',', $U));
+        }
+
+        $this->stor = array_intersect($this->stor, array_unique($UList));
+    }
+
+    // Since 2.0: Search exact page ID
+    function find_page_alias( $PA )
+    {
+        return bt_get_id($PA, 'pg_ts');
+    }
+
+    // Since 2.0: Update item for section
+    function cn_source_update( $news_id, $section = '', $action = 'add' )
+    {
+        // Select index source
+        if ($section == '') $tbl = 'so_news';
+        elseif ($section == 'D') $tbl = 'so_draft';
+        elseif (preg_match('/^[0-9]+$/', $section)) $tbl = "so_$section";
+        else $tbl = 'so_postpone';
+
+        // Add or remove from index
+        return $this->db_insert_index($news_id, $action  == 'add' ? '*' : NULL, $tbl);
+    }
+
+    // Since 2.0: Get tag cloud
+    function get_tagcloud()
+    {
+        // stub
+    }
 }

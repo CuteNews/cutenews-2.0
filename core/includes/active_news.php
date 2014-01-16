@@ -20,12 +20,23 @@ $archive    = preg_replace('/[^0-9]/', '', $archive);
 $start_from = intval($start_from);
 
 // Set default vars
-if (!$template) $template = 'Default';
-if (!$number) $number = getoption('active_news_def');
-if (!is_array($requested_cats)) $requested_cats = array();
-if (!is_array($translate)) $translate = array();
-if ($user_by) $user_by = spsep($user_by);
-if ($static_path) $PHP_SELF = $static_path;
+if (!$template)
+    $template = 'Default';
+
+if (!$number)
+    $number = getoption('active_news_def');
+
+if (!is_array($requested_cats))
+    $requested_cats = array();
+
+if (!is_array($translate))
+    $translate = array();
+
+if ($user_by)
+    $user_by = spsep($user_by);
+
+if ($static_path)
+    $PHP_SELF = $static_path;
 
 // Backup for PHP_SELF
 $_bc_PHP_SELF = $PHP_SELF;
@@ -49,24 +60,29 @@ $_source = 'A2';
 if ($archive) $_source = 'archive';
 elseif ($only_active) $_source = '';
 
-
 // Make settings
 $opts = array
 (
     'source'     => $_source,
-    'tag'        => $tag,
+
     'sort'       => $sortby,
     'dir'        => $dir,
     'start'      => $start_from,
+
     'per_page'   => $number,
     'archive_id' => $archive,
-    'cfilter'    => array_keys($requested_cats),
     'nocat'      => $nocat,
+
+    'tag'        => $tag,
+    'cfilter'    => array_keys($requested_cats),
     'ufilter'    => $user_by,
     'page_alias' => $page_alias,
 );
 
 list($entries, $rs) = cn_get_news($opts);
+
+// Count showed rows
+$_cn = $rs['overall'];
 
 // Check end of list
 $echo = array();
@@ -84,8 +100,6 @@ foreach ($entries as $entry)
 // No Entries
 if (($_show_rows = count($echo)) == 0) echo i18n('No entries to show');
 
-// Count showed rows
-$_cn = cn_get_news_count();
 
 // Re-Request this parameters for news listing
 cn_set_GET('source,number,start_from,reverse,static,sortby,dir,per_page,archive,category,nocategory,ucat,template=Default,page_alias,only_active,user_by');

@@ -44,23 +44,3 @@ function cn_api_get_entry($id = NULL)
     else
         return array();
 }
-
-// Since 2.0: Get tagcloud
-function cn_api_tagcloud($flat = true)
-{
-    $tags = cn_touch_get('/cdata/news/tagcloud.php');
-
-    if ($flat)
-    {
-        foreach ($tags as $id => $v)
-        {
-            $url = cn_rewrite('tag', $id);
-            if (!$url) $url = cn_url_modify('tag='.$id);
-
-            $tags[$id] = array('weight' => $v, 'url' => $url);
-        }
-        return $tags;
-    }
-
-    return null;
-}

@@ -2929,22 +2929,26 @@ function cn_unhtmlspecialchars($str)
 function cn_htmlclear($str)
 {
     $matches = array();
-    $allow_tags = '<p><strong><br><a><div><i><b><u><span><ul><li><ol><table><tbody><td><tr><em><s><blockquote><img><h1><h2><h3><h4><h5><pre><address>';
-    $stripped = strip_tags($str, $allow_tags);
-  
-    if (preg_match_all('/<[^>]+>/is', $stripped, $matches, PREG_PATTERN_ORDER))
+
+    // Cut <script> tags
+    $str = preg_replace('/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/is', '', $str);
+
+    // Also, unclosed script tag
+    $str = preg_replace('/<\s*script[^>]*>.*/is', '', $str);
+
+    if (preg_match_all('/<[^>]+>/is', $str, $matches, PREG_PATTERN_ORDER))
     {            
         foreach ($matches[0] as $match)
         {                                    
             if (trim($match) != '')
             {
                 $tag = preg_replace('/\son[^=]+=([^\s\'"]*)/is', '', $match);
-                $stripped = str_replace($match, $tag, $stripped);
+                $str = str_replace($match, $tag, $str);
             }
         }
     }
 
-    return $stripped;
+    return $str;
 }
 
 // Since 2.0: Check CSRF challenge
@@ -2955,6 +2959,7 @@ function cn_dsi_check()
     if (empty($key) && empty($dsi))
     {
         list($dsi_inline) = GET('__signature_dsi_inline', 'GETPOST');
+
         if ($dsi_inline)
             list($dsi, $key) = explode('.', $dsi_inline);
         else
@@ -3475,19 +3480,28 @@ function cn_put_alias($id)
 // Since 2.0: Basic function for list news
 function cn_get_news($opts)
 {
+    $FlatDB = new FlatDB();
+
     $source     = isset($opts['source']) ? $opts['source'] : '';
     $archive_id = isset($opts['archive_id']) ? intval($opts['archive_id']) : 0;
 
+    // SORT
     $sort       = isset($opts['sort']) ? $opts['sort'] : '';
     $dir        = isset($opts['dir']) ? strtoupper($opts['dir']) : '';
+
     $st         = isset($opts['start']) ? intval($opts['start']) : 0;
     $per_page   = isset($opts['per_page']) ? intval($opts['per_page']) : 10;
+
+    // Will be DEPRECATED
+    $nocat      = isset($opts['nocat']) ? $opts['nocat'] : false;
+
+    // FILTERS
+    $page_alias = isset($opts['page_alias']) ? $opts['page_alias'] : '';
     $cfilter    = isset($opts['cfilter']) ? $opts['cfilter'] : array();
     $ufilter    = isset($opts['ufilter']) ? $opts['ufilter'] : array();
-    $nocat      = isset($opts['nocat']) ? $opts['nocat'] : false;
-    $page_alias = isset($opts['page_alias']) ? $opts['page_alias'] : '';
-    $by_date    = isset($opts['by_date']) ? $opts['by_date'] : '';
     $tag        = isset($opts['tag']) ? trim(strtolower($opts['tag'])) : '';
+
+    $by_date    = isset($opts['by_date']) ? $opts['by_date'] : '';
 
     // sys
     $nlpros     = isset($opts['nlpros']) ? intval($opts['nlpros']) : 0;
@@ -3502,6 +3516,18 @@ function cn_get_news($opts)
     $tc_time    = ctime();
     $cpostponed = 0;
     $date_out   = spsep($by_date, '-');
+
+    $overall    = 0;
+
+    // If search by page alias success, not check categories
+    if (!$page_alias)
+    {
+        $FlatDB->loadall();
+        $FlatDB->find_category($cfilter);
+        $FlatDB->weed_user($ufilter);
+
+        $overall = count($FlatDB->stor);
+    }
 
     // Quick search by page alias
     if ($page_alias)
@@ -3528,7 +3554,10 @@ function cn_get_news($opts)
             $source_id = 'archive';
             $source = "archive-$archive_id";
         }
-        else $source_id = $source;
+        else
+        {
+            $source_id = $source;
+        }
 
         // -----
         // Optimize 'date' function, select by date range
@@ -3680,6 +3709,7 @@ function cn_get_news($opts)
     // meta-info
     $rev['qtree'] = $qtree;
     $rev['cpostponed'] = $cpostponed;
+    $rev['overall'] = $overall;
 
     return array($entries, $rev);
 }
@@ -3717,7 +3747,6 @@ function cn_snippet_paginate($st, $per_page = 100, $showed = NULL)
     echo '</div>';
 }
 
-
 // Since 2.0: Highlight words
 function cn_snippet_search_hl($text, $qhl)
 {
@@ -3754,9 +3783,4 @@ function cn_snippet_search_hl($text, $qhl)
     }
 
     return $text;
-}
-
-function cn_get_news_count()
-{
-    return db_count_news();
 }

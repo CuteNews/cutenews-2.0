@@ -255,7 +255,7 @@ function edit_news_action_edit()
             $page = preg_replace('/[^a-z0-9_]/i', '-', $page);
 
             // current source is archive, active (postponed) or draft news
-            $draft_target  = $postpone_draft == 'draft' ? TRUE : FALSE;
+            $draft_target = $postpone_draft == 'draft' ? TRUE : FALSE;
 
             // User can't post active news
             if (test('Bd') && $draft_target !== 'draft') $draft_target = 'draft';
@@ -316,9 +316,11 @@ function edit_news_action_edit()
                 // no errors in a[rticle] area
                 if (cn_get_message('e', 'c') == 0)
                 {
+                    $FlatDB  = new FlatDB();
+
                     $ida = db_index_load($current_source);
                     $idd = db_index_load($target_source);
-                    $x_cnt=  edit_news_load_indexes_cnt();
+
                     // Time is changed
                     if ($c_time != intval($ID))
                     {
@@ -364,10 +366,6 @@ function edit_news_action_edit()
 
                         cn_throw_message('News was edited');
                     }
-                    $x_cnt=  edit_news_update_index_cnt($x_cnt, $entry, 'update', $oldentry);
-                    edit_news_close_indexes_cnt($x_cnt);
-                    // Update tags, etc
-                    db_update_aux($entry, 'update', $storent);
 
                     // Update page aliases
                     $_ts_pg = bt_get_id($ID, 'ts_pg');
@@ -391,6 +389,19 @@ function edit_news_action_edit()
                     // 3) sync indexes
                     db_index_save($ida, $current_source);   db_index_update_overall($current_source);
                     db_index_save($idd, $target_source);    db_index_update_overall($target_source);
+
+                    // ------
+                    // UPDATE categories
+                    $FlatDB->cn_remove_categories($storent['c'], $storent['id']);
+                    $FlatDB->cn_add_categories($entry['c'], $c_time);
+
+                    // UPDATE tags
+                    $FlatDB->cn_remove_tags($storent['tg'], $storent['id']);
+                    $FlatDB->cn_add_tags($entry['tg'], $c_time);
+
+                    // UPDATE date / id storage [with comments count]
+                    $FlatDB->cn_update_date($entry['id'], $storent['id'], count($storent['co']));
+                    // ------
                 }
             }
         }
@@ -428,6 +439,8 @@ function edit_news_action_edit()
 // ---------------------------------------------------------------------------------------------------------------------
 function edit_news_action_massaction()
 {
+    $FlatDB = new FlatDB();
+
     list($subaction, $source, $archive_id) = GET('subaction, source, archive_id');
 
     // Mass Delete
@@ -448,14 +461,12 @@ function edit_news_action_massaction()
                 $source = 'archive-'.intval($archive_id);
 
             $idx = db_index_load($source);
-            $x_cnt=  edit_news_load_indexes_cnt();
             // do delete news
             foreach ($selected_news as $id)
             {
-                $news = db_news_load(db_get_nloc($id));
-                $x_cnt=  edit_news_update_index_cnt($x_cnt, $news[$id], 'delete');
-                // Delete tags, etc
-                db_update_aux($news[$id], 'delete');
+                $news  = db_news_load(db_get_nloc($id));
+
+                $storent = $news[$id];
 
                 if (isset($news[$id]))
                     unset($news[$id]);
@@ -473,10 +484,17 @@ function edit_news_action_massaction()
                 bt_del_id($id, 'ts_pg');
                 bt_del_id($_ts_pg, 'pg_ts');
 
+                // ------
+                $FlatDB->cn_remove_categories($storent['c'], $storent['id']);
+                $FlatDB->cn_remove_tags($storent['tg'], $storent['id']);
+                $FlatDB->cn_update_date(0, $storent['id']);
+                $FlatDB->cn_user_sync($storent['u'], 0, $storent['id']);
+                // ------
+
                 // Save block
                 db_save_news($news, db_get_nloc($id));
             }
-            edit_news_close_indexes_cnt($x_cnt);
+
             db_index_save($idx, $source);
             db_index_update_overall($source);
 
@@ -510,8 +528,7 @@ function edit_news_action_massaction()
 
             list($news_ids, $cats, $source) = GET('selected_news, cats, source', 'POST');
             $nc = news_make_category(array_keys($cats));
-            
-            $x_cnt=  edit_news_load_indexes_cnt();
+
             // Load index for update categories
             $idx = db_index_load($source);
             foreach ($news_ids as $id)
@@ -522,14 +539,20 @@ function edit_news_action_massaction()
                 // Catch user trick
                 if (!test_cat($entries[$id]['c']))
                     msg_info('Not allowed change category for id = '.$id);
-                
-                $oldentry=$entries[$id];
+
+                $storent = $entries[$id];
+
                 $idx[$id][0] = $nc;
                 $entries[$id]['c'] = $nc;
-                $x_cnt=  edit_news_update_index_cnt($x_cnt, $entries[$id], 'update', $oldentry);
+
+                // ------
+                $FlatDB->cn_remove_categories($storent['c'], $storent['id']);
+                $FlatDB->cn_add_categories($nc, $storent['id']);
+                // ------
+
                 db_save_news($entries, $loc);
             }
-            edit_news_close_indexes_cnt($x_cnt);
+
             // Save updated block
             db_index_save($idx, $source);
 
@@ -584,17 +607,19 @@ function edit_news_delete()
     if (!test('Nud'))
         msg_info("Unable to delete news: no permission");
 
+    $FlatDB = new FlatDB();
     list($id, $source) = GET('id, source', 'GET');
 
     $ida  = db_index_load($source);
     $nloc = db_get_nloc($id);
     $db   = db_news_load($nloc);
 
-    $x_cnt=edit_news_load_indexes_cnt();
-    $x_cnt=edit_news_update_index_cnt($x_cnt, $db[$id], 'delete');
-    edit_news_close_indexes_cnt($x_cnt);
-    // update tags, etc
-    db_update_aux($db[$id], 'delete');
+    // ------
+    $FlatDB->cn_remove_categories($db[$id]['c'], $db[$id]['id']);
+    $FlatDB->cn_update_date(0, $db[$id]['id']);
+    $FlatDB->cn_user_sync($db[$id]['u'], 0, $db[$id]['id']);
+    $FlatDB->cn_remove_tags($db[$id]['tg'], $db[$id]['id']);
+    // ------
 
     unset($db[$id]);
     unset($ida[$id]);
@@ -609,6 +634,7 @@ function edit_news_delete()
     bt_del_id($id, 'ts_pg');
     bt_del_id($_ts_pg, 'pg_ts');
 
+
     // save block
     db_save_news($db, $nloc);
 
@@ -616,47 +642,4 @@ function edit_news_delete()
     db_index_update_overall($source);
 
     cn_relocation(cn_url_modify(array('reset'), 'mod=editnews', "source=$source"));
-}
-
-function edit_news_update_index_cnt($idxs,$entry,$action,$oldentry=NULL)
-{
-    switch ($action) {
-        case 'delete':
-                $idxs['d']=db_index_operation($idxs['d'], array('key'=>  db_get_nloc($entry['id']),'val+'=>-1));
-                $idxs['c']=db_index_operation($idxs['c'], array('key'=>  $entry['c'],'val+'=>-1));
-                $idxs['tg']=db_index_operation($idxs['tg'], array('key'=>  $entry['tg'],'val+'=>-1));
-            break;
-        case 'update':  
-                if(!is_null($oldentry))
-                {
-                    $idxs['d']=db_index_operation($idxs['d'], array('key'=>  db_get_nloc($oldentry['id']),'val+'=>-1));
-                    $idxs['c']=db_index_operation($idxs['c'], array('key'=>  $oldentry['c'],'val+'=>-1));
-                    $idxs['tg']=db_index_operation($idxs['tg'], array('key'=>  $oldentry['tg'],'val+'=>-1));      
-                    $idxs['d']=db_index_operation($idxs['d'], array('key'=>  db_get_nloc($entry['id']),'val+'=>1));
-                    $idxs['c']=db_index_operation($idxs['c'], array('key'=>  $entry['c'],'val+'=>1));
-                    $idxs['tg']=db_index_operation($idxs['tg'], array('key'=>  $entry['tg'],'val+'=>1));                   
-                }
-            break;
-        default:
-            break;
-    }
-    return $idxs;
-}
-
-function edit_news_load_indexes_cnt()
-{
-    $format='key:val+';
-    $idx_date=  db_index_load_cnt($format, 'date');
-    $idx_cat =  db_index_load_cnt($format, 'category');
-    $idx_tags=  db_index_load_cnt($format, 'tags');
-    
-    return array('d'=>$idx_date,'c'=>$idx_cat,'tg'=>$idx_tags);
-}
-
-function edit_news_close_indexes_cnt($idxs)
-{
-    foreach ($idxs as $item)
-    {
-        db_index_close_cnt($item);
-    }
 }

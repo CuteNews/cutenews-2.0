@@ -5,6 +5,8 @@ add_hook('index/invoke_module', '*add_news_invoke');
 
 function add_news_invoke()
 {
+    $FlatDB = new FlatDB();
+
     // loadall
     list($article_type, $preview) = GET('postpone_draft, preview', 'GETPOST');
     list($from_date_hour, $from_date_minutes, $from_date_seconds, $from_date_month, $from_date_day, $from_date_year) = GET('from_date_hour, from_date_minutes, from_date_seconds, from_date_month, from_date_day, from_date_year', 'GETPOST');
@@ -120,31 +122,16 @@ function add_news_invoke()
 
                 // add news to index
                 db_index_add($c_time, $entry['c'], $member['id'], $sc);
-                
-                $format='key:val+';
-                $idx_cnt= db_index_load_cnt($format, 'date');
-                $idx_cnt=db_index_operation($idx_cnt,
-                        array(
-                            'key'=>db_get_nloc($entry['id']),
-                            'val+'=>1
-                        ));
-                db_index_close_cnt($idx_cnt); unset($idx_cnt);
-                
-                $idx_cnt= db_index_load_cnt($format, 'category');
-                $idx_cnt=db_index_operation($idx_cnt,
-                        array(
-                            'key'=>$entry['c'],
-                            'val+'=>1
-                        ));
-                db_index_close_cnt($idx_cnt); unset($idx_cnt);
-                
-                $idx_cnt= db_index_load_cnt($format, 'tags');
-                $idx_cnt=db_index_operation($idx_cnt,
-                        array(
-                            'key'=>$entry['tg'],
-                            'val+'=>1
-                        ));
-                db_index_close_cnt($idx_cnt); unset($idx_cnt);                                
+
+                // ------------------------
+
+                $FlatDB->cn_update_date($c_time, 0);
+                $FlatDB->cn_source_update($c_time, $draft ? 'D' : '');
+                $FlatDB->cn_add_categories($entry['c'], $c_time);
+                $FlatDB->cn_add_tags($entry['tg'], $c_time);
+                $FlatDB->cn_user_sync($entry['u'], $c_time);
+
+                // ------------------------
                 
                 // increase user count written news
                 $cnt = intval($member['cnt']) + 1;
@@ -152,7 +139,6 @@ function add_news_invoke()
 
                 // do update meta-index
                 db_index_update_overall($sc);
-                db_update_aux($entry, 'add');
 
                 // Notify for unapproved
                 if (getoption('notify_unapproved') && test('Bd'))
