@@ -265,7 +265,7 @@ function edit_news_action_edit()
             $target_source  = $archive_id ? "archive-$archive_id" : ($draft_target ? 'draft' : '');
             $if_use_html    = $if_use_html ? TRUE : (getoption('use_wysiwyg') ? TRUE : FALSE);
 
-            $entry['t'] = cn_htmlspecialchars($title);
+            $entry['t'] = cn_htmlclear($title);
             $entry['c'] = is_array($category) ? join(',', $category) : $category;
             $entry['s'] = cn_htmlclear($short_story);
             $entry['f'] = cn_htmlclear($full_story);

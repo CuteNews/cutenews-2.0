@@ -184,7 +184,7 @@ $category   = cn_get_categories();
 
                             <?php hook('template/editnews/list_item_before', array($ID, $entry)); ?>
                             <td>
-                                <div style="word-wrap:break-word; width:200px;">
+                                <div style="word-wrap: break-word; width:200px;">
                                 <?php if ($entry['can']) {
 
                                     $title = $entry['title'] ? $entry['title'] : '<no title:'.$entry['id'].'>';

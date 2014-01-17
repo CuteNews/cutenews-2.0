@@ -48,7 +48,7 @@ function add_news_invoke()
 
         $entry = array();
         $entry['id'] = $c_time;
-        $entry['t']  = cn_htmlspecialchars($title);
+        $entry['t']  = cn_htmlclear($title);
         $entry['u']  = $member['name'];
         $entry['c']  = news_make_category($category);
         $entry['s']  = cn_htmlclear($short_story);
