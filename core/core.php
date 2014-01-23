@@ -3528,6 +3528,7 @@ function cn_get_news($opts)
         $FlatDB->loadall();
         $FlatDB->find_category($cfilter);
         $FlatDB->weed_user($ufilter);
+        $FlatDB->weed_tags($tag);
 
         $overall = count($FlatDB->stor);
     }

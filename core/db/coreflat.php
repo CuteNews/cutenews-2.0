@@ -1012,6 +1012,17 @@ class FlatDB
         $this->stor = array_intersect($this->stor, array_unique($UList));
     }
 
+    // Since 2.0: Weed by tagname
+    function weed_tags( $tag )
+    {
+        if ($tag === '') return;
+
+        $t = $this->db_seek_index($tag, 'tags');
+        if ($t) $T = explode(',', $t); else $T = array();
+
+        $this->stor = array_intersect($this->stor, $T);
+    }
+
     // Since 2.0: Search exact page ID
     function find_page_alias( $PA )
     {
