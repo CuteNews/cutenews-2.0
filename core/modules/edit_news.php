@@ -596,7 +596,25 @@ function edit_news_action_massaction()
 
         msg_info('News was approved');
     }
-    else msg_info('Select action to process');
+    // Bulk switch to HTML
+    elseif ($subaction == 'switch_to_html')
+    {
+        list($selected_news) = GET('selected_news');
+
+        // do approve news
+        foreach ($selected_news as $id)
+        {
+            $news = db_news_load(db_get_nloc($id));
+            $news[$id]['ht'] = TRUE;
+            db_save_news($news, db_get_nloc($id));
+        }
+
+        msg_info('News was switched to HTML');
+    }
+    else
+    {
+        msg_info('Select action to process');
+    }
 }
 
 // Delete single item

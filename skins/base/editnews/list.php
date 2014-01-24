@@ -244,9 +244,10 @@ $category   = cn_get_categories();
                 With selected:
                 <select name="subaction">
                     <option value="">-- Choose Action --</option>
-                    <?php if ($source == 'draft' && test('Nua')) { ?><option title="Approve selected news" value="mass_approve"><?php echo i18n('Approve news'); ?></option><?php } ?>
-                    <?php if (test('Nud')) { ?><option title="Delete all selected news" value="mass_delete"><?php echo i18n('Delete news'); ?></option><?php } ?>
-                    <option title="Move all selected news to one category" value="mass_move_to_cat"><?php echo i18n('Change category'); ?></option>
+                    <?php if ($source == 'draft' && test('Nua')) { ?><option value="mass_approve"><?php echo i18n('Approve news'); ?></option><?php } ?>
+                    <?php if (test('Nud')) { ?><option value="mass_delete"><?php echo i18n('Delete news'); ?></option><?php } ?>
+                    <?php if (test('Nua')) { ?><option value="switch_to_html"><?php echo i18n('Switch to HTML'); ?></option><?php } ?>
+                    <option alue="mass_move_to_cat"><?php echo i18n('Change category'); ?></option>
                     <?php hook('template/editnews/actions'); ?>
                 </select>
 
