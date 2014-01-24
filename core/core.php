@@ -963,8 +963,7 @@ function cn_config_load()
     foreach ($default_conf as $k => $v) if (!isset($cfg['%site'][$k])) $cfg['%site'][$k] = $v;
 
     // Set basic groups
-    if (!isset($cfg['grp']))
-        $cfg['grp'] = array();
+    if (!isset($cfg['grp'])) $cfg['grp'] = array();
 
     // Make default groups
     $cgrp = file(SKIN.'/defaults/groups.tpl');

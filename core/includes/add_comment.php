@@ -141,9 +141,6 @@ foreach ($block_list as $ip_test => $_t)
 
     if (preg_match($match, CLIENT_IP) || !$logged_as_member && preg_match($match, $name))
     {
-        $block_list[$ip_test][0]++;
-        setoption('#ipban', $block_list);
-
         echo '<div class="cn_error_comment">'.i18n('Sorry but you have been blocked from posting comments').' (IP='.cn_htmlspecialchars(CLIENT_IP).'). <a href="'.$refer.'">Go back</a></div>';
         return FALSE;
     }
