@@ -247,7 +247,7 @@ $category   = cn_get_categories();
                     <?php if ($source == 'draft' && test('Nua')) { ?><option value="mass_approve"><?php echo i18n('Approve news'); ?></option><?php } ?>
                     <?php if (test('Nud')) { ?><option value="mass_delete"><?php echo i18n('Delete news'); ?></option><?php } ?>
                     <?php if (test('Nua')) { ?><option value="switch_to_html"><?php echo i18n('Switch to HTML'); ?></option><?php } ?>
-                    <option alue="mass_move_to_cat"><?php echo i18n('Change category'); ?></option>
+                    <option value="mass_move_to_cat"><?php echo i18n('Change category'); ?></option>
                     <?php hook('template/editnews/actions'); ?>
                 </select>
 
