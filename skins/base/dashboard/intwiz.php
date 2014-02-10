@@ -24,7 +24,7 @@ cn_snippet_bc();
 
     <?php if (request_type('POST')) { // Show form ?>
         <div class="notice-form">
-            <h2>Insert this code in site </h2>
+            <h2>Insert this code in site</h2>
             <pre>
 &lt;?php
 
@@ -84,7 +84,7 @@ cn_snippet_bc();
             <td rowspan="2" align="center">
                 <select name="w_template">
                     <?php foreach ($all_tpls as $template_id => $template) { ?>
-                        <option <?php if (REQ('w_template') == $template_id) echo 'selected="selected"'; ?> value="<?php echo $template_id; ?>)"><?php echo cn_htmlspecialchars(ucfirst($template)); ?></option>
+                        <option <?php if (REQ('w_template') == $template_id) echo 'selected="selected"'; ?> value="<?php echo $template_id; ?>"><?php echo cn_htmlspecialchars(ucfirst($template)); ?></option>
                     <?php } ?>
                 </select>
             </td>

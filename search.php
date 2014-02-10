@@ -120,11 +120,14 @@ if ($dosearch)
                 $item = $ent[$id];
 
                 $FN = FALSE;
-                $Fs = $item['f'];
-                $Ss = $item['s'];
+                $Fs = strtolower ($item['f']);
+                $Ss = strtolower ($item['s']);
 
                 $_query = spsep($search, ' ');
-                foreach ($_query as $vq) if (strpos($Fs, $vq) !== FALSE || strpos($Ss, $vq) !== FALSE) $FN = TRUE;
+                foreach ($_query as $vq){
+                    $q=  strtolower($vq);
+                    if (strpos($Fs, $q) !== FALSE || strpos($Ss, $q) !== FALSE) $FN = TRUE;
+                }
 
                 if ($user && !$user != $item['u']) $FN = FALSE;
                 if (!$FN) continue;
