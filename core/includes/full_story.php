@@ -4,7 +4,7 @@ global $PHP_SELF;
 
 // Scan external query
 // $qhl - query search highlight
-list($id, $template, $qhl) = GET('id, template, qhl');
+list($id, $template, $qhl) = GET('id, template, qhl', 'GPG');
 
 // Get alias of ID
 $id = cn_id_alias($id);

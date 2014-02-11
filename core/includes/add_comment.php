@@ -2,7 +2,7 @@
 
 global $PHP_SELF, $_SESS;
 
-list($id, $action) = GET('id, action');
+list($id, $action) = GET('id, action', 'GPG');
 $id = cn_id_alias($id);
 
 // ------------------------------------

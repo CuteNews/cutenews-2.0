@@ -3,7 +3,7 @@
 global $PHP_SELF, $_SESS;
 
 // Scan external query
-list($id, $template, $start_from) = GET('id, template, start_from');
+list($id, $template, $start_from) = GET('id, template, start_from', 'GPG');
 $id = cn_id_alias($id);
 
 if (!$template) $template = 'Default';
