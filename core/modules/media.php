@@ -2,54 +2,38 @@
 
 add_hook('index/invoke_module', '*media_invoke');
 
-function resize_image($source,$nw,$nh)
+function resize_image($source, $nw, $nh)
 {   
-    $result=array('msg'=>'','status'=>TRUE);
-    $path_parts=  pathinfo($source);  
-    $ii = getimagesize($source);   
-    list($w, $h) = $ii;
-    
-    if($w==0 || $h==0)
+    $result = array('msg' => '', 'status' => TRUE);
+
+    $path_parts = pathinfo($source);
+    list($w, $h, $mime) = getimagesize($source);
+
+    if ($w == 0 || $h == 0)
     {
-        $result['msg']='Illegal image ['.$path_parts['basename'].']';
-        $result['status']=FALSE;
+        $result['msg'] = 'Illegal image ['.$path_parts['basename'].']';
+        $result['status'] = FALSE;
         return $result;
     }
     
-    //check file type
-    $callfi=''; $di=NULL;
-    if (preg_match('/jpeg/i', $ii['mime']))
-    {
-        $callfi = 'imagejpeg';
-        $di = imagecreatefromjpeg($source);
-    }
-    elseif (preg_match('/png/i', $ii['mime']))
-    {
-        $callfi = 'imagepng';
-        $di = imagecreatefrompng($source);
-    }
-    elseif (preg_match('/gif/i', $ii['mime']))
-    {
-        $callfi = 'imagegif';
-        $di = imagecreatefromgif($source);
-    }
+    // Check file type
+    if ($mime == IMAGETYPE_JPEG) $di = imagecreatefromjpeg($source);
+    elseif ($mime == IMAGETYPE_PNG) $di = imagecreatefrompng($source);
+    elseif ($mime == IMAGETYPE_GIF) $di = imagecreatefromgif($source);
     else
     {
-        $result['msg']='Unrecognized image type for '.$path_parts['basename'];
-        $result['status']=FALSE;
+        $result['status'] = FALSE;
+        $result['msg']    = 'Unrecognized image type for '.$path_parts['basename'];
         return $result;
     }
     
     // Autosize
-    $resize = FALSE;
     if ($nw == 0)
     {
-        $resize = TRUE;
         $nw = $w * ($nh / $h);
     }
     elseif ($nh == 0)
     {
-        $resize = TRUE;
         $nh = $h * ($nw / $w);
     }
 
@@ -57,26 +41,13 @@ function resize_image($source,$nw,$nh)
     imagefilledrectangle($dt, 0, 0, $nw, $nh, 0xFFFFFF);
 
     // Calculate size factors
-    $sf_x = $nw / $w;
-    $sf_y = $nh / $h;
+    $sf = max(array($nw / $w, $nh / $h));
 
-    $sf = max(array($sf_x, $sf_y));
     imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
+    imagejpeg($dt, preg_replace('/^(.*)\/(.*?)\.(\w+)$/', '\\1/.thumb.\\2.\\3', $source));
+    imagedestroy($di); imagedestroy($dt);
 
-    if ($resize)
-    {
-        $callfi($dt, $source);
-        $result['msg']='Image resized for ['.$path_parts['basename'].']';
-    }
-    else
-    {          
-        imagejpeg($dt, $path_parts['dirname'] . '/.thumb.'.$path_parts['filename'].'.jpeg');
-        $result['msg']= 'Thumbnail created for ['.$path_parts['basename'].']';
-    }
-
-    imagedestroy($di);
-    imagedestroy($dt);   
-    
+    $result['msg'] = 'Thumbnail created for ['.$path_parts['basename'].']';
     return $result;
 }
 
@@ -116,8 +87,10 @@ function media_invoke()
 
         // Allowed Exts.
         $AE = spsep(getoption('allowed_extensions'));
-        //generate thumbnail after upload
-        $thumbnail_with_upload=  getoption('thumbnail_with_upload');
+
+        // Generate thumbnail after upload
+        $thumbnail_with_upload = getoption('thumbnail_with_upload');
+
         // UPLOAD FILES
         if (REQ('upload','POST'))
         {
@@ -153,10 +126,10 @@ function media_invoke()
                         if ($w && $h)
                         {
                             cn_throw_message('File uploaded');
-                            if($thumbnail_with_upload)
+                            if ($thumbnail_with_upload)
                             {
-                                $resize_result=resize_image($c_file, 365, 0);
-                                cn_throw_message($resize_result['msg'],$resize_result['status']?'n':'w');
+                                $resize_result = resize_image($c_file, 365, 0);
+                                cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
                             }                            
                         }
                         else
@@ -207,10 +180,10 @@ function media_invoke()
                         $just_uploaded[$name] = TRUE;
                         cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
 
-                        if($thumbnail_with_upload)
+                        if ($thumbnail_with_upload)
                         {
-                            $resize_result=resize_image($c_file, 365, 0);
-                            cn_throw_message($resize_result['msg'],$resize_result['status']?'n':'w');
+                            $resize_result = resize_image($c_file, 365, 0);
+                            cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
                         }
                     }
                     else
@@ -505,7 +478,7 @@ function media_invoke()
         {
             list($w, $h) = getimagesize("$udir/$path/$file");
 
-            $is_thumb = preg_match('/\.thumb\.(.*)\.jpeg/', $file);
+            $is_thumb = preg_match('/\.thumb\./', $file);
             
             $files[] = array
             (
