@@ -566,7 +566,7 @@ function cn_modify_bb_full_link($e, $t, $bb)
 {
     $action     = REQ('action', 'GPG');
     list($opts, $anchor) = cn_helper_bb_decode($bb);
-    
+
     if ($e['f'] == '' and $action !== 'showheadlines')
         return '<!-- no full story-->';
 

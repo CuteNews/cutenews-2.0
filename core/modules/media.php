@@ -2,6 +2,11 @@
 
 add_hook('index/invoke_module', '*media_invoke');
 
+function usort_by_name_asc($a, $b)
+{
+    return $a['name'] < $b['name'] ? -1 : 1;
+}
+
 function resize_image($source, $nw, $nh)
 {   
     $result = array('msg' => '', 'status' => TRUE);
@@ -470,7 +475,7 @@ function media_invoke()
         {
             $dirs[] = array
             (
-                'url' => "$path/$file",
+                'url'  => "$path/$file",
                 'name' => $file
             );
         }
@@ -494,6 +499,9 @@ function media_invoke()
             );
         }
     }
+
+    uasort($dirs,  'usort_by_name_asc');
+    uasort($files, 'usort_by_name_asc');
 
     // Top level (dashboard)
     cn_bc_add('Dashboard', cn_url_modify(array('reset')));
