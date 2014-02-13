@@ -120,12 +120,13 @@ if ($dosearch)
                 $item = $ent[$id];
 
                 $FN = FALSE;
-                $Fs = strtolower ($item['f']);
-                $Ss = strtolower ($item['s']);
+                $Fs = strtolower($item['f']);
+                $Ss = strtolower($item['s']);
 
                 $_query = spsep($search, ' ');
-                foreach ($_query as $vq){
-                    $q=  strtolower($vq);
+                foreach ($_query as $vq)
+                {
+                    $q = strtolower($vq);
                     if (strpos($Fs, $q) !== FALSE || strpos($Ss, $q) !== FALSE) $FN = TRUE;
                 }
 
