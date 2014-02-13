@@ -88,11 +88,13 @@ function cn_helper_html_text($e, $p)
 
 function cn_helper_bb_decode($bb)
 {
-    $a_opts = '';
+    $a_opts = $b_opts = '';
     $bb = cn_bb_decode($bb);
 
     if ($bb['target']) $a_opts = 'target="'.cn_htmlspecialchars($bb['target']).'" ';
-    return array($a_opts);
+    if ($bb['anchor']) $b_opts = '#'.cn_htmlspecialchars($bb['anchor']);
+
+    return array($a_opts, $b_opts);
 }
 
 function cn_helper_smiles($template)
@@ -531,7 +533,7 @@ function cn_modify_online_own_hits() // Since 2.0
 // make simple link to full story
 function cn_modify_bb_link($e, $t, $bb)
 {
-    list($opts) = cn_helper_bb_decode($bb);
+    list($opts, $anchor) = cn_helper_bb_decode($bb);
 
     $id = intval($e['id']);
     $id = cn_put_alias($id);
@@ -539,13 +541,13 @@ function cn_modify_bb_link($e, $t, $bb)
     if (NULL === ($url = cn_rewrite('full_story', $id)))
         $url = cn_url_modify('subaction', "id=$id");
 
-    return '<a '.$opts.'href="'.$url.'">'.$t.'</a>';
+    return '<a '.$opts.'href="'.$url.$anchor.'">'.$t.'</a>';
 }
 
 // make printable link
 function cn_modify_bb_print($e, $t, $bb)
 {
-    list($opts) = cn_helper_bb_decode($bb);
+    list($opts, $anchor) = cn_helper_bb_decode($bb);
 
     if (defined('AREA') && AREA == 'ADMIN')
         return $t;
@@ -556,15 +558,15 @@ function cn_modify_bb_print($e, $t, $bb)
     if (NULL === ($url = cn_rewrite('print', $id)))
         $url = getoption('http_script_dir').'/print.php?id='.$id;
 
-    return '<a '.$opts.'href="'.$url.'">'.$t.'</a>';
+    return '<a '.$opts.'href="'.$url.$anchor.'">'.$t.'</a>';
 }
 
 // make comment link
 function cn_modify_bb_full_link($e, $t, $bb)
 {
     $action     = REQ('action', 'GPG');
-    list($opts) = cn_helper_bb_decode($bb);
-
+    list($opts, $anchor) = cn_helper_bb_decode($bb);
+    
     if ($e['f'] == '' and $action !== 'showheadlines')
         return '<!-- no full story-->';
 
@@ -573,32 +575,33 @@ function cn_modify_bb_full_link($e, $t, $bb)
 
     if (getoption('full_popup'))
     {
-        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/print.php?id='.$id.'&popup=news\', \'Comment news\', \''.getoption('full_popup_string').'\'); return false;">'.$t.'</a>';
+        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/print.php?id='.$id.$anchor.'&popup=news\', \'Comment news\', \''.getoption('full_popup_string').'\'); return false;">'.$t.'</a>';
     }
     else
     {
         if (NULL === ($url = cn_rewrite('full_story', $id)))
             $url = cn_url_modify("id=$id");
 
-        return '<a '.$opts.'href="'.$url.'">'.$t.'</a>';
+        return '<a '.$opts.'href="'.$url.$anchor.'">'.$t.'</a>';
     }
 }
 
-function cn_modify_bb_com_link($e, $t)
+function cn_modify_bb_com_link($e, $t, $bb)
 {
     $id = intval($e['id']);
     $id = cn_put_alias($id);
+    list(, $anchor) = cn_helper_bb_decode($bb);
 
     if (getoption('comments_popup'))
     {
-        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/print.php?id='.$id.'&popup=comment\', \'Comment news\', \'' . getoption('comments_popup_string').'\'); return false;">'.$t.'</a>';
+        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/print.php?id='.$id.$anchor.'&popup=comment\', \'Comment news\', \'' . getoption('comments_popup_string').'\'); return false;">'.$t.'</a>';
     }
     else
     {
         if (NULL === ($url = cn_rewrite('comments', $id)))
             $url = cn_url_modify("id=." . $id);
 
-        return '<a href="'.$url.'">'.$t.'</a>';
+        return '<a href="'.$url.$anchor.'">'.$t.'</a>';
     }
 }
 
