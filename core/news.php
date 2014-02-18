@@ -48,7 +48,7 @@ function cn_helper_html_text($e, $p)
     // 1) catch [bb-tag] ... [bb-tag] -- double. Recursive search
     do
     {
-        if (preg_match_all('/\[([a-z0-9_-]+)(.*?)\](.*)\[\/\\1\]/is', $text, $cp, PREG_SET_ORDER))
+        if (preg_match_all('/\[([a-z0-9_-]+)(.*?)\](.*?)\[\/\\1\]/is', $text, $cp, PREG_SET_ORDER))
         {
             foreach ($cp as $ci)
             {
