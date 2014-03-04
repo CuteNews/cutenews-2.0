@@ -2960,7 +2960,7 @@ function cn_dsi_check()
         list($dsi_inline) = GET('__signature_dsi_inline', 'GETPOST');
 
         if ($dsi_inline)
-            list($dsi, $key) = explode('.', $dsi_inline);
+            list($dsi, $key) = explode('.', $dsi_inline, 2);
         else
             die('CSRF attempt! No data');
 
