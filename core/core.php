@@ -2824,7 +2824,7 @@ function cn_register_form($admin = TRUE)
                 if ($regusername === '') $errors[] = i18n("Username field can't be blank");
                 if ($regemail === '')    $errors[] = i18n("Email field can't be blank");
                 if ($regpassword === '') $errors[] = i18n("Password field can't be blank");
-                if (!preg_match('/[\w]\@[\w]/i',  $regemail)) $errors[] = i18n("Email is invalid");
+                if (!preg_match('/[\w]\@[\w]/i', $regemail)) $errors[] = i18n("Email is invalid");
 
                 if ($regpassword !== $confirm) $errors[] = i18n("Confirm password not match");
                 if ($captcha !== $_SESS['CSW']) $errors[] = i18n("Captcha not match");

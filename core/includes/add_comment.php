@@ -106,17 +106,20 @@ if (!$logged_as_member)
         }
     }
 
-    $email_check = FALSE;
-    if (getoption('allow_url_instead_mail') && preg_match($regex_site, $mail))
-        $email_check = TRUE;
-
-    if (check_email($mail))
-        $email_check = TRUE;
-
-    if (!$email_check)
+    if ($mail)
     {
-        echo '<div class="cn_error_comment">'.i18n('Email is invalid').'. <a href="'.$refer.'">Go back</a></div>';
-        return FALSE;
+        $email_check = FALSE;
+        if (getoption('allow_url_instead_mail') && preg_match($regex_site, $mail))
+            $email_check = TRUE;
+
+        if (check_email($mail))
+            $email_check = TRUE;
+
+        if (!$email_check)
+        {
+            echo '<div class="cn_error_comment">'.i18n('Email is invalid').'. <a href="'.$refer.'">Go back</a></div>';
+            return FALSE;
+        }
     }
 }
 
