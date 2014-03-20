@@ -119,19 +119,20 @@ if ($dosearch)
 
                 $item = $ent[$id];
 
-                $FN = FALSE;
-                $Fs = strtolower($item['f']);
-                $Ss = strtolower($item['s']);
+                $MB = function_exists('mb_strtolower');
+                $Fs = $MB ? mb_strtolower($item['f'], 'UTF-8') : strtolower($item['f']);
+                $Ss = $MB ? mb_strtolower($item['s'], 'UTF-8') : strtolower($item['s']);
 
                 $_query = spsep($search, ' ');
-                foreach ($_query as $vq)
-                {
-                    $q = strtolower($vq);
-                    if (strpos($Fs, $q) !== FALSE || strpos($Ss, $q) !== FALSE) $FN = TRUE;
-                }
+                foreach ($_query as $_id => $_val) $_query[$_id] = preg_quote($_val, '/');
 
-                if ($user && !$user != $item['u']) $FN = FALSE;
-                if (!$FN) continue;
+                // By user, but user not match
+                if ($user && !$user != $item['u'])
+                    continue;
+
+                // Query string not found
+                if (!preg_match('/'.join('.*?', $_query).'/uis', $Fs . $Ss))
+                    continue;
 
                 $st++;
                 if ($st < $search_st) continue;
