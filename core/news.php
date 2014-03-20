@@ -682,7 +682,7 @@ function cn_modify_comm_author($e)
 
 function cn_modify_comm_date($e)
 {
-    return date(getoption('timestamp_comment', $e['id']));
+    return date(getoption('timestamp_comment'), $e['id']);
 }
 
 function cn_modify_comm_mail($e)
