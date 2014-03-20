@@ -14,6 +14,27 @@ Requirements
     - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
     - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
 
+CuteNews 2.0.1 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+    - Fixed HTML escaping;
+    - Fixed date formatting (added the option to enter days of week in any language);
+    - Updated the display of news items, improved pagination, fixed search form (the link to the news from the search is now working);
+    - Fixed display of ID category in Integration Wizard;
+    - Added the $ignore_rewrite option available for the news that doesn't require rewriting;
+    - Added “smart” cutting of words via bb-tag [truncate=N]..[/truncate] (ignoring of HTML markup tags), counting of actual words;
+    - XSS: tags from news are not cut out, except for "script" in various forms;
+    - Fixed counting of active news items for pagination, old indexes are replaced with new ones, added sorting by tags;
+    - Fixed CKFinder implementation, added a plug-in;
+    - Added "Switch to html" mass action in News Listing;
+    - Removed the "IP ban" counter in order for configuration not to return to its default value;
+    - Fixed the Integration Wizard bug (which showed ")" at the end of the template);
+    - Fixed the bug connected with the $template option which failed to work giving the default error;
+    - Fixed thumbnails formation in the media gallery - now thumbs photos are displayed separately;
+    - Added "anchor" in bb-tags to generate links in the format: id=&lt;Id&gt;#my_anchor ;
+    - Added alphabetical sorting in the media gallery;
+    - Removed "greed" of bb-tags capture ([link]...[/link] .... [link]...[/link] captured and formed only one link instead of two).
+
 CuteNews 2.0 release notes.
 ------------------------------------------------------------------------------------------------------------------------
 

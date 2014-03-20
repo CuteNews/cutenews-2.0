@@ -8,8 +8,8 @@ if (substr(PHP_VERSION, 0, 5) < '4.1.0')
 error_reporting(E_ALL ^ E_NOTICE);
 
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.0');
-define('VERSION_ID',    200);
+define('VERSION',       '2.0.1');
+define('VERSION_ID',    201);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
 define('MODULE_DIR',    SERVDIR . '/core/modules');
