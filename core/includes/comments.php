@@ -32,17 +32,19 @@ $total_comments = count($comments);
 $com = array();
 global $_comment_iterator;
 
-$user_encoding=getoption('frontend_encoding');
-$is_encode=($user_encoding!='UTF-8')&&function_exists('iconv');
+$user_encoding = getoption('frontend_encoding');
+$is_encode = ($user_encoding != 'UTF-8') && function_exists('iconv');
+
 /* Comment struct: ID => [u]ser, [c]comment text, [e]mail, [ip] */
 foreach ($comments as $comment)
 {
-    if($is_encode)
+    if ($is_encode)
     {
-        $bkp=$comment['c'];
-        $comment['c']=iconv('UTF-8',$user_encoding.'//TRANSLIT',$comment['c']);        
-        if(!$comment['c']) $comment['c']=$bkp;
+        $bkp = $comment['c'];
+        $comment['c'] = iconv('UTF-8', $user_encoding.'//TRANSLIT', $comment['c']);
+        if (!$comment['c']) $comment['c'] = $bkp;
     }
+
     $com[] = entry_make($comment, 'comment', $template, 'comm');
     $_comment_iterator++;
 }

@@ -106,9 +106,10 @@ if (!$logged_as_member)
         }
     }
 
-    if ($mail)
+    if ($mail || getoption('check_email_comment'))
     {
         $email_check = FALSE;
+
         if (getoption('allow_url_instead_mail') && preg_match($regex_site, $mail))
             $email_check = TRUE;
 

@@ -221,6 +221,7 @@ function dashboard_sysconf()
             'comments_popup_string' => array('text', "Settings for comments popup|only if 'Show Comments In PopUp' is enabled"),
             'show_full_with_comments' => array('Y/N', 'Show full story when showing comments|if yes, comments will be shown under the story'),
             'timestamp_comment'     => array('text', 'Time format for comments|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>'),
+            'check_email_comment'   => array('Y/N', 'Check email or site before add comment'),
         ),
 
         'notify' => array
