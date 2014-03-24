@@ -3195,18 +3195,18 @@ function cn_rewrite_load()
             $_GET['number'] = $c[1];
             $layout = SERVDIR.'/rss.php';
         }
-        elseif (preg_match('/\/print\-([0-9a-z_\-]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/print\-([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $layout = SERVDIR.'/print.php';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)-(\d+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)-(\d+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['start_from'] = $c[2];
             $_GET['subaction'] = 'showcomments';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['subaction'] = 'showcomments';
