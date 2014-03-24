@@ -252,7 +252,7 @@ function edit_news_action_edit()
             $c_time = intval(mktime($from_date_hour, $from_date_minutes, $from_date_seconds, $from_date_month, $from_date_day, $from_date_year));
 
             // sanitize page name
-            $page = preg_replace('/[^a-z0-9_]/i', '-', $page);
+            $page = preg_replace('/[^a-z0-9_\.]/i', '-', $page);
 
             // current source is archive, active (postponed) or draft news
             $draft_target = $postpone_draft == 'draft' ? TRUE : FALSE;

@@ -3053,13 +3053,18 @@ function cn_rewrite()
     else
     {
         $prefix = array();
+
         foreach ($plist as $_id) if ($_id)
         {
             if (preg_match('/^(.*)\./', $_id, $c)) $prefix[] = $c[1];
             elseif ($_id) $prefix[] = $_id;
         }
+
         $prefix = '/' . join('/', $prefix);
     }
+
+    // Disable twice slashes
+    if ($prefix == '/') $prefix = '';
 
     $param  = $args[0];
     $param2 = $args[1];
@@ -3087,48 +3092,48 @@ function cn_rewrite()
     // ----
     if ($area == 'full_story')
     {
-        return $prefix . '/' . $param . '.html' . $postfix;
+        return $prefix . '/' . $param . $postfix;
     }
     if ($area == 'print')
     {
-        return $prefix . '/print-' . $param . '.html' . $postfix;
+        return $prefix . '/print-' . $param . $postfix;
     }
     elseif ($area == 'comments')
     {
         if ($param2)
-            return $prefix . '/comments-' . $param . '-'.$param2.'.html' . $postfix;
+            return $prefix . '/comments-' . $param . '-'.$param2 . $postfix;
         else
-            return $prefix . '/comments-' . $param . '.html' . $postfix;
+            return $prefix . '/comments-' . $param . $postfix;
     }
     elseif ($area == 'list')
     {
         if ($param2)
         {
             if ($param)
-                return $prefix . '/archive-' . $param2 . '-'.$param.'.html' . $postfix;
+                return $prefix . '/archive-' . $param2 . '-'.$param . $postfix;
             else
-                return $prefix . '/archive-' . $param2 . '.html' . $postfix;
+                return $prefix . '/archive-' . $param2 . $postfix;
         }
 
         if ($param)
-            return $prefix . '/list-' . $param . '.html' . $postfix;
+            return $prefix . '/list-' . $param . $postfix;
         else
             return PHP_SELF . $postfix;
     }
     elseif ($area == 'archive')
     {
-        return $prefix . '/archive-' . $param . '.html' . $postfix;
+        return $prefix . '/archive-' . $param . $postfix;
     }
     elseif ($area == 'rss')
     {
-        return 'http://' . parse_url(getoption('http_script_dir'), PHP_URL_HOST) . $prefix . '/' . $param . '.html' . $postfix;
+        return 'http://' . parse_url(getoption('http_script_dir'), PHP_URL_HOST) . $prefix . '/' . $param  . $postfix;
     }
     elseif ($area == 'tag')
     {
         if ($param2)
-            return $prefix . '/tag-' . urlencode($param) . '/'.$param2.'.html' . $postfix;
+            return $prefix . '/tag-' . urlencode($param) . '/'.$param2 . $postfix;
         else
-            return $prefix . '/tag-' . urlencode($param) . '.html' . $postfix;
+            return $prefix . '/tag-' . urlencode($param) . $postfix;
     }
 
     return NULL;
@@ -3144,11 +3149,14 @@ function cn_rewrite_load()
     {
         $layout = getoption('rw_layout');
 
+        // Make compatible
+        if ($cn_rewrite_url[0] !== '/') $cn_rewrite_url = "/$cn_rewrite_url";
+
         // Try get target php file
         $request_uri = $_SERVER['REQUEST_URI'];
         $basedir = dirname(getoption('rw_htaccess'));
 
-        // Rule matched, testing pathes
+        // Rule matched, test pathes
         if (preg_match('/^(\/[^\?]+)/', $request_uri, $c))
         {
             $tf = explode('/', $c[1]);
@@ -3177,50 +3185,50 @@ function cn_rewrite_load()
         }
 
         // --------
-        if (preg_match('/\/tag\-(.*)\/([0-9]+)\.html/i', $cn_rewrite_url, $c))
+        if (preg_match('/\/tag\-(.*)\/([0-9]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['tag'] = $c[1];
             $_GET['start_from'] = $c[2];
         }
-        elseif (preg_match('/\/rss-([0-9]+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/rss-([0-9]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['number'] = $c[1];
             $layout = SERVDIR.'/rss.php';
         }
-        elseif (preg_match('/\/print\-([0-9a-z_\-]+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/print\-([0-9a-z_\-]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $layout = SERVDIR.'/print.php';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)-(\d+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)-(\d+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['start_from'] = $c[2];
             $_GET['subaction'] = 'showcomments';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['subaction'] = 'showcomments';
         }
-        elseif (preg_match('/\/list\-(\d+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/list\-(\d+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['start_from'] = $c[1];
         }
-        elseif (preg_match('/\/archive\-(\d+)-(\d+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/archive\-(\d+)-(\d+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['archive'] = $c[1];
             $_GET['start_from'] = $c[2];
         }
-        elseif (preg_match('/\/archive\-(\d+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/archive\-(\d+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['archive'] = $c[1];
         }
-        elseif (preg_match('/\/tag\-(.*)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/tag\-(.*)$/i', $cn_rewrite_url, $c))
         {
             $_GET['tag'] = $c[1];
         }
-        elseif (preg_match('/\/([0-9a-z_\-]+)\.html/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
         }

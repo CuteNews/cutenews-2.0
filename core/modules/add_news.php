@@ -41,7 +41,7 @@ function add_news_invoke()
         if (test('Bd')) $draft = 1;
 
         // sanitize page name
-        $page = preg_replace('/[^a-z0-9_]/i', '-', $page);
+        $page = preg_replace('/[^a-z0-9_\.]/i', '-', $page);
 
         // basic news
         $member = member_get();
