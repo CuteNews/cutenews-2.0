@@ -296,6 +296,7 @@ function dashboard_sysconf()
             'rw_htaccess'       => array('label', ".htaccess real path|Automatic, not modify by user"),
             'rw_layout'         => array('text', "Real path to your layout file|e.g. /home/userdir/www/layout.php"),
             'rw_prefix'         => array('text', "Rewrite prefix|e.g. /news/"),
+            'rw_use_shorten'    => array('Y/N', "Disable .html at end of urls"),
         ),
     );
 

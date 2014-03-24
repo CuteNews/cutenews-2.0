@@ -3087,7 +3087,11 @@ function cn_rewrite()
         }
     }
 
+    // GET-params
     $postfix = $postfix ? '?'.join('&amp;', $postfix) : '';
+
+    // After PageAlias
+    $postfix = getoption('rw_use_shorten') ?  $postfix : '.html' . $postfix;
 
     // ----
     if ($area == 'full_story')
@@ -3184,51 +3188,53 @@ function cn_rewrite_load()
             }
         }
 
+        $post_fix = getoption('rw_use_shorten') ? '$' : '\.html';
+
         // --------
-        if (preg_match('/\/tag\-(.*)\/([0-9]+)$/i', $cn_rewrite_url, $c))
+        if (preg_match('/\/tag\-(.*)\/([0-9]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['tag'] = $c[1];
             $_GET['start_from'] = $c[2];
         }
-        elseif (preg_match('/\/rss-([0-9]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/rss-([0-9]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['number'] = $c[1];
             $layout = SERVDIR.'/rss.php';
         }
-        elseif (preg_match('/\/print\-([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/print\-([0-9a-z_\-\.]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $layout = SERVDIR.'/print.php';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)-(\d+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)-(\d+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['start_from'] = $c[2];
             $_GET['subaction'] = 'showcomments';
         }
-        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
             $_GET['subaction'] = 'showcomments';
         }
-        elseif (preg_match('/\/list\-(\d+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/list\-(\d+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['start_from'] = $c[1];
         }
-        elseif (preg_match('/\/archive\-(\d+)-(\d+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/archive\-(\d+)-(\d+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['archive'] = $c[1];
             $_GET['start_from'] = $c[2];
         }
-        elseif (preg_match('/\/archive\-(\d+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/archive\-(\d+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['archive'] = $c[1];
         }
-        elseif (preg_match('/\/tag\-(.*)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/tag\-(.*)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['tag'] = $c[1];
         }
-        elseif (preg_match('/\/([0-9a-z_\-\.]+)$/i', $cn_rewrite_url, $c))
+        elseif (preg_match('/\/([0-9a-z_\-\.]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
         }
