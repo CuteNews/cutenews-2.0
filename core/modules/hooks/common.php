@@ -87,15 +87,21 @@ function cn_extrn_if_cond($template)
         {
             foreach ($cp as $ifc)
             {
-                $cond = trim($ifc[1]);
+                $R = TRUE;
 
-                $R = FALSE;
-                if ($cond[0] === '!')
+                $cond   = trim($ifc[1]);
+                $cond_s = explode('&&', $cond);
+
+                // Check AND parts
+                foreach ($cond_s as $cond)
                 {
-                    $cond = substr($cond, 1);
-                    if (empty($cond)) $R = TRUE;
+                    $cond = trim($cond);
+                    if ($cond[0] === '!')
+                    {
+                        if (substr($cond, 1)) { $R = FALSE; break; }
+                    }
+                    elseif (!$cond) { $R = FALSE; break; }
                 }
-                elseif ($cond) $R = TRUE;
 
                 $template = str_replace($ifc[0], $R ? $ifc[2] : '', $template);
             }

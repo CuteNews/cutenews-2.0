@@ -14,7 +14,7 @@ if ($user)
     $name = $user['name'];
     $mail = $user['email'];
 
-    // Extrn call from internal widget (login), if checkbox 'remember_me' is set
+    // Extern call from internal widget (login), if checkbox 'remember_me' is set
     if ((isset($_POST['CN_COOKIE_POSTPROCESS'])) && isset($_POST['cn_remember_me']))
         cn_save_session(TRUE);
 }
