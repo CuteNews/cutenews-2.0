@@ -13,7 +13,7 @@ if ($user)
     $logged_as_member = TRUE;
     $name = $user['name'];
     $mail = $user['email'];
-
+    
     // Extern call from internal widget (login), if checkbox 'remember_me' is set
     if ((isset($_POST['CN_COOKIE_POSTPROCESS'])) && isset($_POST['cn_remember_me']))
         cn_save_session(TRUE);
@@ -22,7 +22,7 @@ else
 {
     $logged_as_member = FALSE;
     $name = trim(REQ('name', 'POST'));
-    $mail = trim(REQ('mail', 'POST'));
+    $mail = trim(REQ('mail', 'POST'));          
 }
 
 // Can't add comment
@@ -273,7 +273,8 @@ if (!$logged_as_member && isset($_POST['cn_remember_me']))
     cn_guest_auth($name, $mail);
 
 // Redirect...
-echo '<script type="text/javascript">window.location="'.addslashes(REQ('referer')).'";</script>';
+$ref=  preg_replace('/&edit_id=\d+/', '', REQ('referer'));
+echo '<script type="text/javascript">window.location="'.addslashes($ref).'";</script>';
 echo '<div><a href="'.$refer.'">click there</a> if automatic redirect not work</div>';
 
 return FALSE;

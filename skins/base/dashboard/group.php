@@ -82,24 +82,50 @@ cn_snippet_bc();
         <?php } ?>
         <tr><td></td><td><hr/></td></tr>
 
-        <!-- reset group to def. values -->
-        <?php if ($group_system && $group_id) { ?>
             <tr>
-                <td align="right"><input type="checkbox" name="reset_group" value="Y"/></td>
-                <td>Reset this group by default</td>
+                <td>&nbsp;</td>
+                <td>
+                    <div style="float:left;">
+                        <input type="submit" onclick="setMode('add');" value="Add group" />&nbsp;
+                        <?php if($group_id&&($group_id!=1&&$group_id!=5)) {?><input type="submit" onclick="setMode('edit');" value="Edit group" />&nbsp;<?php } ?>
+                        <input type="hidden" id="mode" name="mode" value=""/>
+                        <!-- reset group to def. values -->
+                        <?php if ($group_system && $group_id&&($group_id!=1&&$group_id!=5)) { ?>
+                            <input type="submit" onclick="resetGroup();" value="Reset this group by default" />
+                            <input type="hidden" id="rest_grp" name="reset_group" value=""/>
+                        <?php } ?>   
+                    </div>
+                    <div style="width:100%;text-align:right;">
+                        <!-- delete non-system group -->
+                       <?php if (!$group_system && $group_id) { ?>                
+                           <input type="submit" onclick="deleteGroup();" value="Delete group" />
+                           <input type="hidden" id="del_grp" name="delete_group"  value=""/>
+                       <?php } ?>                         
+                    </div>
+                </td>
+  
             </tr>
-        <?php } ?>
-
-        <!-- delete non-system group -->
-        <?php if (!$group_system && $group_id) { ?>
-            <tr>
-                <td align="right"><input type="checkbox" name="delete_group" value="Y"/></td>
-                <td>Delete this group</td>
-            </tr>
-        <?php } ?>
-
-        <tr><td>&nbsp;</td><td><input type="submit" value="Add or Edit group" /></td></tr>
 
     </table>
 
 </form>
+<script type="text/javascript">
+    function resetGroup()
+    {
+        var r=document.getElementById('rest_grp');
+        r.setAttribute('value','Y');
+        
+    }
+    
+    function deleteGroup()
+    {
+        var d=document.getElementById('del_grp');
+        d.setAttribute('value','Y');
+    }
+    
+    function setMode(md)
+    {
+        var m=document.getElementById('mode');
+        m.setAttribute('value',md);
+    }
+</script>

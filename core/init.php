@@ -4,12 +4,21 @@
 if (substr(PHP_VERSION, 0, 5) < '4.1.0')
     die('PHP Version is '.PHP_VERSION.', need great than PHP &gt;= 4.1.0 to start cutenews');
 
+define('DEV_DEBUG',false); //for visual detect errors
+if(DEV_DEBUG)
+{
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL|E_STRICT);
+}
+else 
+{
+    error_reporting(E_ALL ^ E_NOTICE);
+}
 // definitions
-error_reporting(E_ALL ^ E_NOTICE);
 
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.0.1');
-define('VERSION_ID',    201);
+define('VERSION',       '2.0.2');
+define('VERSION_ID',    202);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
 define('MODULE_DIR',    SERVDIR . '/core/modules');
@@ -25,9 +34,11 @@ require_once SERVDIR . '/core/captcha/captcha.php';
 // magic quotes = ON, filtering it
 if (ini_get('magic_quotes_gpc')) cn_filter_magic_quotes();
 
-// catch errors
-set_error_handler("user_error_handler");
-
+if(!DEV_DEBUG)
+{
+    // catch errors
+    set_error_handler("user_error_handler");
+}
 // create cutenews caches
 $_CN_SESS_CACHE     = array();
 $_CN_cache_block_id = array();

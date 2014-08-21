@@ -47,7 +47,7 @@ require_once 'cn_api.php';
     <meta name="description" content="<?php echo $meta_short_desc; ?>" />
 
     <!-- Example for OpenGraph Protocol (if og_image field present, show it) -->
-    <?php if (isset($og_image)) { ?><meta property="og:image" content="<?php echo $og_image; ?>" /><? } ?>
+    <?php if (isset($og_image)) { ?><meta property="og:image" content="<?php echo $og_image; ?>" /><?php } ?>
 
     <!-- After, we can append any field as shown before -->
     <!-- Also, put there styles/js, etc. -->

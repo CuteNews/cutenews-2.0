@@ -115,11 +115,11 @@ function edit_news_action_list()
 
     // Meta-data for draft only
     $meta_draft = db_index_meta_load('draft');
-    $ptree      = $meta['locs'];
+    $ptree      = isset($meta['locs'])?$meta['locs']:false;
     $userlist   = $meta['uids'];
     $nprospect  = intval($rev['cpostponed']);
     $ndraft     = is_array($meta_draft['locs']) ? intval(array_sum($meta_draft['locs'])) : 0;
-    $found_rows = is_array($meta['locs']) ? intval(array_sum($meta['locs'])) : 0;
+    $found_rows = isset($meta['locs'])&&is_array($meta['locs']) ? intval(array_sum($meta['locs'])) : 0;
     $archives   = count(db_get_archives());
 
     // ---
@@ -134,12 +134,28 @@ function edit_news_action_list()
         if ($ptree) foreach ($ptree as $nloc => $c)
         {
             list($Y, $M, $D) = explode('-', $nloc);
-            $tree_years[$Y] += $c;
-
+            if(isset($tree_years[$Y]))
+            {
+                $tree_years[$Y] += $c;
+            }
+            else 
+            {
+                $tree_years[$Y]=$c;
+            }
             if ($Y == $YS)
             {
-                $tree_mons[$M] += $c;
-                if ($M == $MS) $tree_days[$D] = $c;
+                if(isset($tree_mons[$M]))
+                {
+                    $tree_mons[$M] += $c;
+                }
+                else
+                {
+                    $tree_mons[$M]=$c;
+                }
+                if ($M == $MS)
+                {
+                    $tree_days[$D] = $c;
+                }
             }
         }
     }
@@ -253,7 +269,10 @@ function edit_news_action_edit()
 
             // sanitize page name
             $page = preg_replace('/[^a-z0-9_\.]/i', '-', $page);
-
+            if(empty($page)&&!empty($title)&& getoption('auto_news_alias'))
+            {
+                $page=  strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($title)));
+            }            
             // current source is archive, active (postponed) or draft news
             $draft_target = $postpone_draft == 'draft' ? TRUE : FALSE;
 
@@ -411,17 +430,21 @@ function edit_news_action_edit()
         }
     }
 
+    if(empty($entry['pg'])&&isset($entry['t'])&& getoption('auto_news_alias'))
+    {
+        $entry['pg']=  strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($entry['t'])));
+    }        
     // Assign template vars
     $category      = spsep($entry['c']);
-    $categories    = cn_get_categories();
-    $title         = $entry['t'];
-    $short_story   = $entry['s'];
-    $page          = $entry['pg'];
-    $full_story    = $entry['f'];
-    $is_draft      = $entry['st'] == 'd';
-    $vConcat       = $entry['cc'];
-    $vTags         = $entry['tg'];
-    $if_use_html   = $entry['ht'];
+    $categories    = cn_get_categories();    
+    $title         =isset($entry['t'])? $entry['t']:'';
+    $short_story   =isset($entry['s'])? $entry['s']:'';
+    $page          =isset($entry['pg'])? $entry['pg']:'';
+    $full_story    =isset($entry['f'])? $entry['f']:'';
+    $is_draft      =isset($entry['st'])? $entry['st'] == 'd':false;
+    $vConcat       =isset($entry['cc'])? $entry['cc']:'';
+    $vTags         =isset($entry['tg'])? $entry['tg']:'';
+    $if_use_html   =  isset($entry['ht'])? $entry['ht']:false;
     $is_active_html =test('Csr');
     cn_assign
     (
@@ -447,13 +470,13 @@ function edit_news_action_massaction()
     if ($subaction == 'mass_delete')
     {
         if (!test('Nud'))
-            msg_info("Operation not permitted for you");
+            cn_throw_message("Operation not permitted for you",'w');
 
         list($selected_news) = GET('selected_news');
 
         $count = count($selected_news);
         if (confirm_first() && $count == 0)
-            msg_info('Error: no none entry selected');
+            cn_throw_message('No none entry selected','e');
 
         if (confirm_post("Delete selected news ($count)"))
         {
@@ -485,10 +508,10 @@ function edit_news_action_massaction()
                 bt_del_id($_ts_pg, 'pg_ts');
 
                 // ------
-                $FlatDB->cn_remove_categories($storent['c'], $storent['id']);
-                $FlatDB->cn_remove_tags($storent['tg'], $storent['id']);
+                if(isset($storent['c'])) $FlatDB->cn_remove_categories($storent['c'], $storent['id']);
+                if(isset($storent['tg'])) $FlatDB->cn_remove_tags($storent['tg'], $storent['id']);
                 $FlatDB->cn_update_date(0, $storent['id']);
-                $FlatDB->cn_user_sync($storent['u'], 0, $storent['id']);
+               if(isset($storent['u'])) $FlatDB->cn_user_sync($storent['u'], 0, $storent['id']);
                 // ------
 
                 // Save block
@@ -508,14 +531,12 @@ function edit_news_action_massaction()
                 db_archive_meta_update($archive_id, $min, $max, $cnt);
             }
 
-            msg_info('News deleted');
+            cn_throw_message('News deleted');
         }
         else
         {
-            msg_info("No one entry deleted");
-        }
-
-        msg_info('News not deleted');
+            cn_throw_message("No one entry deleted",'e');
+        }        
     }
     // Mass change category
     elseif ($subaction == 'mass_move_to_cat')
@@ -538,7 +559,7 @@ function edit_news_action_massaction()
 
                 // Catch user trick
                 if (!test_cat($entries[$id]['c']))
-                    msg_info('Not allowed change category for id = '.$id);
+                    cn_throw_message('Not allowed change category for id = '.$id,'w');
 
                 $storent = $entries[$id];
 
@@ -556,11 +577,11 @@ function edit_news_action_massaction()
             // Save updated block
             db_index_save($idx, $source);
 
-            msg_info('Successful processed');
+            cn_throw_message('Successful processed');
         }
         else
         {
-            msg_info('Operation declined by user');
+            cn_throw_message('Operation declined by user','e');
         }
     }
     // Mass approve action
@@ -594,7 +615,7 @@ function edit_news_action_massaction()
         db_index_save($ida);            db_index_update_overall();
         db_index_save($idd, 'draft');   db_index_update_overall('draft');
 
-        msg_info('News was approved');
+        cn_throw_message('News was approved');
     }
     // Bulk switch to HTML
     elseif ($subaction == 'switch_to_html')
@@ -609,12 +630,14 @@ function edit_news_action_massaction()
             db_save_news($news, db_get_nloc($id));
         }
 
-        msg_info('News was switched to HTML');
+        cn_throw_message('News was switched to HTML');
     }
     else
     {
-        msg_info('Select action to process');
+        cn_throw_message('Select action to process','w');
     }
+    
+    edit_news_action_list();
 }
 
 // Delete single item

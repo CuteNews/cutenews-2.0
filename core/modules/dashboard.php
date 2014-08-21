@@ -104,16 +104,22 @@ function dashboard_invoke()
     $member = member_get();
 
     $meta_draft = db_index_meta_load('draft');
-    $drafts = intval(array_sum($meta_draft['locs']));
+    $drafts =isset($meta_draft['locs'])? intval(array_sum($meta_draft['locs'])):false;
 
     if ($drafts && test('Cvn'))
         $greeting_message = i18n('News in draft: %1', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
     else
         $greeting_message = i18n('Have a nice day!');
 
+    global $_SESS;
+    if(isset($_SESS['adm_need_migrate'])&&$_SESS['adm_need_migrate'])
+    {
+        $greeting_message=  i18n('<b style="color:red;"> Need convert data by migration tools. </b>');        
+    }
+
     cn_assign('dashboard, username, greeting_message', $dashboard, $member['name'], $greeting_message);
     echo exec_tpl('dashboard/general');
-
+    
     echofooter();
 }
 
@@ -186,6 +192,7 @@ function dashboard_sysconf()
             'client_online'         => array('int', 'Expiration time client online|If 0, client online disabled'),
             'show_thumbs'           => array('Y/N', 'Show thumbnail files in media gallery'),
             'thumbnail_with_upload'  => array('Y/N', 'Generate thumbnail after upload big image'),
+            'max_thumbnail_widht'   => array('int', 'Max image width (in px)|Larger than the specified size is considered a big'),
             'uploads_dir'           => array('text', 'Server upload dir|Real path on server'),
             'uploads_ext'           => array('text', 'Frontend upload dir|Frontend path for uploads'),
         ),
@@ -198,6 +205,7 @@ function dashboard_sysconf()
             'reverse_active'        => array('Y/N', 'Reverse News|if yes, older news will be shown on the top'),
             'full_popup'            => array('Y/N', 'Show full story in popup|full Story will be opened in PopUp window'),
             'full_popup_string'     => array('text', "Settings for full story popup|only if 'Show Full Story In PopUp' is enabled"),
+            'auto_news_alias'       => array('Y/N', 'Autocomplete page alias|Set news title as page alias'),
             'show_comments_with_full' => array('Y/N', 'Show comments when showing full story|if yes, comments will be shown under the story'),
             'timestamp_active'      => array('text', 'Time format for news|view help for time formatting <a href="http://www.php.net/manual/en/function.date.php" target="_blank">here</a>'),
             'use_captcha'           => array('Y/N', 'Use CAPTCHA|on registration and comments'),
@@ -211,6 +219,7 @@ function dashboard_sysconf()
 
         'comments' => array
         (
+            'comments_std_show'     => array('Y/N', 'Show standart comments|show/hide standart comment system'),
             'reverse_comments'      => array('Y/N', 'Reverse comments|newest comments will be shown at the top'),
             'flood_time'            => array('int', 'Comments flood protection|in seconds; 0 = no protection'),
             'comment_max_long'      => array('int', 'Max. Length of comments in characters|enter <b>0</b> to disable checking'),
@@ -342,7 +351,7 @@ function dashboard_sysconf()
         if (empty($post_cfg['rw_layout']))       $post_cfg['rw_layout']   = SERVDIR . '/example.php';
 
         // .htaccess rewrite
-        if ($post_cfg['rw_engine'])
+        if (isset($post_cfg['rw_engine'])&&$post_cfg['rw_engine'])
         {
             if (!file_exists($fn = getoption('rw_htaccess')))
                 fclose(fopen($fn, "w+"));
@@ -406,8 +415,10 @@ function dashboard_sysconf()
     foreach ($options as $id => $vo)
     {
         $options[$id]['var'] = getoption($id);
-
-        list($title, $desc) = explode('|', $vo[1], 2);
+        
+        $text_parths=explode('|', $vo[1], 2);        
+        $title=isset($text_parths[0])?$text_parths[0]:'';
+        $desc =isset($text_parths[1])?$text_parths[1]:'';
         $options[$id]['title'] = $title;
         $options[$id]['desc']  = $desc;
         $options[$id]['help']  = isset($help[$id]) ? i18n($help[$id]) : '';
@@ -470,8 +481,8 @@ function dashboard_personal()
         }
 
         // Update additional fields for personal data
-        $o_more = serialize($member['more']);
-        $n_more = serialize($more);
+        $o_more = base64_encode(serialize($member['more']));
+        $n_more = base64_encode(serialize($more));
 
         if ($o_more !== $n_more)
         {
@@ -512,53 +523,101 @@ function dashboard_personal()
 // Since 2.0: Category management
 function dashboard_category()
 {
-    list($category_id, $delete_cat, $new_cat) = GET('category_id, delete_cat, new_cat');
+    list($category_id, $mode) = GET('category_id, mode');
     list($category_name, $category_memo, $category_icon, $category_parent, $category_acl) = GET('category_name, category_memo, category_icon, category_parent, category_acl', "POST");
 
+    $is_edit=$category_id&&$mode=='e';
+    $is_add=$mode=='a';
+    $is_delete=$category_id&&$mode=='d';
+    $is_cancel=$category_id&&$mode=='c';    
+    
     $groups     = getoption('#grp');
     $categories = getoption('#category');
-
+    
+    $category_ids= array_keys($categories);
+    if(!empty($category_ids))
+    {
+        $max_id=0;
+        foreach ($category_ids as $id)
+        {
+            if($max_id<$id) $max_id=$id;
+        }
+        $categories['#']=$max_id;
+    }
+    else
+    {
+       $categories['#']=0; 
+    }
+    
     // Do Action
     if (request_type('POST'))
     {
         cn_dsi_check();
-
-        if ($category_name)
+        $cat_acl=!empty($category_acl)?join(',', $category_acl):'';
+        $is_duble=false;
+        $message=false;
+        
+        if($category_name)
         {
-            // Add category, if not exist is [or if new_cat checkbox]
-            if (!$category_id || $new_cat)
-            {
-                $categories['#']++;
-                $category_id = intval($categories['#']);
+            if($is_add)
+            {            
+                //Check category dubles
+                foreach ($categories as $c)
+                {                      
+                    $is_duble=$c['name']==$category_name&&$c['acl']==$cat_acl;
+                    if($is_duble) break;
+                }            
+
+                if(!$is_duble)
+                {
+                    $categories['#']=count($categories)!=0?$categories['#']+1:1;
+                    $category_id = intval($categories['#']);             
+                    $message='Category added';
+                }
+                else
+                {
+                    cn_throw_message('This category alredy exist','e');
+                }            
             }
+            elseif($is_edit)
+            {
+                $message='Category edited';
+            }
+            elseif($is_delete)
+            {
+                unset($categories[$category_id]);
+                $category_id=0;
+                $message='Category deleted';
+            }
+            elseif($is_cancel)
+            {
+                $category_id=0;
+            }
+            
+            if(!empty($category_id))
+            {
+                $categories[$category_id]['name'] = $category_name;
+                $categories[$category_id]['memo'] = $category_memo;
+                $categories[$category_id]['icon'] = $category_icon;
+                $categories[$category_id]['acl']  = $cat_acl;
+                $categories[$category_id]['parent']  = $category_parent;            
 
-            // Edit any news
-            $categories[$category_id]['name'] = $category_name;
-            $categories[$category_id]['memo'] = $category_memo;
-            $categories[$category_id]['icon'] = $category_icon;
-            $categories[$category_id]['acl']  = join(',', $category_acl);
-            $categories[$category_id]['parent']  = $category_parent;
-
-            cn_throw_message('Category edited');
+                cn_throw_message($message);
+            }
+            $category_name = $category_icon = $category_memo = $category_acl= $category_parent = $category_id = '';
+            
+            if(!$is_cancel)
+            {
+                list($categories) = cn_category_struct($categories);
+                setoption('#category', $categories); 
+            }
         }
-        else
+        elseif(!$is_delete)
         {
             cn_throw_message('Empty category name', 'e');
-        }
-
-        // Delete checkbox selected
-        if ($delete_cat)
-        {
-            unset($categories[$category_id]);
-
-            cn_throw_message('Category deleted');
-            $category_name = $category_icon = $category_memo = $category_acl = $category_id = '';
-        }
-
-        list($categories) = cn_category_struct($categories);
-        setoption('#category', $categories);
+        }              
     }
-
+    
     // ---
     if ($category_id)
     {
@@ -860,9 +919,9 @@ function dashboard_userman()
     // Retrieve info about user
     if ($user = db_user_by_name($user_name))
     {
-        $user_nick  = $user['nick'];
-        $user_email = $user['email'];
-        $user_acl   = $user['acl'];
+        $user_nick  =isset($user['nick'])? $user['nick']:'';
+        $user_email =isset($user['email'])? $user['email']:'';
+        $user_acl   =isset($user['acl'])? $user['acl']:'';
         $is_edit=TRUE;
     }
 
@@ -1107,10 +1166,10 @@ function dashboard_intwiz()
     $categories = cn_get_categories();
 
     $rss                    = getoption('#rss');
-    $rss_encoding           = $rss['encoding'];
-    $rss_news_include_url   = $rss['news_include_url'];
-    $rss_title              = $rss['title'];
-    $rss_language           = $rss['language'];
+    $rss_encoding           =isset($rss['encoding'])? $rss['encoding']:'UTF-8';
+    $rss_news_include_url   =isset($rss['news_include_url'])? $rss['news_include_url']:'';
+    $rss_title              =isset($rss['title'])? $rss['title']:'';
+    $rss_language           =isset($rss['language'])? $rss['language']:'en-us';
 
     // Default: view
     if ($rss_encoding == '') $rss_encoding = 'UTF-8';
@@ -1209,40 +1268,44 @@ function dashboard_logs()
     // --- System section ---
     if (!$section)
     {
-        $r = fopen(SERVDIR.'/cdata/log/error_dump.log', 'r');
-        if ($r)
+        $path=SERVDIR. path_construct('cdata','log','error_dump.log');
+        if(file_exists($path))
         {
-            do
+            $r = fopen($path, 'r');
+            if ($r)
             {
-                $v = trim(fgets($r));
-
-                if ($v == '')
+                do
                 {
-                    $skip = FALSE;
-                    continue;
-                }
-                elseif ($skip) continue;
+                    $v = trim(fgets($r));
 
-                // Catch
-                if (preg_match('/^\[(\d+)\] (.*)$/', $v, $c))
-                {
-                    $n++;
-
-                    // Skip some logs
-                    if ($n >= $st)
+                    if ($v == '')
                     {
-                        list(,$msg) = explode('|', $c[2], 2);
-                        $logs[] = array('msg' => $msg, 'date' => date('Y-m-d H:i:s', $c[1]));
+                        $skip = FALSE;
+                        continue;
+                    }
+                    elseif ($skip) continue;
+
+                    // Catch
+                    if (preg_match('/^\[(\d+)\] (.*)$/', $v, $c))
+                    {
+                        $n++;
+
+                        // Skip some logs
+                        if ($n >= $st)
+                        {
+                            list(,$msg) = explode('|', $c[2], 2);
+                            $logs[] = array('msg' => $msg, 'date' => date('Y-m-d H:i:s', $c[1]));
+                        }
+
+                        $skip = TRUE;
                     }
 
-                    $skip = TRUE;
+                    if ($n > $over) break;
                 }
+                while (!feof($r));
 
-                if ($n > $over) break;
+                fclose($r);
             }
-            while (!feof($r));
-
-            fclose($r);
         }
     }
     // --- User log section ---
@@ -1550,8 +1613,9 @@ function dashboard_group()
 
     $grp = array();
     $groups = getoption('#grp');
-    list($group_name, $group_id, $group_grp, $ACL, $delete_group, $reset_group) = GET('group_name, group_id, group_grp, acl, delete_group, reset_group');
-
+    list($group_name, $group_id, $group_grp, $ACL, $delete_group, $reset_group,$mode) = GET('group_name, group_id, group_grp, acl, delete_group, reset_group,mode');
+    $is_add_edit=false;
+    
     // -----------
     if (request_type('POST'))
     {
@@ -1561,11 +1625,74 @@ function dashboard_group()
         {
             cn_throw_message("Enter group name", 'e');
         }
+        elseif($mode=='edit')
+        {
+            // Update exists or new group
+            if ($group_id > 1)
+            {
+                $groups[$group_id] = array
+                (
+                    '#' => $groups[$group_id]['#'],
+                    'N' => $group_name,
+                    'G' => $group_grp,
+                    'A' => join(',', $ACL),
+                );
+            }
+            
+            if ($group_id == 1)
+            {
+                cn_throw_message("Can't update admin group", 'e');
+            }
+            else
+            {
+                // Save to config
+                setoption('#grp', $groups);                             
+                cn_throw_message("Group updated");                           
+            }
+        }
+        elseif($mode=='add')
+        {
+            $is_exists =FALSE;
+            // Check group exists
+            foreach ($groups as $id => $dt)
+            {
+                if ($dt['N'] == $group_name)
+                {
+                    $is_exists = TRUE;
+                    break;
+                }
+            }      
+            
+            $group_id = max(array_keys($groups)) + 1;                       
+            // Update exists or new group
+            if ($group_id > 1&&!$is_exists)
+            {
+                $groups[$group_id] = array
+                (
+                    '#' => '',
+                    'N' => $group_name,
+                    'G' => $group_grp,
+                    'A' => join(',', $ACL),
+                );                
+                // Save to config
+                setoption('#grp', $groups);                          
+                cn_throw_message("Group added");                
+            }
+            elseif($is_exists)
+            {
+                cn_throw_message("Group with that name alredy exist",'e');
+                $group_id=0;
+            }
+            else
+            {
+                cn_throw_message("Group not added",'e');  
+            }                       
+        }
         else
         {
             $edit_system = FALSE;
             $edit_exists = FALSE;
-
+            $is_add_edit=TRUE;
             // Check group exists
             foreach ($groups as $id => $dt)
             {
@@ -1590,15 +1717,20 @@ function dashboard_group()
                     $id = intval($id);
 
                     if ($id == $group_id)
-                    {
-                        $groups[$group_id]['#'] = TRUE;
-                        $group_name = $name;
-                        $group_grp  = $group;
+                    {                                                
                         $ACL = spsep(($access === '*') ? $_CN_access['C'].','.$_CN_access['N'].','.$_CN_access['M'] : $access);
-
+                        $groups[$group_id] = array
+                        (
+                            '#' => TRUE,
+                            'N' => $name,
+                            'G' => $group,
+                            'A' => join(',', $ACL),
+                        );                            
+                        
                         cn_throw_message("Group reset");
                     }
                 }
+                $is_add_edit=FALSE;
             }
             // Update group
             elseif ($edit_exists && !$delete_group)
@@ -1606,7 +1738,7 @@ function dashboard_group()
                 if ($group_id == 1)
                     cn_throw_message("Can't update admin group", 'e');
                 else
-                    cn_throw_message("Group updated");
+                    cn_throw_message('Parameters for a group are not correct specified or group alredy exists','e');
             }
             // Unable remove system group
             elseif ($delete_group && $edit_exists)
@@ -1619,33 +1751,15 @@ function dashboard_group()
                 {
                     unset($groups[$group_id]);
 
-                    $ACL = array();
-                    $group_name = $group_grp = '';
+                    $ACL = array();                   
                     $group_id = 0;
 
                     cn_throw_message("Group removed");
                 }
             }
-            else
-            {
-                $group_id = max(array_keys($groups)) + 1;
-                cn_throw_message("Group added");
-            }
-
-            // Update exists or new group
-            if ($group_id > 1)
-            {
-                $groups[$group_id] = array
-                (
-                    '#' => $groups[$group_id]['#'],
-                    'N' => $group_name,
-                    'G' => $group_grp,
-                    'A' => join(',', $ACL),
-                );
-            }
 
             // Save to config
-            setoption('#grp', $groups);
+            setoption('#grp', $groups);                        
         }
     }
 
@@ -1655,7 +1769,7 @@ function dashboard_group()
         $G = spsep($data['G']);
 
         foreach ($G as $id)
-            $_gtext[] = $groups[$id]['N'];
+            if(isset ($groups[$id]))$_gtext[] = $groups[$id]['N'];
 
         $grp[$name] = array
         (
@@ -1682,13 +1796,19 @@ function dashboard_group()
 
         foreach ($Ex as $id)
         {
-            list($d, $t) = explode('|', $Tr[$id]);
-
+            $trp=explode('|', $Tr[$id]);
+            $d=isset($trp[0])?$trp[0]:''; 
+            $t = isset($trp[1])?$trp[1]:''; 
+            $c=in_array($id, $bc);
+            if($is_add_edit)
+            {
+                $c=FALSE;
+            }
             $Gz[ $id ] = array
             (
                 'd' => i18n( array($d, 'DS-') ),
                 't' => i18n( array($t, 'DS-') ),
-                'c' => in_array($id, $bc)
+                'c' => $c
             );
         }
 
@@ -1698,12 +1818,20 @@ function dashboard_group()
     // Group is system
     $group_system = $group_id && $groups[$group_id]['#'];
 
+    
     if ($group_id)
     {
-        $group_name = $groups[$group_id]['N'];
-        $group_grp  = $groups[$group_id]['G'];
+        if(!$is_add_edit)
+        {
+            $group_name = $groups[$group_id]['N'];
+            $group_grp  = $groups[$group_id]['G'];
+        }
+        else 
+        {
+            $group_name=$group_grp='';      
+            $group_id=0;
+        }
     }
-
 
     cn_assign('grp, group_name, group_id, group_grp, group_system, access, form_desc', $grp, $group_name, $group_id, $group_grp, $group_system, $access, $form_desc);
     echoheader('-@dashboard/style.css', 'Groups'); echo exec_tpl('dashboard/group'); echofooter();
@@ -1886,10 +2014,12 @@ function dashboard_script()
     $list = getoption('#snippets');
     if (empty($list)) $list['sandbox'] = '';
 
+    $opt_txt=getoption('#snippets/'.$snippet);
+    
     $params = array
     (
         'list' => $list,
-        'text' => getoption('#snippets/'.$snippet),
+        'text' =>(!empty($opt_txt)?$opt_txt:''),
         'can_delete' => ($snippet !== 'sandbox') ? TRUE : FALSE,
         'snippet'  => $snippet,
         'snippets' => getoption('#snippets'),

@@ -52,4 +52,4 @@ if ((!isset($count_cute_news_includes) or !$count_cute_news_includes) and $templ
     }
 }
 
-$count_cute_news_includes++;
+if(isset($count_cute_news_includes)) $count_cute_news_includes++;

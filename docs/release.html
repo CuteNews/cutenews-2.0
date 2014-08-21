@@ -12,6 +12,46 @@
 Requirements
 
     - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
+    - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8;
+    - To add images from Media Manager via the https protocol it is required that open ssl for PHP works on the server.
+
+CuteNews 2.0.2 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+    - For additional security, all news, comments and configurations are coded in base64.
+    - Added migration from version 2.0.1 to 2.0.2. 
+    - Fixed bugs appearing during migration from version 1.5.3. 
+    - Fixed the functioning of the Preview button in the migration section.
+    - Added error messages during migration.
+    - Added an option of automatic generation of Page Aliases when news is added.
+    - Added an option of disabling the standard comment system.
+    - Added an option of controlling the maximum width of loaded images in Media manager.
+    - In Dashboard > Categories, the checkboxes for adding and deleting categories are replaced with buttons.
+    - Prohibited creation of duplicate categories.
+    - Changed the algorithm for calculating Id for category.
+    - Fixed banning of users.
+    - In Dashboard > Groups, the checkboxes for deleting, resetting the system groups to the default value are replaced with buttons. The functions of adding and editing of groups are applied to different buttons.
+    - Prohibited editing of rights in the admin and ban system groups. 
+    - Adjusted the layout of templates in Dashboard > Templates.
+    - Fixed the functioning of the [cat] tag.
+    - Fixed the display style of the [quote] tag.
+    - The Preview checkbox in Add News is replaced with a button.
+    - Fixed the layout displaying preview in Add News. 
+    - In Edit News, error messages redirecting to another page are replaced with pop-ups.
+    - Fixed adding of images to Media manager via links.
+    - Fixed the display of thumbnails in Media manager. 
+    - Fixed the error of displaying pagination.
+    - Fixed processing of indexes on Windows based servers.
+    - Adjusted the display of text on the Delete comments button according to the number of comments.
+    - Adjusted the layout on the example.php webpage.
+    - Fixed the behavior of comment form after adding/editing of comments.
+    - Fixed user authentication when logging in via comment form.
+    - Fixed the account of group rights when user is working with comments.
+    - Improved overall system stability.
+
+Requirements
+
+    - PHP 4.1.0 version is desired. Please use the older versions at your own risk;
     - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8.
 
 CuteNews 2.0.1 release notes.

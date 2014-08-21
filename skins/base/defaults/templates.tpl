@@ -1,27 +1,34 @@
 #default
 *active
- <div style="width: 100%; margin-bottom:30px;">
-     <div style="clear:both;">
-          
+ <div style="width: 100%; margin-bottom:30px;">     
+     <div>
         <div style="word-wrap:break-word; width:300px; float:left;"><strong>[link]{title}[/link]</strong></div>
-         <div style="text-align:right;">[print]printable version[/print]</div>      
+        <div style="text-align:right;">[print]printable version[/print]</div>      
      </div>
+     <div style="clear:both;"></div>
      <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{short-story}
          <div style="margin-top:10px;">[full-link target=_blank]Read more... [/full-link]</div>
      </div>
      <div style="margin: 0 0 8px 0;">{tagline}</div>
-     <div style="float: right;">[com-link]{comments-num} Comments[/com-link]</div>
+     <div style="float: right;">[com-link]Count of comments: {comments-num} [/com-link]</div>
      <div><em>Posted on {date} by {author}</em></div>
-     {fb-comments} {fb-like} {gplus} {twitter}
+     <div>{fb-comments}</div>
+     <div>
+          <span class="soc-buttons-left">{fb-like}</span> <span class="soc-buttons-left">{gplus}</span> <span class="soc-buttons-left">{twitter}</span>
+     </div>
+     <div style="clear:both;"></div>
  </div>
 
 *full
  <div style="width: 100%; margin-bottom:15px;">
      <div><strong>{title}</strong></div>
      <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{full-story}</div>
-     <div style="float: right;">{comments-num} Comments</div>
+     <div style="float: right;">Count of comments: {comments-num}</div>
      <div><em>Posted on {date} by {author}</em></div>
-     {fb-comments} {fb-like} {gplus} {twitter}
+     <div>{fb-comments}</div> 
+     <div>
+         <span class="soc-buttons-left">{fb-like}</span> <span class="soc-buttons-left">{gplus}</span> <span class="soc-buttons-left">{twitter}</span>
+     </div>
  </div>
 
 *comment
@@ -72,7 +79,7 @@
  [full-link]{title}[/full-link], posted on {date} by {author}<br />
 
 *full
- <div style="width:420px; margin-bottom:15px;">
+ <div style="width:100%; margin-bottom:15px;">
  <div><strong>{title}</strong></div>
  <div style="text-align:justify; padding:3px; margin-top:3px; margin-bottom:5px; border-top:1px solid #D3D3D3;">{full-story}</div>
  <div style="float: right;">{comments-num} Comments</div>

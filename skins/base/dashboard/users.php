@@ -1,7 +1,7 @@
 <?php
 
 list($users, $section, $st, $per_page, $grp) = _GL('users, section, st, per_page, grp');
-list($user_name, $user_nick, $user_email, $user_acl, $is_edit, $delete) = _GL('user_name, user_nick, user_email, user_acl, is_edit');
+list($user_name, $user_nick, $user_email, $user_acl, $is_edit) = _GL('user_name, user_nick, user_email, user_acl, is_edit');
 
 cn_snippet_messages();
 cn_snippet_bc();
@@ -85,11 +85,11 @@ cn_snippet_bc();
         <th>Access</th>
     </tr>
     <?php if ($users) foreach ($users as $id => $user) { ?>
-        <tr <?php if ($user_name == $user['name']) echo 'class="row_selected"'; ?>>
-            <td width="400px"><a href="<?php echo cn_url_modify('user_name='.$user['name']); ?>"><?php echo cn_htmlspecialchars($user['name']); ?></td>
-            <td align="center"><?php echo date('Y-m-d H:i', $user['id']); ?></td>
-            <td align="center"><?php echo intval($user['cnt']); ?></td>
-            <td align="center"><?php echo cn_htmlspecialchars(ucfirst($grp[ $user['acl'] ]['N'])); ?></td>
+        <tr <?php if (isset($user['name'])&&$user_name == $user['name']) echo 'class="row_selected"'; ?>>
+            <td width="400px"><a href="<?=(isset($user['name'])? cn_url_modify('user_name='.$user['name']):''); ?>"><?=(isset($user['name'])? cn_htmlspecialchars($user['name']):''); ?></td>
+            <td align="center"><?=(isset($user['id'])? date('Y-m-d H:i', $user['id']):''); ?></td>
+            <td align="center"><?=(isset($user['cnt'])?intval($user['cnt']):0); ?></td>
+            <td align="center"><?=(isset($user['acl'])&& isset($grp[ $user['acl'] ]['N'])? cn_htmlspecialchars(ucfirst($grp[ $user['acl'] ]['N'])):''); ?></td>
         </tr>
     <?php } else { ?><tr><td colspan="5">No users found</td> </tr><?php } ?>
 </table>

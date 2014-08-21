@@ -18,6 +18,12 @@ function ShowOrHide(d1, d2)
   if (d2 != '') DoDiv(d2);
 }
 
+function CheckPreview()
+{
+    var c=document.getElementById('chkPreview');
+    c.setAttribute('value','true');
+}
+
 function DoDiv(id)
 {
     var item = getId(id);

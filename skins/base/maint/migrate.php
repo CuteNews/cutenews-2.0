@@ -15,8 +15,9 @@ cn_snippet_messages();
             <td align="right">Migrate from <span class="required">*</span></td>
             <td>
                 <select name="version">
-                    <option>1.5.x</option>
-                    <option <?php if ($version == '1.4.x') echo 'selected'; ?>>1.4.x</option>
+                    <option <?php if ($version == '2.0.x') echo 'selected'; ?>>2.0.x</option>
+                    <option <?php if ($version == '1.5.x') echo 'selected'; ?>>1.5.x</option>
+                    <option <?php if ($version == '1.4.x') echo 'selected'; ?>>1.4.x</option>                    
                 </select>
             </td>
         </tr>
@@ -63,7 +64,8 @@ cn_snippet_messages();
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[users]" value="Y" /></td><td>Convert users (<b>first</b>)</td></tr>
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[news]" value="Y" /></td><td>Convert all news, comments, more fields</td></tr>
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[archives]" value="Y" /></td><td>Convert archives</td></tr>
-        <tr><td style="text-align: right;"><input type="checkbox" name="conv[sc]" value="Y" /></td><td>Convert sysconf (configs, category, ipban, templates, replace words)</td></tr>
+        <tr><td style="text-align: right;"><input type="checkbox" name="conv[sc]" value="Y" /></td><td>Convert sysconf (configs, category, ipban, templates, replace words)*</td></tr>
+        <tr><td colspan="2"><span style="color: red;">*Warning: The migration of templates from versions 1.4 and 1.5 will make it impossible to work with comments.<br/> You need to make a backup copy of the configuration.</span></td></tr>
 
         <tr>
             <td align="right"><input type="submit" name="convert" value="Do convert" /></td>

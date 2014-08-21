@@ -6,7 +6,6 @@
     list($_dateD, $_dateM, $_dateY, $_dateH, $_dateI, $_dateS) = make_postponed_date($gstamp);
     list($morefields) = _GL('morefields');
     list($id) = GET('id', "GETPOST");
-
     // CKEDITOR INITIALIZE BLOCK
     $CKEDITOR_Active = getoption('use_wysiwyg');
 
@@ -115,7 +114,8 @@
             <?php if (empty($_POST['full_story'])) { ?><input type=button onClick="ShowOrHide('full-story','');" value="Toggle Full-Story"><?php } ?>
             <input type=submit name="do_editsave" style='font-weight: bold' title="Post the New Article" value="     <?php if (!$EDITMODE) echo 'Add News'; else echo 'Edit'; ?>     " accesskey="s">
         </div>
-        <input type="checkbox" name="preview" value="preview" style="border:0; background-color: transparent; vertical-align: middle;"> <span style="font-size: 14px;">Preview</span>
+        <input type="hidden" name="preview" id="chkPreview" value=""/>
+        <input type="submit" value="  Preview  " onclick="CheckPreview();" /> 
         <div style="clear: both"></div>
     </div>
 

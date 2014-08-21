@@ -28,7 +28,7 @@ if (!isset($_init_modules[$_module]))
 }
 
 // Check restrictions, if user is authorized
-if (member_get() && defined('AREA') && AREA == 'ADMIN')
+if (($user=member_get()) && defined('AREA') && AREA == 'ADMIN')
 {
     if (test($_init_modules[$_module]['acl']))
     {
@@ -37,7 +37,14 @@ if (member_get() && defined('AREA') && AREA == 'ADMIN')
         include MODULE_DIR . '/'. $_mod_cfg['path'] . '.php';
     }
     else
-    {
-        msg_info('Section ['.cn_htmlspecialchars($_module).'] disabled for you', PHP_SELF);
-    }
+    {        
+        //check user for ban group        
+        if($user['acl']==ACL_LEVEL_BANNED)
+        {
+            global $_SESS;
+            $_SESS=array();
+            cn_save_session();            
+        }
+        msg_info('Section ['.cn_htmlspecialchars($_module).'] disabled for you', PHP_SELF);        
+    }    
 }

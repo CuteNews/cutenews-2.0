@@ -8,10 +8,9 @@ function add_news_invoke()
     $FlatDB = new FlatDB();
 
     // loadall
-    list($article_type, $preview) = GET('postpone_draft, preview', 'GETPOST');
+    list($article_type, $preview) = GET('postpone_draft, preview', 'GETPOST');    
     list($from_date_hour, $from_date_minutes, $from_date_seconds, $from_date_month, $from_date_day, $from_date_year) = GET('from_date_hour, from_date_minutes, from_date_seconds, from_date_month, from_date_day, from_date_year', 'GETPOST');
     list($title, $page, $category, $short_story, $full_story, $if_use_html, $vConcat, $vTags, $faddm) = GET('title, page, category, short_story, full_story, if_use_html, concat, tags, faddm', 'GETPOST');
-
     $categories = cn_get_categories();
     list($morefields) = cn_get_more_fields($faddm);
 
@@ -42,13 +41,17 @@ function add_news_invoke()
 
         // sanitize page name
         $page = preg_replace('/[^a-z0-9_\.]/i', '-', $page);
-
+        if(empty($page)&& getoption('auto_news_alias'))
+        {
+            $page=  strtolower(preg_replace('/[^a-z0-9_\.]/i', '-',  cn_transliterate($title)));
+        }
+        
         // basic news
         $member = member_get();
 
         $entry = array();
         $entry['id'] = $c_time;
-        $entry['t']  = cn_htmlclear($title);
+        $entry['t']  = cn_htmlclear($title);  
         $entry['u']  = $member['name'];
         $entry['c']  = news_make_category($category);
         $entry['s']  = cn_htmlclear($short_story);
@@ -61,16 +64,12 @@ function add_news_invoke()
         $entry['pg'] = $page;
 
         // Check page alias for exists
-        if ($page && bt_get_id($page, 'pg_ts'))
+        if ($page && bt_get_id($page, 'pg_ts') && !$preview)
         {
             cn_throw_message('Page alias already exists', 'e');
         }
         else
         {
-            // Add page alias
-            bt_set_id($page, $c_time, 'pg_ts');
-            bt_set_id($c_time, $page, 'ts_pg');
-
             // Get latest id for news
             $latest_id = intval( bt_get_id('latest_id', 'conf') );
             $latest_id++;
@@ -102,6 +101,10 @@ function add_news_invoke()
             // no errors in a[rticle] area
             if (cn_get_message('e', 'c') == 0)
             {
+                // Add page alias
+                bt_set_id($page, $c_time, 'pg_ts');
+                bt_set_id($c_time, $page, 'ts_pg');                
+                
                 $sc = $draft ? 'draft' : '';
                 $es = db_news_load( db_get_nloc($entry['id']) );
 
@@ -156,13 +159,15 @@ function add_news_invoke()
             }
         }
         // show news preview
-        else cn_assign('preview_html', entry_make($entry, 'active') );
+        else 
+        {                        
+            cn_assign('preview_html', entry_make($entry, 'active') );
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-
-    cn_assign('categories, vCategory, vTitle, vShort, vFull, is_active_html, vUseHtml, vConcat, vTags, morefields',
-              $categories, $category, $title, $short_story, $full_story,$is_active_html, $if_use_html, $vConcat, $vTags, $morefields);
+    cn_assign('categories, vCategory, vTitle, vShort, vFull, is_active_html, vUseHtml, vConcat, vTags, morefields,vPage',
+              $categories, $category, $title, $short_story, $full_story,$is_active_html, $if_use_html, $vConcat, $vTags, $morefields, $page);
 
     // ---
     echoheader("addedit@addedit/main.css", i18n("Add News")); echo exec_tpl('addedit/main'); echofooter();

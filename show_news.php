@@ -1,5 +1,5 @@
 <?php
-
+if(!defined('SHOW_NEWS')) define('SHOW_NEWS', TRUE);
 require_once (dirname(__FILE__).'/core/init.php');
 
 // Quick Redirect

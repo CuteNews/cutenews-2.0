@@ -36,7 +36,7 @@ function cn_helper_html_text($e, $p)
     $text = cn_extrn_replace($text);
 
     // html-specialchars
-    if ($e['ht'])
+    if (isset($e['ht'])&&$e['ht'])
         $text = hook('kses', $text);
     else
         $text = nl2br(cn_htmlspecialchars($text));
@@ -91,8 +91,8 @@ function cn_helper_bb_decode($bb)
     $a_opts = $b_opts = '';
     $bb = cn_bb_decode($bb);
 
-    if ($bb['target']) $a_opts = 'target="'.cn_htmlspecialchars($bb['target']).'" ';
-    if ($bb['anchor']) $b_opts = '#'.cn_htmlspecialchars($bb['anchor']);
+    if (isset($bb['target'])&&$bb['target']) $a_opts = 'target="'.cn_htmlspecialchars($bb['target']).'" ';
+    if (isset($bb['anchor'])&&$bb['anchor']) $b_opts = '#'.cn_htmlspecialchars($bb['anchor']);
 
     return array($a_opts, $b_opts);
 }
@@ -147,8 +147,8 @@ function cn_modify_s2bb_align($t, $o) { return '<div style="text-align: '.preg_r
 
 function cn_modify_s2bb_quote($t, $o)
 {
-    $o = substr($o, 1);
-    return '<blockquote class="cn_blockquote"><div class="cn_blockquote_title">quote'.($o ? ' ('.$o.')' : '').':</div><hr /><div class="cn_blockquote_body">'.$t.'</div><hr /></blockquote>';
+    $o = substr($o, 1);        
+    return '<blockquote class="cn_blockquote"><div class="cn_blockquote_title">'.($o ? ' '.$o.':' : '').'</div><div class="cn_blockquote_body"><i>&#171;'.$t.'&#187;</i></div></blockquote>';
 }
 
 function cn_modify_s2bb_img($t, $bb)
@@ -217,7 +217,7 @@ function cn_modify_short_story($e)
 function cn_modify_full_story($e)
 {
     // Concate flag short + full
-    if ($e['cc'])
+    if (isset($e['cc'])&&$e['cc'])
     {
         $e['f'] = $e['s'] . "\n\n" . $e['f'];
     }
@@ -249,10 +249,10 @@ function cn_modify_author($e)
     $username = cn_htmlspecialchars($e['u']);
 
     // user has nick
-    if ($user['nick']) $username = cn_htmlspecialchars($user['nick']);
+    if (isset($user['nick'])&&$user['nick']) $username = cn_htmlspecialchars($user['nick']);
 
     // user allow to show his email?
-    if ($user['e-hide'])
+    if (isset($user['e-hide'])&&$user['e-hide'])
         return $username;
     else
         return '<a href="mailto:'.cn_htmlspecialchars($user['email']).'">'.$username.'</a>';
@@ -358,7 +358,7 @@ function cn_modify_tagline($e)
     $tag_extrn = strtolower(trim(REQ('tag')));
 
     $echo = array();
-    $x = spsep($e['tg']);
+    $x =isset($e['tg'])? spsep($e['tg']):array();
 
     $ix = 1;
     $tc = count($x);
@@ -510,7 +510,7 @@ function cn_modify_online() // Since 2.0
 {
     if ($expire = getoption('client_online'))
     {
-        $online = cn_touch_get('/cdata/online.php', TRUE);
+        $online = cn_touch_get('/cdata/online.php');
         return count($online['%']);
     }
 
@@ -521,7 +521,7 @@ function cn_modify_online_own_hits() // Since 2.0
 {
     if ($expire = getoption('client_online'))
     {
-        $online = cn_touch_get('/cdata/online.php', TRUE);
+        $online = cn_touch_get('/cdata/online.php');
         return intval($online['%'][CLIENT_IP]);
     }
 
@@ -638,10 +638,12 @@ function cn_modify_bb_mail($e, $t)
 // multicategory bb-tag [cat-NUM]... [$catid] ...[/cat]
 function cn_modify_bb_cat($e, $t, $c)
 {
+    $rc=intval(substr($c, 1));
     $cw = spsep($e['c']);
     $c  = intval(substr($c, 1)) - 1;
+    if(count($cw)==1) $c=0;
 
-    if (isset($cw[$c]) && $cw[$c])
+    if (isset($cw[$c]) && $cw[$c]==$rc)
         return str_replace('[$catid]', $cw[$c], $t);
 
     return '';
@@ -674,9 +676,9 @@ function cn_modify_comm_author($e)
     );
 
     // Got nick?
-    $username = $user['nick'] ? $user['nick'] : $user['name'];
+    $username = isset($user['nick'])&&!empty($user['nick']) ? $user['nick'] : $user['name'];
 
-            // User exists
+    // User exists
     return $user['name']?cn_htmlspecialchars($username):'Anonymous';
 }
 
@@ -695,7 +697,7 @@ function cn_modify_comm_input_username()
 {
     global $_SESS;
     $user = member_get();
-
+    
     // User is authorized
     if ($user)
     {
@@ -703,7 +705,8 @@ function cn_modify_comm_input_username()
     }
     else
     {
-        $name_input = REQ('name', 'POST') ? REQ('name', 'POST') : $_SESS['guest_name'];
+        $guest_name=isset($_SESS['guest_name'])?$_SESS['guest_name']:'';
+        $name_input = REQ('name', 'POST') ? REQ('name', 'POST') : $guest_name;
         return '<input type="text" class="cn_comm_username" name="name" value="'.cn_htmlspecialchars($name_input).'"/>';
     }
 }
@@ -720,7 +723,8 @@ function cn_modify_comm_input_email()
     }
     else
     {
-        $email_input = REQ('mail', 'POST') ? REQ('mail', 'POST') : $_SESS['guest_email'];
+        $guest_name=isset($_SESS['guest_name'])?$_SESS['guest_name']:'';
+        $email_input = REQ('mail', 'POST') ? REQ('mail', 'POST') : $guest_name;
         return '<input type="text" name="mail" class="cn_comm_email" value="'.cn_htmlspecialchars($email_input).'"/>';
     }
 }
@@ -729,15 +733,17 @@ function cn_modify_comm_input_commentbox($e)
 {
     $edit_id = REQ('edit_id');
     $cm_text = REQ('comments', 'POST');
+    
+    if(!empty($edit_id))
+    {
+        $username    =$e['co'][$edit_id]['u'];
+        $member      = member_get();
+        $target_user = db_user_by_name($username);
 
-    $username    = $e['co'][$edit_id]['u'];
-    $member      = member_get();
-    $target_user = db_user_by_name($username);
-
-    // Check ACL for edit
-    if (test('Mes') && $username == $member['name'] || test('Meg', $target_user) || test('Mea'))
-        $cm_text = str_replace('[', '&#91;', $e['co'][$edit_id]['c']);
-
+        // Check ACL for edit
+        if (test('Mes') && $username == $member['name'] || test('Meg', $target_user) || test('Mea'))
+            $cm_text = str_replace('[', '&#91;', $e['co'][$edit_id]['c']);
+    }
     return '<textarea cols="40" rows="6" name="comments" class="cn_comm_textarea" id="ncomm_'.$e['id'].'">'.cn_htmlspecialchars($cm_text).'</textarea>';
 }
 
@@ -811,7 +817,7 @@ function cn_modify_bb_comm_submit($e, $t)
 {
     $echo = '<input type="submit" value="'.cn_htmlspecialchars($t).'" class="cn_submit_bb"/>';
 
-    if (test('Mea') && REQ('edit_id'))
+    if ((test('Mea')||test('Mes')) && REQ('edit_id'))
         $echo .= '<input type="submit" name="cm_edit_comment" value="Edit comment" class="cn_edit_bb"/>';
 
     return $echo;
@@ -864,7 +870,7 @@ function cn_modify_bb_comm_edit($e, $t)
 function cn_modify_bb_comm_delete($e, $t)
 {
     $user = member_get();
-    if (test('Mda'))
+    if (test('Mda')||test('Mds'))
         return str_replace('%cbox', '<input type="checkbox" name="comm_delete[]" value="'.intval($e['id']).'" />', $t);
 
     return '';

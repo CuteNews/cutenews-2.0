@@ -9,10 +9,20 @@ define('ACL_LEVEL_JOURNALIST',    3);
 define('ACL_LEVEL_COMMENTER',     4);
 define('ACL_LEVEL_BANNED',        5);
 
+function path_construct()
+{
+    $arg_list = func_get_args();
+    if($arg_list[0][0]==DIRECTORY_SEPARATOR)
+    {
+        $arg_list[0]=  substr($arg_list[0], 1);
+    }
+    return DIRECTORY_SEPARATOR.join(DIRECTORY_SEPARATOR,$arg_list);
+}
+
 // Since 2.0: Check users exists. If no, require install script
 function db_installed_check()
 {
-    $cfile = cn_touch('/cdata/users.txt');
+    $cfile = cn_touch(path_construct('cdata','users.txt'));
 
     if (filesize($cfile) < 4)
         cn_require_install();
@@ -31,7 +41,7 @@ function db_make_bk($fn)
 // Since 2.0: Get user by any indexed field (id, ...) [x2 slowed, than by_name]
 function db_user_by($eid, $match = 'id')
 {
-    $cu = cn_touch_get('/cdata/users/'.substr(md5($eid), 0, 2).'.php', TRUE);
+    $cu = cn_touch_get(path_construct('cdata','users',substr(md5($eid), 0, 2).'.php'));
 
     // Translate id -> name [reference]
     if (!isset($cu[$match][$eid]))
@@ -46,12 +56,11 @@ function db_user_by_name($name, $index = FALSE)
     $uex = array();
 
     // Get from php-serialized array
-    $cu = cn_touch_get('/cdata/users/'.substr(md5($name), 0, 2).'.php', TRUE);
-
+    $cu = cn_touch_get(path_construct('cdata','users',substr(md5($name), 0, 2).'.php'));
     // Check at index
     if ($index)
     {
-        $rd = fopen(cn_touch('/cdata/users/users.txt'), 'r');
+        $rd = fopen(cn_touch(path_construct('cdata','users','users.txt')), 'r');
         while ($a = fgets($rd))
         {
             list($uid) = explode(':', 2);
@@ -68,9 +77,9 @@ function db_user_by_name($name, $index = FALSE)
         return NULL;
 
     // Decode serialized more data
-    $pdata = $cu['name'][$name];
+    $pdata = $cu['name'][$name];    
     if (isset($pdata['more']) && $pdata['more'])
-        $pdata['more'] = unserialize($pdata['more']);
+        $pdata['more'] = unserialize(base64_decode($pdata['more']));
     else
         $pdata['more'] = array();
 
@@ -90,7 +99,7 @@ function db_user_add($username, $acl, $user_id = 0)
         return NULL;
 
     // add to index
-    $a = fopen(SERVDIR.'/cdata/users.txt', 'a+');
+    $a = fopen(SERVDIR.path_construct('cdata','users.txt'), 'a+');
     fwrite($a, base_convert($user_id, 10, 36).':'.$acl."\n");
     fclose($a);
 
@@ -100,11 +109,44 @@ function db_user_add($username, $acl, $user_id = 0)
     return $user_id;
 }
 
+function db_user_update_index($user_id,$acl)
+{
+    $path=cn_touch(path_construct('cdata','users.txt'));
+
+    $key=base_convert($user_id, 10, 36);
+    $uh=fopen($path,'r');
+    $idx=array();
+    while($row=  fgets($uh))
+    {
+        if(trim($row)=='') continue;
+        $row=  str_replace("\n", '', $row);
+        list($uk,$uacl)=  explode(':', $row);
+        if($uk==$key)
+        {
+            $uacl=$acl;
+        }
+        $idx[]=$uk.':'.$uacl."\n";
+    }
+    
+    $bk = db_make_bk($path);
+    $wh=  fopen($bk, 'w+');
+    foreach ($idx as $str)
+    {
+        fwrite($wh, $str);
+    }
+    
+    fclose($uh);
+    fclose($wh);
+    
+    return rename($bk,$path);
+}
+
+
 // Since: 2.0: Delete user from database
 function db_user_delete($username)
 {
-    $fn = '/cdata/users/'.substr(md5($username), 0, 2).'.php';
-    $cu = cn_touch_get($fn, TRUE);
+    $fn =path_construct('cdata','users',substr(md5($username), 0, 2).'.php');
+    $cu = cn_touch_get($fn);
 
     if (isset($cu['name'][$username]))
     {
@@ -121,7 +163,7 @@ function db_user_delete($username)
         cn_fsave($fn, $cu);
 
         // delete user index
-        $fn = cn_touch('/cdata/users.txt');
+        $fn = cn_touch(path_construct('cdata','users.txt'));
         $bk = db_make_bk($fn);
 
         $r = fopen($fn, 'r');
@@ -152,8 +194,8 @@ function db_user_update()
         return NULL;
 
     // -------
-    $fn = '/cdata/users/'.substr(md5($username), 0, 2).'.php';
-    $cu = cn_touch_get($fn, TRUE);
+    $fn =path_construct( 'cdata','users',substr(md5($username), 0, 2).'.php');
+    $cu = cn_touch_get($fn);
 
     foreach ($args as $v)
     {
@@ -171,11 +213,17 @@ function db_user_update()
     // Save DB
     cn_fsave($fn, $cu);
 
+    //update index
+    if(isset($cp['acl']))
+    {
+        db_user_update_index($cu['name'][$username]['id'],$cp['acl']);
+    }
+    
     // -------
     // Make references
     if (isset($cp['id'])) // ID -> USERNAME
     {
-        $cu = cn_touch_get($lc = '/cdata/users/'.substr(md5($cp['id']), 0, 2).'.php', TRUE);
+        $cu = cn_touch_get($lc =path_construct( 'cdata','users',substr(md5($cp['id']), 0, 2).'.php'));
 
         if (!isset($cu['id'])) $cu['id'] = array();
         $cu['id'][$cp['id']] = $username;
@@ -184,7 +232,7 @@ function db_user_update()
 
     if (isset($cp['email'])) // EMAIL -> USERNAME
     {
-        $cu = cn_touch_get($lc = '/cdata/users/'.substr(md5($cp['email']), 0, 2).'.php', TRUE);
+        $cu = cn_touch_get($lc =path_construct( 'cdata','users',substr(md5($cp['email']), 0, 2).'.php'));
 
         if (!isset($cu['email'])) $cu['email'] = array();
         $cu['email'][$cp['email']] = $username;
@@ -197,7 +245,7 @@ function db_user_update()
 // Since 2.0: Fetch index
 function db_user_list()
 {
-    $fn = cn_touch('/cdata/users.txt');
+    $fn = cn_touch(path_construct('cdata','users.txt'));
 
     $ls = array();
     $fc = file($fn);
@@ -225,7 +273,7 @@ function db_save_news($es, $location)
     if (substr($location, 0, 4) == '1970')
         return FALSE;
 
-    return cn_fsave('/cdata/news/'.$location.'.php', $es);
+    return cn_fsave(path_construct('cdata','news',$location.'.php'), $es);
 }
 
 // Since 2.0: Load block database entries
@@ -235,30 +283,30 @@ function db_news_load($location)
     if (substr($location, 0, 4) == '1970')
         return array();
 
-    return cn_touch_get('/cdata/news/'.$location.'.php');
+    return cn_touch_get(path_construct('cdata','news',$location.'.php'));
 }
 
 // Since 2.0: Helper for db_index_(load|save)
 function db_index_file_detect($source = '')
 {
-    $fn = SERVDIR . '/cdata/news';
+    $fn = SERVDIR. path_construct('cdata','news');
 
     // Aliases for active news
     if ($source == 'iactive' || $source == 'postpone'  || $source == 'A2')
         $source = '';
 
-    if ($source == '') $fn .= '/iactive.txt';
-    elseif ($source == 'draft') $fn .= '/idraft.txt';
-    elseif (substr($source, 0, 7) == 'archive') $fn .= '/'.$source.'.txt';
+    if ($source == '') $fn .=DIRECTORY_SEPARATOR. 'iactive.txt';
+    elseif ($source == 'draft') $fn .=DIRECTORY_SEPARATOR. 'idraft.txt';
+    elseif (substr($source, 0, 7) == 'archive') $fn .= DIRECTORY_SEPARATOR.$source.'.txt';
     elseif (substr($source, 0, 4) == 'meta')
     {
         $source = substr($source, 5);
         if (!$source) $source = 'iactive';
-        $fn .= '/meta-'.$source.'.txt';
+        $fn .=DIRECTORY_SEPARATOR. 'meta-'.$source.'.txt';
     }
     elseif(substr($source,0,5)=='group')
     {
-        $fn.='/'.$source.'.txt';
+        $fn.=DIRECTORY_SEPARATOR.$source.'.txt';
     }
     
     if (!file_exists($fn)) fclose(fopen($fn, "w+"));
@@ -352,22 +400,24 @@ function db_index_save($idx, $source = '')
 function db_index_meta_load($source = '', $load_users = FALSE)
 {
     $fn = db_index_file_detect("meta-$source");
-    $ls = unserialize(join('', file($fn)));
+    $ls = unserialize(base64_decode(join('', file($fn))));
 
     // Decode userids
     $uids = array();
 
     if ($load_users)
     {
-        foreach ($ls['uids'] as $id => $ct)
+        if(isset($ls['uids']))
         {
-            $id = base_convert($id, 36, 10);
-            $user = db_user_by($id);
+            foreach ($ls['uids'] as $id => $ct)
+            {
+                $id = base_convert($id, 36, 10);
+                $user = db_user_by($id);
 
-            if ($user['name'])
-                $uids[ $user['name'] ] = $ct;
+                if ($user['name'])
+                    $uids[ $user['name'] ] = $ct;
+            }
         }
-
         $ls['uids'] = $uids;
     }
 
@@ -393,17 +443,42 @@ function db_index_update_overall($source = '')
 
     foreach ($ls as $vi)
     {
-        list($id,,$ui,$co) = explode(':', $vi);
+        $vips=explode(':', $vi);
+        $id=isset($vips[0])?$vips[0]:false;
+        $ui=isset($vips[2])?$vips[2]:false;
+        $co=isset($vips[3])?$vips[3]:false;                
 
-        $id  = base_convert($id, 36, 10);
-        $loc = db_get_nloc($id);
+        if($id!==FALSE)
+        {
+            $id  = base_convert($id, 36, 10);
+            $loc = db_get_nloc($id);
+            if(isset($i['locs'][$loc]))
+            {
+                $i['locs'][$loc]++;
+            }
+            else 
+            {
+                $i['locs'][$loc]=1;
+            }
 
-        $i['uids'][$ui]++;
-        $i['coms'] += $co;
-        $i['locs'][$loc]++;
-
-        if ($i['min_id'] > $id)
-            $i['min_id'] = $id;
+            if ($i['min_id'] > $id)
+                $i['min_id'] = $id;            
+        }
+        if($ui!==FALSE)
+        {
+            if(isset($i['uids'][$ui]))
+            {
+                $i['uids'][$ui]++;
+            }
+            else
+            {
+                $i['uids'][$ui]=1;
+            }
+        }
+        if($co!==FALSE)
+        {
+            $i['coms'] += $co;
+        }
     }
 
     // Active news is many, auto archive it (and user is hasn't draft rights)
@@ -421,7 +496,7 @@ function db_index_update_overall($source = '')
 
     // save meta-data
     $meta = db_index_file_detect("meta-$source");
-    $w = fopen($meta, "w+"); fwrite($w, serialize($i)); fclose($w);
+    $w = fopen($meta, "w+"); fwrite($w, base64_encode(serialize($i))); fclose($w);
 
     return TRUE;
 }
@@ -477,7 +552,7 @@ function db_make_archive($id_from, $id_to)
     $cc = 0;
     $fc = db_index_file_detect();
     $fn = db_index_file_detect('archive-'.$archive_id);
-    $al = cn_touch('/cdata/news/archive.txt');
+    $al = cn_touch(path_construct('cdata','news','archive.txt'));
     $bk = db_make_bk($fc);
 
     $rs = fopen($fc, 'r');
@@ -569,7 +644,7 @@ function db_extract_archive($archive_id)
     $ls = array();
     $fc = db_index_file_detect();
     $fn = db_index_file_detect('archive-'.$archive_id);
-    $al = cn_touch('/cdata/news/archive.txt');
+    $al = cn_touch(path_construct('cdata','news','archive.txt'));
     $bk = db_make_bk($fc);
 
     // Load archive entries
@@ -693,18 +768,25 @@ function db_comm_lst($start_from = 0, $clusters = 1)
     // Fetch descending order comments
     for ($i = 0; $i < $cluster + $clusters; $i++)
     {
-        $bt[0] = array_reverse($bt[0]);
-        if ($i >= $cluster) $bc = array_merge($bc, $bt[0]);
-        $bt = bt_get_id('lc:'.$bt[1], 'comm');
+        if(isset($bt[0]))
+        {
+            $bt[0] = array_reverse($bt[0]);
+            if ($i >= $cluster) $bc = array_merge($bc, $bt[0]);
+        }
+        if(isset($bt[1]))
+        {
+            $bt = bt_get_id('lc:'.$bt[1], 'comm');
+        }
     }
-       
-    foreach ($bc as $citem)
+    if(!empty($bc))
     {
-        list($_id, $_cid, $_ref) = explode(':', $citem, 3);
-        $blk = db_news_load(db_get_nloc($_id));    
-        $cb[] = array(intval($_id), intval($_cid), $blk[$_id]['co'][$_cid], $_ref);
+        foreach ($bc as $citem)
+        {
+            list($_id, $_cid, $_ref) = explode(':', $citem, 3);
+            $blk = db_news_load(db_get_nloc($_id));    
+            $cb[] = array(intval($_id), intval($_cid), $blk[$_id]['co'][$_cid], $_ref);
+        }
     }
-
     return array($cb, $cn);
 }
 
@@ -717,7 +799,7 @@ class FlatDB
     function db__show_table( $table = NULL )
     {
         $_st = array();
-        $DB  = SERVDIR . '/cdata/news';
+        $DB  = SERVDIR . path_construct('cdata','news');
 
         if (is_null($table))
         {
@@ -735,7 +817,7 @@ class FlatDB
     // Since 2.0: Seek index at idx table
     function db_seek_index( $FKEY, $tbl )
     {
-        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
+        fclose( fopen($fn = SERVDIR . path_construct("cdata","news",$tbl.".idx"), 'a+') );
         $rd = fopen($fn, 'r'); fseek($rd, 0, SEEK_SET);
 
         while ($row = trim(fgets($rd)))
@@ -751,8 +833,8 @@ class FlatDB
     // Since 2.0: UPDATE/DELETE index
     function db_update_index( $FKEY, $vm, $tbl )
     {
-        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
-        $fk = SERVDIR . "/cdata/news/$tbl.idx." . mt_rand(0, 10000);
+        fclose( fopen($fn = SERVDIR .path_construct( "cdata","news",$tbl.".idx"), 'a+') );
+        $fk = SERVDIR . path_construct("cdata","news",$tbl.".idx." . mt_rand(0, 10000));
 
         $rd = fopen($fn, 'r');
         $wt = fopen($fk, 'w+');
@@ -771,8 +853,8 @@ class FlatDB
             }
         }
 
-        fclose($rd);
-        fclose($wt);
+        fflush($rd); fclose($rd);
+        fflush($wt); fclose($wt);
 
         // Replace previous data
         return rename($fk, $fn);
@@ -782,8 +864,8 @@ class FlatDB
     function db_insert_index( $FKEY, $vm, $tbl )
     {
         $DIS = FALSE;
-        fclose( fopen($fn = SERVDIR . "/cdata/news/$tbl.idx", 'a+') );
-        $fk = SERVDIR . "/cdata/news/$tbl.idx." . mt_rand(0, 10000);
+        fclose( fopen($fn = SERVDIR . path_construct("cdata","news",$tbl.".idx"), 'a+') );
+        $fk = SERVDIR . path_construct("cdata","news",$tbl.".idx." . mt_rand(0, 10000));
 
         $r = fopen($fn, 'r');
         $w = fopen($fk, 'w+');
@@ -804,9 +886,9 @@ class FlatDB
         // At end...
         if ($DIS == FALSE) fwrite($w, "$FKEY|$vm\n");
 
-        fclose($w);
-        fclose($w);
-
+        fflush($r); fclose($r);
+        fflush($w); fclose($w);
+        
         // Replace previous data
         return rename($fk, $fn);
     }
@@ -962,17 +1044,20 @@ class FlatDB
 
     function loadall()
     {
-        $r = fopen(SERVDIR . "/cdata/news/date.idx", 'r');
-
-        while ($row = trim(fgets($r)))
+        $path=SERVDIR . path_construct("cdata","news","date.idx");
+        if(file_exists($path))
         {
-            list($ts) = explode('|', $row);
+            $r = fopen($path, 'r');
 
-            $this->stor[] = $ts;
+            while ($row = trim(fgets($r)))
+            {
+                list($ts) = explode('|', $row);
+
+                $this->stor[] = $ts;
+            }
+
+            fclose($r);
         }
-
-        fclose($r);
-
         return $this->stor;
     }
 

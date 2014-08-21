@@ -10,6 +10,9 @@ $page       = intval($page);
 $archive_id = intval(REQ('archive_id','GPG'));
 $category   = cn_get_categories();
 
+    // MESSAGES BLOCK
+    cn_snippet_messages();
+
 ?>
 <div class="panel">
 

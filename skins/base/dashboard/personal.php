@@ -2,13 +2,13 @@
 
 list($member, $acl_write_news, $accesslevel, $personal_more) = _GL('member, acl_write_news, acl_desc, personal_more');
 
-$username       = $member['name'];
-$nickname       = $member['nick'];
-$usermail       = $member['email'];
-$written_news   = $member['cnt'];
-$register_date  = $member['id'];
-$hide_email     = $member['e-hide'];
-$ban_times      = $member['ban'];
+$username       =isset($member['name'])? $member['name']:'';
+$nickname       =isset($member['nick'])? $member['nick']:'';
+$usermail       =isset($member['email'])? $member['email']:'';
+$written_news   =isset($member['cnt'])?  $member['cnt']:0;
+$register_date  =isset($member['id'])?  $member['id']:0;
+$hide_email     =isset($member['e-hide'])?  $member['e-hide']:0;
+$ban_times      =isset($member['ban'])?  $member['ban']:0;
 
 cn_snippet_messages();
 cn_snippet_bc();
@@ -57,9 +57,9 @@ cn_snippet_bc();
                 <td valign="top" align="right" style="padding: 12px 4px 0 0;"><?php echo $pdata['name']; ?></td>
                 <td valign="top">
                     <?php if ($pdata['type'] == 'text') { ?>
-                        <input type="text" style="width: 500px;" name="more[<?php echo $name; ?>]" value="<?php echo cn_htmlspecialchars($pdata['value']); ?>">
+                        <input type="text" style="width: 500px;" name="more[<?php echo $name; ?>]" value="<?=(isset($pdata['value'])? cn_htmlspecialchars($pdata['value']):'');?>">
                     <?php } elseif ($pdata['type'] == 'textarea') { ?>
-                        <textarea style="width: 500px; height: 100px;" name="more[<?php echo $name; ?>]"><?php echo cn_htmlspecialchars($pdata['value']); ?></textarea>
+                        <textarea style="width: 500px; height: 100px;" name="more[<?php echo $name; ?>]"><?=(isset($pdata['value'])? cn_htmlspecialchars($pdata['value']):'');?></textarea>
                     <?php } ?>
                 </td>
             </tr>

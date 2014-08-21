@@ -49,14 +49,6 @@ cn_snippet_bc();
 
     <br/>
     <table class="panel">
-
-        <?php if ($category_name) { ?>
-            <tr>
-                <td align="right"><input type="checkbox" name="new_cat" value="Y"/></td>
-                <td>Add new category</td>
-            </tr>
-        <?php } ?>
-
         <tr>
             <td align="right">Name <span class="required">*</span></td>
             <td><input style="width: 350px;" type="text" name="category_name" value="<?php echo cn_htmlspecialchars($category_name); ?>"/></td>
@@ -87,19 +79,38 @@ cn_snippet_bc();
             <td>Groups</td>
             <td>
                 <?php foreach ($groups as $id => $name) { ?>
-                    <input type="checkbox" name="category_acl[]" <?php if (in_array($id, $category_acl)) echo 'checked'; ?> value="<?php echo $id; ?>"/> <?php echo cn_htmlspecialchars($name['N']); ?>
+                <input type="checkbox" name="category_acl[]" <?php if ($category_acl&& in_array($id, $category_acl)) echo 'checked'; ?> value="<?php echo $id; ?>"/> <?php echo cn_htmlspecialchars($name['N']); ?>
                 <?php } ?>
             </td>
         </tr>
 
         <tr><td></td><td><hr/></td></tr>
-        <tr>
-            <td align="right"><input type="checkbox" name="delete_cat" value="Y"/></td>
-            <td>Delete this category</td>
-        </tr>
 
-        <tr><td>&nbsp;</td><td><input type="submit" value="Add or Edit category" /></td></tr>
+        <tr><td>&nbsp;</td>
+            <td>
+                <div style="float:left;">
+                    <?php if(!$category_id){ ?>
+                        <input type="submit" onclick="actionClick('a');" value="Add category" />&nbsp;       
+                    <?php } else { ?>
+                        <input type="submit" onclick="actionClick('e');" value="Edit category" />                                    
+                        &nbsp;
+                        <input type="submit" onclick="actionClick('c');" value="Cancel edit" />&nbsp;
+                    <?php } ?>                    
+                </div>
+                <div style="width:100%;text-align:right;">
+                    <?php if($category_id){ ?>
+                        <input type="submit" onclick="actionClick('d');" value="Delete category" />
+                    <?php } ?> 
+                </div>               
+                <input type="hidden" id="mode" name="mode" value=""/>                
+            </td></tr>
 
     </table>
-
+    <script type="text/javascript">
+        function actionClick(m)
+        {
+            var input=document.getElementById('mode');
+            input.setAttribute('value',m);
+        }
+    </script>
 </form>

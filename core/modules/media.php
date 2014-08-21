@@ -49,7 +49,7 @@ function resize_image($source, $nw, $nh)
     $sf = max(array($nw / $w, $nh / $h));
 
     imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
-    imagejpeg($dt, preg_replace('/^(.*)\/(.*?)\.(\w+)$/', '\\1/.thumb.\\2.\\3', $source));
+    imagejpeg($dt, preg_replace('/^(.*)[\/\\\\](.*?)\.(\w+)$/', '\\1/.thumb.\\2.\\3', $source));
     imagedestroy($di); imagedestroy($dt);
 
     $result['msg'] = 'Thumbnail created for ['.$path_parts['basename'].']';
@@ -70,7 +70,7 @@ function media_invoke()
     $udir = getoption('uploads_dir') ? getoption('uploads_dir') : SERVDIR."/uploads";
     $edir = getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads';
 
-    $dfile = "$udir/$folder";
+    $dfile = $udir.DIRECTORY_SEPARATOR.$folder;
 
     // Remove root identifier
     if (substr($path, -1, 1) == '/') $path = substr($path, 0, -1);
@@ -83,7 +83,7 @@ function media_invoke()
 
     // Get path struct
     $pathes = spsep($path, '/');
-    if ($pathes[0] == '') unset($pathes[0]);
+    if (isset($pathes[0])&& $pathes[0] == '') unset($pathes[0]);
 
     // Do upload files
     if (request_type('POST'))
@@ -108,19 +108,20 @@ function media_invoke()
                 {
                     // Get filename
                     $url_name = spsep($upload_from_inet, '/');
-                    $url_name = $url_name[count($url_name)-1];
-
+                    $url_name = $url_name[count($url_name)-1];                    
+                    $url_name = preg_replace('/(%20|\s)/', '_', $url_name);
+                    
                     // resolve filename
                     $c_file = $dfile . $url_name;
-
+                        
                     // Overwrite [if can], or add file
                     if ($overwrite && file_exists($c_file) || !file_exists($c_file))
                     {
                         // read file
-                        $fw = fopen($upload_from_inet, 'r');
+                        $fw = fopen($upload_from_inet, 'rb');
                         ob_start(); fpassthru($fw); $file_image = ob_get_clean();
                         fclose($fw);
-                      
+                        
                         // write2disk
                         $w = fopen($c_file, 'w+');
                         fwrite($w, $file_image);
@@ -131,11 +132,13 @@ function media_invoke()
                         if ($w && $h)
                         {
                             cn_throw_message('File uploaded');
-                            if ($thumbnail_with_upload)
+                            $max_width=getoption('max_thumbnail_widht');
+                            if($w>$max_width&&$thumbnail_with_upload)
                             {
-                                $resize_result = resize_image($c_file, 365, 0);
+                                $resize_result = resize_image($c_file, $max_width, 0);
                                 cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
-                            }                            
+                            }
+                                                       
                         }
                         else
                         {
@@ -185,11 +188,15 @@ function media_invoke()
                         $just_uploaded[$name] = TRUE;
                         cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
 
-                        if ($thumbnail_with_upload)
-                        {
-                            $resize_result = resize_image($c_file, 365, 0);
+                        $max_width=getoption('max_thumbnail_widht');
+                        list($w, $h) = getimagesize($c_file);
+                        
+                        if($w>$max_width&&$thumbnail_with_upload)
+                        {                                
+                            $resize_result = resize_image($c_file, $max_width, 0);
                             cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
                         }
+                        
                     }
                     else
                         cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded!', 'e');
@@ -489,14 +496,14 @@ function media_invoke()
             (
                 'name'          => $file,
                 'url'           => $edir . '/'. ($path? $path . '/' : '') . $file,
-                'thumb'         => file_exists($root_dir.'/.thumb.'.pathinfo($file,PATHINFO_FILENAME).'.jpeg') ? $edir . '/'. ($path? $path . '/' : '') . '.thumb.' . pathinfo($file,PATHINFO_FILENAME).'.jpeg' : '',
+                'thumb'         => file_exists($root_dir.'/.thumb.'.pathinfo($file,PATHINFO_BASENAME)) ? $edir . '/'. ($path? $path . '/' : '') . '.thumb.' . pathinfo($file,PATHINFO_BASENAME) : '',
                 'local'         => ($path? $path . '/' : '') . $file,
                 'just_uploaded' => isset($just_uploaded[$file]) ? TRUE : FALSE,
                 'is_thumb'      => $is_thumb,
                 'w'             => $w,
                 'h'             => $h,
                 'fs'            => round(filesize($file_location)/1024, 1),
-            );
+            );            
         }
     }
 
@@ -505,8 +512,7 @@ function media_invoke()
 
     // Top level (dashboard)
     cn_bc_add('Dashboard', cn_url_modify(array('reset')));
-    cn_bc_add('Media manager', cn_url_modify());
-
+    cn_bc_add('Media manager', cn_url_modify());    
     cn_assign("files, dirs, path, pathes, popup_form, root_dir", $files, $dirs, $path, $pathes, $popup_form, $root_dir);
 
     if ($opt === 'inline')

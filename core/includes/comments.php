@@ -1,5 +1,9 @@
 <?php if (!defined('EXEC_TIME')) die('Access restricted');
 
+//desable/enable standart comment thread
+$is_comments=getoption('comments_std_show');
+if(!$is_comments)    return TRUE;
+
 global $PHP_SELF, $_SESS;
 
 // Scan external query
@@ -21,9 +25,6 @@ if (isset($_GET['__signature_dsi_inline']))
 
 // Load system configurations
 $comm_number   = intval( getoption('comments_per_page') );
-
-// $comm_addcomm  = cn_get_template('form', $template);
-// $comm_paginate = cn_get_template('prev_next', $template);
 
 $comments = $entry['co'];
 $total_comments = count($comments);
@@ -99,12 +100,14 @@ else
     $cpn = '';
 }
 
+echo '<br style="clear:both;"/>';
 if ($total_comments && test('Mda'))
 {
     if (getoption('reverse_comments')) $comments = array_reverse($comments);
 
     // Action with comments box
-    echo '<form action="'.PHP_SELF.'" method="POST">';
+    echo '<form id="comments_frm" action="'.PHP_SELF.'" method="POST">';    
+    
     echo '<input type="hidden" name="id" value="'.$id.'" />';
     echo '<input type="hidden" name="subaction" value="addcomment" />';
     echo '<input type="hidden" name="action" value="comment_process" />';
@@ -121,9 +124,15 @@ if ($total_comments && test('Mda'))
 {
     // Some operations, e.g. remove comments
     if (test('Mda'))
-        echo '<div class="cn_comment_submit"><input type="submit" value="Delete comments"/></div>';
-
+    {
+        echo '<div id="del_btn" class="cn_comment_submit" style="visibility:hidden;"><input type="submit" id="btn_delete" value="Delete comments"/></div>';        
+    }    
     echo '</form>';
+    echo '<script type="text/javascript">function d(){var a=document.getElementById("del_btn"); var ck=document.getElementsByName("comm_delete[]"); var i=0; var en="visibility:hidden;"; var dl=document.getElementById("btn_delete"); var cheked=0; '
+        . 'for(i=0;i<ck.length;i++){ if(ck[i].checked){ cheked++; en="visibility:visible;"; }} a.setAttribute("style", en); '
+        . 'var btn_name="Delete comment"; if(cheked>1){btn_name=btn_name+"s";} dl.setAttribute("value",btn_name);}';
+    echo 'var ss=document.getElementsByName("comm_delete[]"); var i=0; for (i=0; i<ss.length; i++){ ss[i].onclick=d; }</script>';
+    
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -158,7 +167,7 @@ if ($member && test('Mac') || !$member)
             if($ni) $entry['co'][$item['id']]['c']=$ni;
         }
         
-    }
+    }    
     $echo = entry_make($entry, 'form', $template, 'comm');
 
     // Keep [bb]codes[/bb]

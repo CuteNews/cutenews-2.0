@@ -4,33 +4,34 @@
 
     // Play with settings --------------------------------------------------
     $pw = REQ('pw');
+    
+    if (isset($pw['PHP_SELF'])&&$pw['PHP_SELF']) $PHP_SELF = $pw['PHP_SELF'];
+    if (isset($pw['template'])&&$pw['template']) $template = $pw['template'];
 
-    if ($pw['PHP_SELF']) $PHP_SELF = $pw['PHP_SELF'];
-    if ($pw['template']) $template = $pw['template'];
+    if (isset($pw['start_from'])&&$pw['start_from']) $start_from = $pw['start_from'];
+    if (isset($pw['number'])&&$pw['number']) $number = $pw['number'];
+    if (isset($pw['archive'])&&$pw['archive']) $archive = $pw['archive'];
+    if (isset($pw['category'])&&$pw['category']) $category = $pw['category'];
+    if (isset($pw['ucat'])&&$pw['ucat']) $ucat = $pw['ucat'];
+    if (isset($pw['sortby'])&&$pw['sortby']) $sortby = $pw['sortby'];
+    if (isset($pw['dir'])&&$pw['dir']) $dir = $pw['dir'];
+    if (isset($pw['page_alias'])&&$pw['page_alias']) $page_alias = $pw['page_alias'];
+    if (isset($pw['tag'])&&$pw['tag']) $page_alias = $pw['tag'];
+    if (isset($pw['user_by'])&&$pw['user_by']) $user_by = $pw['user_by'];
 
-    if ($pw['start_from']) $start_from = $pw['start_from'];
-    if ($pw['number']) $number = $pw['number'];
-    if ($pw['archive']) $archive = $pw['archive'];
-    if ($pw['category']) $category = $pw['category'];
-    if ($pw['ucat']) $ucat = $pw['ucat'];
-    if ($pw['sortby']) $sortby = $pw['sortby'];
-    if ($pw['dir']) $dir = $pw['dir'];
-    if ($pw['page_alias']) $page_alias = $pw['page_alias'];
-    if ($pw['tag']) $page_alias = $pw['tag'];
-    if ($pw['user_by']) $user_by = $pw['user_by'];
-
-    if ($pw['static']) $static = $pw['static'];
-    if ($pw['reverse']) $reverse = $pw['reverse'];
-    if ($pw['only_active']) $only_active = $pw['only_active'];
-    if ($pw['no_prev']) $no_prev = $pw['no_prev'];
-    if ($pw['no_next']) $no_next = $pw['no_next'];
+    if (isset($pw['static'])&&$pw['static']) $static = $pw['static'];
+    if (isset($pw['reverse'])&&$pw['reverse']) $reverse = $pw['reverse'];
+    if (isset($pw['only_active'])&&$pw['only_active']) $only_active = $pw['only_active'];
+    if (isset($pw['no_prev'])&&$pw['no_prev']) $no_prev = $pw['no_prev'];
+    if (isset($pw['no_next'])&&$pw['no_next']) $no_next = $pw['no_next'];
     // ---------------------------------------------------------------------
 
-    if ($_GET['do'] == "rss") include("rss.php");
+    if (isset($_GET['do'])&& $_GET['do'] == "rss") include("rss.php");
 ?>
 <html>
 <head>
     <title>Example page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <style>
         <!--
         a, a:link, a:visited { color: #003366; text-decoration: none; }
@@ -46,7 +47,7 @@
             line-height: 1.3em;
         }
 
-        .logo { position: fixed; width: 100%; height: 43px; box-shadow: 0 2px 6px #aaa; background: #f0f0f0; border-bottom: 3px solid #bbbbbb; padding: 8px 0 8px 0; }
+        .logo { position: fixed; width: 100%; height: 43px; box-shadow: 0 2px 6px #aaa; background: #f0f0f0; border-bottom: 3px solid #bbbbbb; padding: 8px 0 8px 0; z-index: 100;}
         .logo div.c { margin: 0 auto; width: 800px; }
         .logo div.d { margin: 0 0 0 300px; }
         .logo img { float: left; }
@@ -84,6 +85,9 @@
 
         .cn_search_hl { font-weight: bold; color: #008; }
         .blocking_posting_comment, .cn_error_comment{ font-weight: bold; color: #F00;}
+        .cn_blockquote{border-left: 3px double grey; padding-left:5px;}
+        .soc-buttons-left{float:left; margin-left:3px;}
+        .widget_personal_msg{color: #F00; margin: 3px; font-weight: bold;}
         //-->
     </style>
     <script>
@@ -132,15 +136,15 @@
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 Here we decide what page to include
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-                if ($_GET['search'])
+                if (isset($_GET['search'])&&$_GET['search'])
                 {
                     include ("search.php");
                 }
-                elseif ($_GET['do'] == 'archives')
+                elseif (isset($_GET['do'])&&$_GET['do'] == 'archives')
                 {
                     include ("show_archives.php");
                 }
-                elseif ($_GET['do'] == "stats")
+                elseif (isset($_GET['do'])&&$_GET['do'] == "stats")
                 {
                     echo "You can download the stats addon and include it here to show how many news, comments ... you have"; // include("$path/stats.php");
                 }
@@ -205,14 +209,14 @@
                         </td>
                     </tr>
 
-                    <tr><td>$page_alias</td> <td><input type="text" name="pw[page_alias]" value="<?php echo cn_htmlspecialchars($pw['page_alias']); ?>"></td></tr>
-                    <tr><td>$tag</td> <td><input type="text" name="pw[tag]" value="<?php echo cn_htmlspecialchars($pw['tag']); ?>"></td></tr>
+                    <tr><td>$page_alias</td> <td><input type="text" name="pw[page_alias]" value="<?=(isset($pw['page_alias'])?cn_htmlspecialchars($pw['page_alias']):''); ?>"></td></tr>
+                    <tr><td>$tag</td> <td><input type="text" name="pw[tag]" value="<?=(isset($pw['tag'])?cn_htmlspecialchars($pw['tag']):''); ?>"></td></tr>
 
-                    <tr><td>$static</td> <td><input type="checkbox" name="pw[static]" value="Y" <?php if ($pw['static']) echo ' checked="checked" '; ?> /></td></tr>
-                    <tr><td>$reverse</td> <td><input type="checkbox" name="pw[reverse]" value="Y" <?php if ($pw['reverse']) echo ' checked="checked" '; ?> /></td></tr>
-                    <tr><td>$only_active</td> <td><input type="checkbox" name="pw[only_active]" value="Y" <?php if ($pw['only_active']) echo ' checked="checked" '; ?> /></td></tr>
-                    <tr><td>$no_prev</td> <td><input type="checkbox" name="pw[no_prev]" value="Y" <?php if ($pw['no_prev']) echo ' checked="checked" '; ?> /></td></tr>
-                    <tr><td>$no_next</td> <td><input type="checkbox" name="pw[no_next]" value="Y" <?php if ($pw['no_next']) echo ' checked="checked" '; ?> /></td></tr>
+                    <tr><td>$static</td> <td><input type="checkbox" name="pw[static]" value="Y" <?php if (isset($pw['static'])&&$pw['static']) echo ' checked="checked" '; ?> /></td></tr>
+                    <tr><td>$reverse</td> <td><input type="checkbox" name="pw[reverse]" value="Y" <?php if (isset($pw['reverse'])&&$pw['reverse']) echo ' checked="checked" '; ?> /></td></tr>
+                    <tr><td>$only_active</td> <td><input type="checkbox" name="pw[only_active]" value="Y" <?php if (isset($pw['only_active'])&&$pw['only_active']) echo ' checked="checked" '; ?> /></td></tr>
+                    <tr><td>$no_prev</td> <td><input type="checkbox" name="pw[no_prev]" value="Y" <?php if (isset($pw['no_prev'])&&$pw['no_prev']) echo ' checked="checked" '; ?> /></td></tr>
+                    <tr><td>$no_next</td> <td><input type="checkbox" name="pw[no_next]" value="Y" <?php if (isset($pw['no_next'])&&$pw['no_next']) echo ' checked="checked" '; ?> /></td></tr>
                     <tr><td>&nbsp;</td><td><input type="submit" value="Check result" /><td></tr>
                 </table>
                 </form>

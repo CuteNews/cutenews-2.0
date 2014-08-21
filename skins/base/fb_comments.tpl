@@ -3,6 +3,6 @@
 	  var js, fjs = d.getElementsByTagName(s)[0];
 	  if (d.getElementById(id)) return;
 	  js = d.createElement(s); js.id = id;
-	  js.src = "//connect.facebook.net/{fbi18n}/all.js#xfbml=1&appId={appID}";
+	  js.src = "//connect.facebook.net/{fbi18n}/all.js#xfbml=1&version=v2.0&appId={appID}";
 	  fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>

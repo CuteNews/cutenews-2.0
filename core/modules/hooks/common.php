@@ -54,8 +54,7 @@ function cn_extrn_replace($input)
 
 // Since 2.0: Do replace more fields
 function cn_extrn_morefields($t, $e)
-{
-    $mf = join('|', array_keys($e['mf']));
+{    
     $mb = member_get($e['u']);
 
     // Personal info
@@ -67,12 +66,15 @@ function cn_extrn_morefields($t, $e)
             $t = str_replace($v[0], cn_htmlspecialchars($r), $t);
         }
     }
-
-    // Common purpose more fields
-    if (preg_match_all('/\{('.$mf.')\}/i', $t, $c, PREG_SET_ORDER))
-        foreach ($c as $v)
-            $t = str_replace($v[0], $e['mf'][$v[1]], $t);
-
+    
+    if(isset($e['mf']))
+    {
+        $mf = join('|', array_keys($e['mf']));
+        // Common purpose more fields
+        if (preg_match_all('/\{('.$mf.')\}/i', $t, $c, PREG_SET_ORDER))
+            foreach ($c as $v)
+                $t = str_replace($v[0], $e['mf'][$v[1]], $t);
+    }
     return $t;
 }
 
@@ -168,7 +170,8 @@ function login_guest($keep_data = NULL, $username = NULL)
             "CSRF=".$_SESS['.CSRF'],
             'KEEP='.base64_encode(serialize($keep_data)),
             'MSG='.cn_front_msg_show('login', 'widget_personal_msg'),
-            'username='.$username
+            'username='.$username,
+            'rememberme='.(isset($_POST['cn_remember_me'])&&!empty($_POST['cn_remember_me'])?'checked':'')
             );
     }
 }
@@ -192,6 +195,7 @@ if (isset($_POST['widget_personal_keep']))
         {
             $login = $_REQ['widget_personal_username'];
             $pass  = $_REQ['widget_personal_password'];
+            $rem   = isset($_REQ['widget_personal_rememberme'])&&!empty($_REQ['widget_personal_rememberme']);
 
             // Get User Session
             $_SESS['user'] = $login;
@@ -199,27 +203,34 @@ if (isset($_POST['widget_personal_keep']))
 
             if ($user['acl'] == ACL_LEVEL_ADMIN)
             {
-                cn_front_message("Admin login denied from this place", 'login');
+                cn_front_message("Admin login denied from this place", 'login');                
+                $_SESS['user'] = null;
             }
             elseif ($login && $pass)
-            {
-                $gp = hash_generate($pass);
+            {                          
+                $gp = hash_generate($pass);                
                 if (in_array($user['pass'], $gp))
                 {
                     $_SESS['user'] = $login;
-                    $_POST['CN_COOKIE_POSTPROCESS'] = TRUE;
+                    if($rem) $_POST['cn_remember_me'] = $rem;
+                    $_POST['CN_COOKIE_POSTPROCESS'] = TRUE;                    
                 }
                 else
                 {
                     $_SESS['user'] = null;
                     cn_front_message('Invalid login or password', 'login');
-                }
+                }                
             }
             else
             {
                 $_SESS['user'] = null;
             }
         }
-        else cn_front_message("CSRF attempt!", 'login');
+        else 
+        {
+            cn_front_message("CSRF attempt!", 'login');                
+            $_SESS['user'] = null;
+        }
+            
     }
 }
