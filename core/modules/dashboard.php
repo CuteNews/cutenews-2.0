@@ -297,6 +297,7 @@ function dashboard_sysconf()
             'ck_ln6'            => array('text', "Row 6|Optional"),
             'ck_ln7'            => array('text', "Row 7|Optional"),
             'ck_ln8'            => array('text', "Row 8|Optional"),
+            'cklang'            => array('text', "Ckeditor lang"),
         ),
 
         'rewrite' => array

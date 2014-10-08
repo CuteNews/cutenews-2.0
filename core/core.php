@@ -3486,12 +3486,14 @@ function cn_snippet_ckeditor($ids = '')
 
     $CKSmiles = join(', ', $CKSmiles);
     $CKBar    = join(', ', $CKBar);
+    $Cklang   = getoption('cklang');
+    if (empty($Cklang)) $Cklang = 'en';
 
     // show
     echo '<script src="'.getoption('http_script_dir').'/core/ckeditor/ckeditor.js"></script>';
     echo '<script type="text/javascript">'."\n";
     echo "(function() { var settings = {"."\n";
-    echo "skin: 'moono', width: 'auto', height: 350, customConfig: '', language: 'en', entities_latin: false, entities_greek: false, \n";
+    echo "skin: 'moono', width: 'auto', height: 350, customConfig: '', language: '$Cklang', entities_latin: false, entities_greek: false, \n";
     echo "toolbar: [ ". hook('settings/CKEDITOR_customize', $CKBar) . " ], \n";
 
     $add_opt  = array();

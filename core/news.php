@@ -679,7 +679,13 @@ function cn_modify_comm_author($e)
     $username = isset($user['nick'])&&!empty($user['nick']) ? $user['nick'] : $user['name'];
 
     // User exists
-    return $user['name']?cn_htmlspecialchars($username):'Anonymous';
+    $username = $user['name']? cn_htmlspecialchars($username) : 'Anonymous';
+
+    // user allow to show his email?
+    if (isset($user['e-hide']) && $user['e-hide'] || empty($user['email']))
+        return $username;
+    else
+        return '<a href="mailto:'.cn_htmlspecialchars($user['email']).'">'.$username.'</a>';
 }
 
 function cn_modify_comm_date($e)

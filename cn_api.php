@@ -13,11 +13,7 @@ function cn_api_add_news($id, $data)
     db_save_news($db, $nloc);
 
     $user = db_user_by_name($data['u']);
-
-    // add index data
-    $w = fopen(db_index_file_detect(), 'a+');
-    fwrite($w, base_convert($id, 10, 36).':'.$data['c'].':'.base_convert($user['id'], 10, 36).':'.count($data['co']).'::'."\n");
-    fclose($w);
+    db_index_add($id, $data['c'], $user['id'], $data['is_draft']);
 }
 
 // Since 2.0: Get news entry
