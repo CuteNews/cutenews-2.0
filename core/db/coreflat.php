@@ -701,7 +701,7 @@ function db_get_archives()
     $archs = array();
     $fn = db_index_file_detect('archive');
     $ti = file($fn);
-
+    
     foreach ($ti as $vi)
     {
         list($archid, $min_id, $max_id, $count) = explode('|', $vi);

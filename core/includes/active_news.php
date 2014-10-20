@@ -77,6 +77,7 @@ $opts = array
     'cfilter'    => array_keys($requested_cats),
     'ufilter'    => $user_by,
     'page_alias' => $page_alias,
+    'only_active'=> $only_active
 );
 
 list($entries, $rs) = cn_get_news($opts);

@@ -3611,7 +3611,8 @@ function cn_get_news($opts)
     $cfilter    = isset($opts['cfilter']) ? $opts['cfilter'] : array();
     $ufilter    = isset($opts['ufilter']) ? $opts['ufilter'] : array();
     $tag        = isset($opts['tag']) ? trim(strtolower($opts['tag'])) : '';
-
+    $only_active= isset($opts['only_active']) ? $opts['only_active']:false;
+    
     $by_date    = isset($opts['by_date']) ? $opts['by_date'] : '';
 
     // sys
@@ -3633,12 +3634,22 @@ function cn_get_news($opts)
     // If search by page alias success, not check categories
     if (empty($page_alias))
     {
-        $FlatDB->loadall();
-        $FlatDB->find_category($cfilter);
-        $FlatDB->weed_user($ufilter);
-        $FlatDB->weed_tags($tag);
-
-        $overall = count($FlatDB->stor);
+        $FlatDB->loadall();        
+        $FlatDB->find_category($cfilter);        
+        $FlatDB->weed_user($ufilter);        
+        $FlatDB->weed_tags($tag);        
+    
+        $count_arhives=0;
+        if($only_active) //detect count arhived news for correct calculate news pagination
+        {
+            $arhs=db_get_archives();
+            foreach ($arhs as $a)
+            {
+                $count_arhives+=$a['c'];
+            }
+        }
+        
+        $overall = count($FlatDB->stor)-$count_arhives;        
     }
 
     // Quick search by page alias
@@ -3721,7 +3732,7 @@ function cn_get_news($opts)
         if (in_array($source_id, array('', 'draft', 'archive', 'A2')))
         {
             do
-            {
+            {                
                 $wo = db_index_bind($source);
                 while (NULL !== ($it = db_index_next($wo)))
                 {
