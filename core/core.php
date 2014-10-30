@@ -3324,12 +3324,17 @@ function cn_rewrite_load()
             $_GET['archive'] = $c[1];
         }
         elseif (preg_match('/\/tag\-(.*)'.$post_fix.'/i', $cn_rewrite_url, $c))
-        {
+        {           
             $_GET['tag'] = $c[1];
         }
         elseif (preg_match('/\/([0-9a-z_\-\.]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
-        {
+        {              
             $_GET['id'] = $c[1];
+        }
+        else
+        {     
+            header("HTTP/1.0 404 Not Found");
+            die("404 Not Found");
         }
 
         define('CN_REWRITE', $layout);
