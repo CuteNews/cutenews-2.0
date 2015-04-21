@@ -1,8 +1,4 @@
 <script type="text/javascript">
-
-    var regex = /^[\.A-z0-9_\-\+]+[@][A-z0-9_\-]+([.][A-z0-9_\-]+)+[A-z]$/;
-    var regex2 = /((http(s?):\/\/)|(www\.))([\w\.]+)([\/\w+\.-?]+)/;
-
     /* Dealing with cookies */
     function cn_get_cookie_val(offset)
     {
@@ -38,11 +34,17 @@
         var secure  = (argc > 4) ? argv[4] : false;
         var path    = '/';
 
-        document.cookie = name + "=" + encodeURIComponent (value) +
-                ((expires == null) ? "" : ("; expires=" + expires.toGMTString())) +
-                ((path == null) ? "" : ("; path=" + path)) +
-                ((domain == null) ? "" : ("; domain=" + domain)) +
-                ((secure == true) ? "; secure" : "");
+        if (value.length > 0)
+        {
+            document.cookie = name + "=" + (value ? encodeURIComponent (value) : '') +
+                    ((expires == null) ? "" : ("; expires=" + expires.toGMTString())) +
+                    ((path == null) ? "" : ("; path=" + path)) +
+                    ((domain == null) ? "" : ("; domain=" + domain)) +
+                    ((secure == true) ? "; secure" : "");
+        }
+        else {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/';
+        }
     }
 
     /* -------------- Get ID in misc browser ------------------ */
@@ -56,22 +58,31 @@
 
     function forget_me()
     {
-        var t = null, i = 0;
-
-        t = document.getElementsByTagName('input');
-        for (i = 0; i < t.length; i++)
+        var t = document.getElementsByTagName('input');
+        for (var i = 0; i < t.length; i++)
         {
             if (t[i].className == 'cn_comm_username' || t[i].className == 'cn_comm_email')
             {
                 t[i].value = '';
                 t[i].disabled = '';
             }
+
+            if (t[i].name == 'isforgetme') {
+                t[i].value = 'true';
+            }
+
+            if (t[i].name == '__signature_key' || t[i].name == '__signature_dsi') {
+                t[i].value = '';
+            }
         }
 
         cn_set_cookie('session', '');
-        alert("All Your personal information collected by CuteNews has been deleted!\n\nEnjoy your anonymity.");
+        cn_set_cookie('CUTENEWS_SESSION', '');
 
-        window.location.reload(true);
+        var c = document.getElementsByTagName('form')[0];
+        /* c.submit(); */
+
+        document.location.reload();
     }
 
     function cn_more_expand(id)

@@ -69,9 +69,9 @@
         <div class="options">
 
             <a href="example.php" target="blank">Example</a> &middot;
-            <a href="docs/readme.html">Readme</a> &middot;
-            <a href="docs/usage.html">Usage</a> &middot;
-            <a href="docs/release.html">Release notes</a>
+            <a href="docs/readme.html" target="blank">Readme</a> &middot;
+            <a href="docs/usage.html" target="blank">Usage</a> &middot;
+            <a href="docs/release.html" target="blank">Release notes</a>
 
         </div>
 

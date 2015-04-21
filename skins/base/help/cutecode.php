@@ -38,11 +38,6 @@
                     code = '[link=' + var1 + ']' + var1 + '[/link]';
                     break;
 
-                case 'image':
-
-                    code = '[image=' + var1 + ']';
-                    break;
-
                 case 'color':
 
                     has_wrap = var1;
@@ -108,11 +103,6 @@
     <tr class="row">
         <td> <a href="javascript:insertcode('link', prompt('Enter the complete URL of the hyperlink', 'http://') )">Insert Link</a> </td>
         <td> [link=<span>URL</span>]<span>Text</span>[/link]</td>
-    </tr>
-
-    <tr>
-        <td><a href="javascript:insertcode('image', prompt('Enter URL of the Image:', 'http://') )">Insert Image</a></td>
-        <td>[image=<span>URL</span>]</td>
     </tr>
 
     <tr>

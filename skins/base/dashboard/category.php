@@ -65,14 +65,25 @@ cn_snippet_bc();
             <td align="right" valign="top" style="padding: 8px 0 0 0;">Parent</td>
             <td><select name="category_parent" style="width: 350px;">
                     <option value="0">-- None --</option>
-                    <?php foreach ($categories as $id => $category) if ($category_id != $id) { ?><option <?php if ($category_parent == $id) echo 'selected'; ?> value="<?php echo $id; ?>"><?php echo cn_htmlspecialchars($category['name']); ?></option><?php } ?>
+                    <?php foreach ($categories as $id => $category) 
+                    {
+                        if ($category_id != $id) { ?>
+                        <option <?php if ($category_parent == $id) { echo 'selected'; } ?> value="<?php echo $id; ?>">
+                            <?php echo cn_htmlspecialchars($category['name']); ?>
+                        </option>
+                    <?php }                     
+                    } ?>                        
                 </select>
             </td>
         </tr>
 
         <tr>
             <td align="right">Icon</td>
-            <td><input style="width: 350px;" type="text" id="category_icon" name="category_icon" value="<?php echo cn_htmlspecialchars($category_icon); ?>"/> <a class="external" href="#" onclick="<?php echo cn_snippet_open_win(cn_url_modify('mod=media','opt=inline','faddm=C','callback=category_icon'), array('w' => 640)); ?>">Media manager</a> </td>
+            <td><input style="width: 350px;" type="text" id="category_icon" name="category_icon" value="<?php echo cn_htmlspecialchars($category_icon); ?>"/> 
+                <a class="external" href="#" onclick="<?php echo cn_snippet_open_win(cn_url_modify('mod=media','opt=inline','faddm=C','callback=category_icon'), array('w' => 640)); ?>">
+                    Media manager
+                </a> 
+            </td>
         </tr>
 
         <tr>

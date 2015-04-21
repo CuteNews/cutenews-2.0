@@ -1,4 +1,4 @@
-<?php if (!defined('EXEC_TIME')) die('Access restricted');
+<?php if (!defined('EXEC_TIME')) { die('Access restricted'); }
 
 add_hook('index/invoke_module', '*media_invoke');
 
@@ -7,7 +7,7 @@ function usort_by_name_asc($a, $b)
     return $a['name'] < $b['name'] ? -1 : 1;
 }
 
-function resize_image($source, $nw, $nh)
+function resize_image($source, $nw, $nh, $is_thumb=true)
 {   
     $result = array('msg' => '', 'status' => TRUE);
 
@@ -22,9 +22,18 @@ function resize_image($source, $nw, $nh)
     }
     
     // Check file type
-    if ($mime == IMAGETYPE_JPEG) $di = imagecreatefromjpeg($source);
-    elseif ($mime == IMAGETYPE_PNG) $di = imagecreatefrompng($source);
-    elseif ($mime == IMAGETYPE_GIF) $di = imagecreatefromgif($source);
+    if ($mime == IMAGETYPE_JPEG) 
+    {
+        $di = imagecreatefromjpeg($source);    
+    }
+    elseif ($mime == IMAGETYPE_PNG) 
+    {
+        $di = imagecreatefrompng($source);
+    }
+    elseif ($mime == IMAGETYPE_GIF) 
+    {
+        $di = imagecreatefromgif($source);
+    }
     else
     {
         $result['status'] = FALSE;
@@ -48,42 +57,116 @@ function resize_image($source, $nw, $nh)
     // Calculate size factors
     $sf = max(array($nw / $w, $nh / $h));
 
-    imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);
-    imagejpeg($dt, preg_replace('/^(.*)[\/\\\\](.*?)\.(\w+)$/', '\\1/.thumb.\\2.\\3', $source));
-    imagedestroy($di); imagedestroy($dt);
-
+    imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);       
+    $new_thumb_file_name=$path_parts['dirname'].DIRECTORY_SEPARATOR.'.thumb.'.$path_parts['basename']; 
     $result['msg'] = 'Thumbnail created for ['.$path_parts['basename'].']';
+    
+    if(!$is_thumb)
+    {
+        $new_thumb_file_name=$path_parts['dirname'].DIRECTORY_SEPARATOR.'resized_'.$path_parts['basename']; 
+        $result['msg'] = 'Image ['.$path_parts['basename'].'] successfully resized';
+    }
+    imagejpeg($dt, $new_thumb_file_name);
+    imagedestroy($di); imagedestroy($dt);
+    
+    
     return $result;
+}
+
+function get_sizes_form($title,$action='thumb')
+{
+    $popup_form = '<div class="big_font">'.i18n($title).'</div><p>';
+    $popup_form .= '<input type="hidden" name="'.$action.'_rms" value="'.cn_htmlspecialchars(serialize($_POST['rm'])).'">';
+    $popup_form .= 'Width <input name="'.$action.'_size_w" value="256"> ';
+    $popup_form .= 'Height <input name="'.$action.'_size_h" value="256"></p>';    
+    return $popup_form;
+}
+
+function do_resize_image($root_dir, $is_thumb=true)
+{
+    $act='thumb';
+    if(!$is_thumb)
+    {
+        $act='resize';
+    }
+    
+    $rms = unserialize(REQ($act.'_rms', 'POST'));
+
+    $wt = intval(REQ($act.'_size_w', 'POST'));
+    $ht = intval(REQ($act.'_size_h', 'POST'));
+
+    if ($wt == 0 && $ht == 0)
+    {
+        cn_throw_message('Enter correct width or height', 'e');
+    }
+    else
+    {
+        foreach ($rms as $vp)
+        {                        
+            $fn = $root_dir . $vp;
+            if(is_dir($fn))
+            {
+                continue;
+            }
+            
+            if(!preg_match('/\.thumb\./', $fn)) // ignore already exists thumbnails
+            {
+                $resize_result=  resize_image($fn, $wt, $ht, $is_thumb);
+                if($resize_result['status'])
+                {
+                    cn_throw_message($resize_result['msg']);
+                }
+                else
+                {
+                    cn_throw_message($resize_result['msg'],'w');
+                    continue;                                                       
+                }
+            }
+        }
+    }    
+}
+
+function preparation_path($path)
+{
+    if (substr($path, -1, 1) == DIRECTORY_SEPARATOR)
+    {
+        return substr($path, 0, -1);
+    }    
+    return $path;
 }
 
 function media_invoke()
 {
     $popup_form = '';
+
     list($path, $opt) = GET('folder, opt', 'GETPOST');
     list($do_action, $pending) = GET('do_action, pending', 'POST');
-
-    // Path on server
-    $folder = $path;
-    if ($folder !== '') $folder = "$folder/";
-
+    
     // Change default uploads dir
-    $udir = getoption('uploads_dir') ? getoption('uploads_dir') : SERVDIR."/uploads";
-    $edir = getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads';
+    $udir = cn_path_construct(SERVDIR,'uploads');
+    if (getoption('uploads_dir'))
+    {
+        $udir = preparation_path(getoption('uploads_dir'));
+    }
 
-    $dfile = $udir.DIRECTORY_SEPARATOR.$folder;
+    $edir  = getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads';
+    $dfile = cn_path_construct($udir, $path);
 
-    // Remove root identifier
-    if (substr($path, -1, 1) == '/') $path = substr($path, 0, -1);
+    // Remove root identifier    
+    $path       = preparation_path($path);
 
     // Path detection
-    $path       = str_replace('\\', '/', $path); // win-style
-    $path       = preg_replace('/[^a-z0-9\/_]/i', '-', $path);
-    $root_dir   = dirname("$udir/" . $path . '/index.html');
+    $path       = preg_replace('/[^a-z0-9\/_\\\]/i', '-', $path);
+    $root_dir   = cn_path_construct($udir, $path) .DIRECTORY_SEPARATOR;
+
     $just_uploaded = array();
 
     // Get path struct
-    $pathes = spsep($path, '/');
-    if (isset($pathes[0])&& $pathes[0] == '') unset($pathes[0]);
+    $pathes = spsep($path, DIRECTORY_SEPARATOR);
+    if (isset($pathes[0]) && $pathes[0] === '')
+    {
+        unset($pathes[0]);
+    }
 
     // Do upload files
     if (request_type('POST'))
@@ -100,7 +183,9 @@ function media_invoke()
         if (REQ('upload','POST'))
         {
             list($overwrite) = GET('overwrite');
-
+            
+            $is_uploaded = FALSE;
+            
             // Try for fopen url upload
             if ($upload_from_inet = REQ('upload_from_inet'))
             {
@@ -108,37 +193,62 @@ function media_invoke()
                 {
                     // Get filename
                     $url_name = spsep($upload_from_inet, '/');
-                    $url_name = $url_name[count($url_name)-1];                    
-                    $url_name = preg_replace('/(%20|\s)/', '_', $url_name);
-                    
+                    $url_name = $url_name[ count($url_name) - 1 ];
+
+                    $url_name = preg_replace('/(%20|\s|\?|&|\/)/', '_', $url_name);
+                    $url_name = str_replace('%', '_', $url_name);
+
                     // resolve filename
                     $c_file = $dfile . $url_name;
-                        
+                    
                     // Overwrite [if can], or add file
-                    if ($overwrite && file_exists($c_file) || !file_exists($c_file))
+                    if (($overwrite && file_exists($c_file)) || !file_exists($c_file))
                     {
-                        // read file
-                        $fw = fopen($upload_from_inet, 'rb');
-                        ob_start(); fpassthru($fw); $file_image = ob_get_clean();
+                        // Use context for disable error notices
+                        if (function_exists('stream_context_create'))
+                        {
+                            $context = stream_context_create(array(
+                                'http' => array('ignore_errors' => true)
+                            ));
+
+                            $fw = fopen($upload_from_inet, 'rb', false, $context);
+                        }
+                        else
+                        {
+                            // Read file
+                            $fw = fopen($upload_from_inet, 'rb');
+                        }
+
+                        // --------- (fetch content) ------
+                        ob_start();
+                        fpassthru($fw); 
+                        $file_image = ob_get_clean();
                         fclose($fw);
+                        // ---------
                         
                         // write2disk
-                        $w = fopen($c_file, 'w+');
-                        fwrite($w, $file_image);
-                        fclose($w);
+                        if ($wf = fopen($c_file, 'w'))
+                        {
+                            fwrite($wf, $file_image);
+                            fclose($wf);
+                        }
 
                         // check image
                         list($w, $h) = getimagesize($c_file);
                         if ($w && $h)
                         {
                             cn_throw_message('File uploaded');
-                            $max_width=getoption('max_thumbnail_widht');
-                            if($w>$max_width&&$thumbnail_with_upload)
+
+                            $max_width = getoption('max_thumbnail_width');
+                            if ($w > $max_width && $thumbnail_with_upload)
                             {
                                 $resize_result = resize_image($c_file, $max_width, 0);
                                 cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
                             }
-                                                       
+
+                            $is_uploaded = TRUE;
+
+                            $just_uploaded[$url_name] = TRUE;
                         }
                         else
                         {
@@ -147,62 +257,82 @@ function media_invoke()
                         }
                     }
                     else
+                    {
                         cn_throw_message("Can't overwrite or save", 'e');
+                    }
                 }
-                else cn_throw_message('allow_url_fopen=0, check server configurations');
+                else 
+                {
+                    cn_throw_message('allow_url_fopen=0, check server configurations');
+                }
             }
 
             // Upload from local
-            foreach ($_FILES['upload_file']['name'] as $id => $name) if ($name)
-            {
-                $ext = NULL;
-                if (preg_match('/\.(\w+)$/i', $name, $c))
-                    $ext = strtolower($c[1]);
-
-                // Check allowed ext
-                if ($ext && in_array($ext, $AE))
+            foreach ($_FILES['upload_file']['name'] as $id => $name) 
+            {                
+                if ($name)
                 {
-                    // encode url
-                    $name = str_replace('%2F', '/', urlencode($name));
-
-                    // encoded? replace filename
-                    if (strpos($name, '%') !== FALSE)
-                        $name = str_replace('%', '', strtolower($name));
-
-                    // check file for exist
-                    if (file_exists($c_file = $dfile . $name))
+                    $ext = NULL;
+                    if (preg_match('/\.(\w+)$/i', $name, $c))
                     {
-                        if ($overwrite)
+                        $ext = strtolower($c[1]);
+                    }
+                    
+                    // Check allowed ext
+                    if ($ext && in_array($ext, $AE))
+                    {
+                        // encode url
+                        $name = str_replace('%2F', '/', urlencode($name));
+
+                        // encoded? replace filename
+                        if (strpos($name, '%') !== FALSE) {
+                            $name = str_replace('%', '', strtolower($name));
+                        }
+
+                        // check file for exist
+                        if (file_exists($c_file = $dfile . $name))
                         {
-                            cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] overwritten', 'w');
+                            if ($overwrite)
+                            {
+                                cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] overwritten', 'w');
+                            }
+                            else
+                            {
+                                cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] already exists', 'e');
+                                continue;
+                            }
+                        }
+
+                        // Upload file to server
+                        if (move_uploaded_file($_FILES['upload_file']['tmp_name'][$id], $c_file))
+                        {
+                            $just_uploaded[$name] = TRUE;
+
+                            cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
+
+                            $max_width = getoption('max_thumbnail_width');
+                            list($w, $h) = getimagesize($c_file);
+
+                            if ($w > $max_width && $thumbnail_with_upload)
+                            {                                
+                                $resize_result = resize_image($c_file, $max_width, 0);
+                                cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
+                            }
                         }
                         else
                         {
-                            cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] already exists', 'e');
-                            continue;
+                            cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded! Please, check upload_max_filesize in PHP settings.', 'e');
                         }
-                    }
-
-                    if (move_uploaded_file($_FILES['upload_file']['tmp_name'][$id], $c_file))
-                    {
-                        $just_uploaded[$name] = TRUE;
-                        cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
-
-                        $max_width=getoption('max_thumbnail_widht');
-                        list($w, $h) = getimagesize($c_file);
-                        
-                        if($w>$max_width&&$thumbnail_with_upload)
-                        {                                
-                            $resize_result = resize_image($c_file, $max_width, 0);
-                            cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
-                        }
-                        
                     }
                     else
-                        cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded!', 'e');
+                    {
+                        cn_throw_message('File extension ['.cn_htmlspecialchars($ext).'] not allowed', 'e');
+                    }
                 }
-                else
-                    cn_throw_message('File extension ['.cn_htmlspecialchars($ext).'] not allowed', 'e');
+                elseif (!$is_uploaded)
+                {
+                    cn_throw_message('No selected files for upload','e');
+                }
             }
         }
         // MAKE ACTION WITH MEDIA FILES
@@ -215,23 +345,40 @@ function media_invoke()
             {
                 if (empty($rm))
                 {
-                    cn_throw_message('No one file selected', 'w');
+                    cn_throw_message('No files selected', 'w');
                 }
-
-                foreach ($rm as $file)
-                {
-                    if (file_exists($cfile = $dfile . $file))
+                else
+                {                                    
+                    foreach ($rm as $file)
                     {
-                        if (is_dir($cfile))
-                            @rmdir($cfile);
-                        else
-                            @unlink($cfile);
-                    }
+                        if (file_exists($cfile = $dfile . $file))
+                        {
+                            if (is_dir($cfile))
+                            {
+                                rmdir($cfile);
+                            }
+                            else
+                            {
+                                //get thumbnail path
+                                $path_parts=  pathinfo($cfile);
+                                $thumbnail_path=$path_parts['dirname'].DIRECTORY_SEPARATOR.'.thumb.'.$path_parts['basename'];
+                                if(file_exists($thumbnail_path))
+                                {
+                                    unlink($thumbnail_path);
+                                }
+                                unlink($cfile);
+                            }
+                        }
 
-                    if (file_exists($cfile))
-                        cn_throw_message('File ['.cn_htmlspecialchars($cfile).'] not deleted!', 'e');
-                    else
-                        cn_throw_message('File ['.cn_htmlspecialchars($file).'] deleted successfully');
+                        if (file_exists($cfile))
+                        {
+                            cn_throw_message('File ['.cn_htmlspecialchars($cfile).'] not deleted!', 'e');
+                        }
+                        else
+                        {
+                            cn_throw_message('File ['.cn_htmlspecialchars($file).'] deleted successfully');
+                        }
+                    }
                 }
             }
             // --------------------
@@ -243,7 +390,8 @@ function media_invoke()
             // action --> process create
             elseif ($pending == 'create')
             {
-                list($new_folder) = GET('new_dir', 'POST');
+                $new_dir_arr=GET('new_dir', 'POST');
+                $new_folder =array_pop($new_dir_arr);
 
                 $new_folder = preg_replace('/[^a-z0-9_]/i', '-', $new_folder);
 
@@ -259,9 +407,13 @@ function media_invoke()
                     {
                         mkdir($cfile);
                         if (!is_dir($cfile))
+                        {
                             cn_throw_message('Folder ['.cn_htmlspecialchars($cfile).' not created]', 'e');
+                        }
                         else
+                        {
                             cn_throw_message('Folder ['.$new_folder.'] created!');
+                        }
                     }
                 }
                 else
@@ -291,7 +443,10 @@ function media_invoke()
 
                     $popup_form .= '</table>';
                 }
-                else cn_throw_message('Select files to rename', 'w');
+                else 
+                {
+                    cn_throw_message('Select files to rename', 'w');
+                }
             }
             // action: process move
             elseif ($pending == 'rename')
@@ -301,7 +456,10 @@ function media_invoke()
 
                 // prevent illegal moves
                 $safe_dir = scan_dir($root_dir);
-                foreach ($safe_dir as $id => $v) $safe_dir[$id] = md5($v);
+                foreach ($safe_dir as $id => $v) 
+                {
+                    $safe_dir[$id] = md5($v);
+                }
 
                 // do move all files / dirs
                 foreach ($ids as $id => $file)
@@ -314,13 +472,21 @@ function media_invoke()
                             cn_throw_message(i18n('The name of file [%1] should not contain special characters',cn_htmlspecialchars($file)), 'e');
                             continue;
                         }
-                        $renameto = $root_dir . '/' . $filename;
-
+                        $renameto = $root_dir . $filename;
+                        $thumb=$root_dir.'.thumb.'.$file;
                         // do move
-                        if (rename($root_dir . '/' . $file, $renameto))
+                        if (rename($root_dir .  $file, $renameto))
+                        {
+                            if(file_exists($thumb))
+                            {
+                                rename($thumb, $root_dir.'.thumb.'.$filename);
+                            }
                             cn_throw_message(i18n('File [%1] renamed to [%2]', cn_htmlspecialchars($file), cn_htmlspecialchars($filename)) );
+                        }
                         else
+                        {
                             cn_throw_message(i18n('File [%1] not renamed', cn_htmlspecialchars($file)), 'e');
+                        }
                     }
                 }
             }
@@ -336,7 +502,7 @@ function media_invoke()
                     $dirs=  scan_dir($root_dir);
                     foreach($dirs as $entry)
                     {
-                        if(is_dir($root_dir.'/'. $entry)&&!($entry==='..'||$entry==='.'))
+                        if(is_dir($root_dir. $entry)&&!($entry==='..'||$entry==='.'))
                         {
                             $folders[]=$entry;
                         }
@@ -350,7 +516,7 @@ function media_invoke()
                         $cnt_folders=count($folders);
                         if($cnt_folders!=0&&!($cnt_folders==1 && in_array($hfn, $folders)))
                         {
-                            $popup_form .= '<select name="place_folder">';
+                            $popup_form .= '<select name="place_folder_'.$id.'">';
                             foreach ($folders as $dirn)
                             {
                                 if($dirn!=$hfn)
@@ -359,10 +525,10 @@ function media_invoke()
                                 }
                             }
                             $popup_form .= '</select>';                        
-                        }
+                        }                        
                         if($root_dir!=$udir)
                         {
-                            $popup_form .= '<nobr><input type="checkbox" name="moveup['.$id.']" value="Y" /> Move up</nobr>';
+                            $popup_form .= '<nobr><input type="checkbox" onclick="javascript:hideFolderList(this,'.$id.')" name="moveup['.$id.']" value="Y" /> Move up</nobr>';
                         }
                         else 
                         {
@@ -373,21 +539,29 @@ function media_invoke()
 
                     $popup_form .= '</table>';
                 }
-                else cn_throw_message('Select files to move', 'w');
+                else 
+                {
+                    cn_throw_message('Select files to move', 'w');
+                }
             }
             // action: process move
             elseif ($pending == 'move')
             {
                 // ...
-                list($ids, $place_folder, $moveup) = GET('ids, place_folder, moveup', 'POST');
-
+                list($ids, $moveup) = GET('ids, moveup', 'POST');
+                
                 // prevent illegal moves
                 $safe_dir = scan_dir($root_dir); 
-                foreach ($safe_dir as $id => $v) $safe_dir[$id] = md5($v);
+                foreach ($safe_dir as $id => $v)
+                {
+                    $safe_dir[$id] = md5($v);
+                }
 
                 // do move all files / dirs
                 foreach ($ids as $id => $file)
                 {
+                    list($place_folder)=GET('place_folder_'.$id);
+                    
                     if (in_array(md5($file), $safe_dir))
                     {
                         $NF = '';
@@ -401,57 +575,64 @@ function media_invoke()
                         }
                         else
                         {
-                            $nwfolder = $root_dir. ( $NF = isset($rm[0]) ? '/'.$rm[0] : '' ) . '/' . $foldername;
-                            if ($rm[0]) $NF = $rm[0].'/' ;
+                            $nwfolder = $root_dir. ( $NF = isset($rm[0]) ? $rm[0] : '' ) . DIRECTORY_SEPARATOR . $foldername;
+                            if ($rm[0]) 
+                            {
+                                $NF = $rm[0].DIRECTORY_SEPARATOR ;
+                            }
                         }   
-                        $moveto = $nwfolder . '/' . $file;
-
+                        $moveto = $nwfolder . DIRECTORY_SEPARATOR . $file;
+                        //check for image thumbnail
+                        $thumb=$root_dir.'.thumb.'.$file;                       
                         // do move
-                        if (rename($root_dir . '/' . $file, $moveto))
+                        if (rename($root_dir .  $file, $moveto))
+                        {
+                            if(file_exists($thumb))
+                            {
+                                rename($thumb, $nwfolder.DIRECTORY_SEPARATOR.'.thumb.'.$file);
+                            }
                             cn_throw_message(i18n('File [%1] moved to [%2]', cn_htmlspecialchars($file), cn_htmlspecialchars($foldername)) );
+                        }
                         else
+                        {
                             cn_throw_message(i18n('File [%1] not moved', cn_htmlspecialchars($file)), 'e');
+                        }
                     }
                 }
             }                      
             // ------------------
             elseif ($do_action == 'thumb')
             {
-                $popup_form = '<div class="big_font">'.i18n('Make thumbnails').'</div>Tip: To resize image, set 0 to width, or height<p>';
-                $popup_form .= '<input type="hidden" name="thumb_rms" value="'.cn_htmlspecialchars(serialize($_POST['rm'])).'">';
-                $popup_form .= 'Width <input name="thumb_size_w" value="256"> ';
-                $popup_form .= 'Height <input name="thumb_size_h" value="256"></p>';
-            }
-            elseif ($pending == 'thumb')
-            {
-                $rms = unserialize(REQ('thumb_rms', 'POST'));
-                
-                $wt = intval(REQ('thumb_size_w', 'POST'));
-                $ht = intval(REQ('thumb_size_h', 'POST'));
-                
-                if ($wt == 0 && $ht == 0)
+                if(!empty($_POST['rm']))
                 {
-                    cn_throw_message('Enter correct width or height', 'e');
+                    $popup_form = get_sizes_form('Make thumbnails',$do_action);
                 }
                 else
                 {
-                    foreach ($rms as $vp)
-                    {                        
-                        $fn = $root_dir . '/' . $vp;
-
-                        $resize_result=  resize_image($fn, $wt, $ht);
-                        if($resize_result['status'])
-                        {
-                            cn_throw_message($resize_result['msg']);
-                        }
-                        else
-                        {
-                            cn_throw_message($resize_result['msg'],'w');
-                            continue;                                                       
-                        }                                    
-                    }
+                    cn_throw_message('Select files to make thumbnail', 'w');
                 }
             }
+            elseif ($pending == 'thumb')
+            {
+                do_resize_image($root_dir);
+            }
+            // action: resize
+            elseif ($do_action == 'resize')
+            {
+                if(!empty($_POST['rm']))
+                {                
+                    $popup_form = get_sizes_form('Resize source image',$do_action);
+                }
+                else
+                {
+                    cn_throw_message('Select files to resize', 'w');
+                }                
+            }
+            elseif ($pending == 'resize')
+            {
+                do_resize_image($root_dir,false);
+            }            
+            
             // ------------------
             // check for plugin
             elseif (!hook('media/post_action'))
@@ -461,9 +642,9 @@ function media_invoke()
         }
     }
 
-    // Check dir exists
+    // Check dir exists    
     if (is_dir($root_dir))
-    {
+    {        
         $raw_files = scan_dir($root_dir);
     }
     else
@@ -476,6 +657,11 @@ function media_invoke()
 
     foreach ($raw_files as $file)
     {
+        if(preg_match('/avatar_/', $file))
+        {
+            continue;
+        }
+        
         $file_location = "$root_dir/$file";
 
         if (is_dir($file_location))
@@ -486,9 +672,9 @@ function media_invoke()
                 'name' => $file
             );
         }
-        else
+        elseif(filesize(cn_path_construct($udir,$path).$file)!=0)
         {
-            list($w, $h) = getimagesize("$udir/$path/$file");
+            list($w, $h) = getimagesize(cn_path_construct($udir,$path).$file);
 
             $is_thumb = preg_match('/\.thumb\./', $file);
             
@@ -517,7 +703,7 @@ function media_invoke()
 
     if ($opt === 'inline')
     {
-        echo exec_tpl('window', 'title=Quick insert image', 'style=media/style.css', 'content='.exec_tpl('media/general'));
+        echo exec_tpl('window', 'title=Quick insert image', 'style=media/style.css', 'content='.exec_tpl('media/general'));        
     }
     else
     {

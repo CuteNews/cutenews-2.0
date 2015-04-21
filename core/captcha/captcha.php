@@ -104,10 +104,7 @@ class SimpleCaptcha
         {
             list($text, $reply) = $this->GetCaptchaText();
 
-            $_SESS[$this->session_var] = $reply;
-
-            if (!$DisableHeaders)
-                cn_save_session();
+            $_SESSION[$this->session_var] = $reply;
 
             echo '<html><body style="font-size: 42px; font-family: Arial, Tahoma, Serif;">'.$reply.'</body></html>';
         }
@@ -122,10 +119,7 @@ class SimpleCaptcha
             $fontcfg  = $this->fonts[array_rand($this->fonts)];
             $this->WriteText($text, $fontcfg);
 
-            $_SESS[$this->session_var] = $reply;
-
-            if (!$DisableHeaders)
-                cn_save_session();
+            $_SESSION[$this->session_var] = $reply;
 
             /** Transformations */
             $this->WaveImage();

@@ -17,14 +17,14 @@ $category   = cn_get_categories();
 <div class="panel">
 
     <div style="float: right;">
-        Entries on page: <?php foreach (array(25, 50, 100, 250) as $_per_page) echo ' <a href="'.cn_url_modify("per_page=$_per_page").'" '.($per_page == $_per_page ? 'class="b"' : '').'>'.$_per_page.'</a> '; ?>
+        Entries on page: <?php foreach (array(25, 50, 100, 250) as $_per_page) { echo ' <a href="'.cn_url_modify('mod=editnews', "per_page=$_per_page").'" '.($per_page == $_per_page ? 'class="b"' : '').'>'.$_per_page.'</a> '; } ?>
         <a style="color: #008080;" href="#" onclick="DoDiv('filters'); return false;">[Change filters]</a>
     </div>
 
     <?php
 
         echo i18n('Showed <b>%1</b> ', $showed);
-        if ($nprospect) echo i18n('(postponed <b>%1</b>)', $nprospect);
+        if ($nprospect) { echo i18n('(postponed <b>%1</b>)', $nprospect); }
         echo i18n(' from total <b>%1</b> ', $entries_total);
 
     ?>
@@ -38,25 +38,25 @@ $category   = cn_get_categories();
         <?php
 
             // sort method
-            echo ' <a href="'.cn_url_modify('sort=date').'" '.($sort == 'date'?'class="bd"':'').'>date</a> /';
-            echo ' <a href="'.cn_url_modify('sort=comments').'" '.($sort == 'comments'?'class="bd"':'').'>comments</a> /';
-            echo ' <a href="'.cn_url_modify('sort=author').'" '.($sort == 'author'?'class="bd"':'').'>author</a> ';
+            echo ' <a href="'.cn_url_modify('mod=editnews', 'sort=date').'" '.($sort == 'date'?'class="bd"':'').'>date</a> /';
+            echo ' <a href="'.cn_url_modify('mod=editnews', 'sort=comments').'" '.($sort == 'comments'?'class="bd"':'').'>comments</a> /';
+            echo ' <a href="'.cn_url_modify('mod=editnews', 'sort=author').'" '.($sort == 'author'?'class="bd"':'').'>author</a> ';
 
             // sort order
-            echo ' &nbsp; <a href="'.cn_url_modify('dir=a').'" '.($dir == 'a'? 'class="bd"':'').'>&uarr; ASC</a> &nbsp; ';
-            echo ' <a href="'.cn_url_modify('dir=d').'" '.($dir == 'd'?'class="bd"':'').'>&darr; DESC</a> ';
+            echo ' &nbsp; <a href="'.cn_url_modify('mod=editnews', 'dir=a').'" '.($dir == 'a'? 'class="bd"':'').'>&uarr; ASC</a> &nbsp; ';
+            echo ' <a href="'.cn_url_modify('mod=editnews', 'dir=d').'" '.($dir == 'd'?'class="bd"':'').'>&darr; DESC</a> ';
 
         ?>
         </div>
     </div>
 
     Source:
-    <a href="<?php echo cn_url_modify('source,year,mon,day,archive_id,page,cat_filter'); ?>" <?php if ($source == '') echo 'class="b"'; ?>>Active</a> /
-    <?php if ($archives) { ?><a href="<?php echo cn_url_modify('year,mon,day,page,archive_id,cat_filter', 'source=archive'); ?>" <?php if ($source == 'archive') echo 'class="b"'; ?>>Archives (<?php echo $archives; ?>)</a> /<?php } ?>
-    <a href="<?php echo cn_url_modify('year,mon,day,archive_id,page,cat_filter', 'source=draft'); ?>" <?php if ($source == 'draft') echo 'class="b"'; ?>>Draft (<?php echo $ndraft; ?>) </a>
+    <a href="<?php echo cn_url_modify('mod=editnews', 'source,year,mon,day,archive_id,page,cat_filter'); ?>" <?php if ($source == '') { echo 'class="b"'; } ?>>Active</a> /
+    <?php if ($archives) { ?><a href="<?php echo cn_url_modify('mod=editnews', 'year,mon,day,page,archive_id,cat_filter', 'source=archive'); ?>" <?php if ($source == 'archive') echo 'class="b"'; ?>>Archives (<?php echo $archives; ?>)</a> /<?php } ?>
+    <a href="<?php echo cn_url_modify('mod=editnews', 'year,mon,day,archive_id,page,cat_filter', 'source=draft'); ?>" <?php if ($source == 'draft') { echo 'class="b"'; } ?>>Draft (<?php echo $ndraft; ?>) </a>
     <div style="clear:both;"></div>
 
-    <div style="<?php if (empty($category_filters) && empty($user_filters)) echo 'display: none;'; ?>" id="filters">
+    <div style="<?php if (empty($category_filters) && empty($user_filters)) { echo 'display: none;'; } ?>" id="filters">
 
         <form action="<?php echo PHP_SELF; ?>" method="GET">
 
@@ -69,14 +69,14 @@ $category   = cn_get_categories();
                 <tr>
                     <td><select name="add_category_filter" style="width: 420px;">
                         <option value="0">--</option>
-                        <?php foreach ($category as $catid => $cat) echo '<option value="'.$catid.'">'.cn_htmlspecialchars($cat['name']).'</option>'; ?>
+                        <?php foreach ($category as $catid => $cat) { echo '<option value="'.$catid.'">'.cn_htmlspecialchars($cat['name']).'</option>'; } ?>
                         </select>
                     </td>
 
 
                     <td><select name="add_user_filter" style="width:200px;">
                             <option value="">--</option>
-                            <?php foreach ($userlist as $user => $num) echo '<option value="'.cn_htmlspecialchars($user).'">'.cn_htmlspecialchars($user).' ('.$num.')</option>'; ?>
+                            <?php foreach ($userlist as $user => $num) { echo '<option value="'.cn_htmlspecialchars($user).'">'.cn_htmlspecialchars($user).' ('.$num.')</option>'; } ?>
                         </select>
                     </td>
 
@@ -86,12 +86,23 @@ $category   = cn_get_categories();
                 <tr>
 
                     <td><?php
-                        foreach ($category_filters as $id) echo ' [<a href="'.cn_url_modify('cat_filter', "rm_category_filter=$id").'" style="color: red;">&ndash;</a>] <b>'.$category[$id]['name'].'</b> &nbsp; ';
+                            arsort($category_filters);
+                            foreach ($category_filters as $id) 
+                            { 
+                                if(isset($category[$id]))
+                                {
+                                    echo ' [<a href="'.cn_url_modify('mod=editnews', 'cat_filter', "rm_category_filter=$id").'" style="color: red;">&ndash;</a>] <b>'.$category[$id]['name'].'</b> &nbsp; ';                                 
+                                }
+                            } 
                         ?>
                     </td>
 
                     <td><?php
-                        foreach ($user_filters as $id) echo ' [<a href="'.cn_url_modify("rm_user_filter=$id").'" style="color: red;">&ndash;</a>] <b>'.cn_htmlspecialchars($id).'</b> &nbsp; ';
+                            arsort($user_filters);
+                            foreach ($user_filters as $id) 
+                            {
+                                echo ' [<a href="'.cn_url_modify('mod=editnews', "rm_user_filter=$id").'" style="color: red;">&ndash;</a>] <b>'.cn_htmlspecialchars($id).'</b> &nbsp; ';
+                            }
                         ?>
                     </td>
                 </tr>
@@ -120,26 +131,48 @@ $category   = cn_get_categories();
 
             <!-- news list -->
             <table class="std-table" width="100%">
-                <tr><th><nobr><a href="<?php echo cn_url_modify('mon,day,year,archive_id'); ?>">All periods</a></nobr></th></tr>
+                <tr><th><nobr><a href="<?php echo cn_url_modify('mod=editnews', 'mon,day,year,archive_id'); ?>">All periods</a></nobr></th></tr>
                 <tr>
                     <td>
-                        <?php if ($source == 'archive') { ?>
-
+                        <?php if ($source == 'archive')
+                        { ?>
                             <div id="archives_list">
-                            <?php foreach ($ptree as $id => $item) { ?>
-                                <a class="arch<?php if ($archive_id == $id) echo '-b'; ?>" href="<?php echo cn_url_modify('mon,day', "archive_id=$id"); ?>"><em><?php echo date('Y-m-d H:i', $id); ?></em> <?php if ($item['c']) echo '<small>('.intval($item['c']).')</small>'; ?></a>
-                            <?php } ?>
+                                <?php foreach ($ptree as $id => $item)
+                                { ?>
+                                    <a class="arch<?php if ($archive_id == $id) { echo '-b'; } ?>" href="<?php echo cn_url_modify('mod=editnews', 'mon,day', "archive_id=$id"); ?>">
+                                        <em><?php echo date('Y-m-d H:i', $id); ?></em> <?php if ($item['c']) { echo '<small>(' . intval($item['c']) . ')</small>'; } ?>
+                                    </a>
+                                <?php } ?>
                             </div>
-
-                        <?php } else { foreach ($TY as $yc => $cy) { ?>
-                            <div class="years<?php if ($yc == $YS) echo '-b' . ($MS? '' : 'wm'); ?>"><a href="<?php echo cn_url_modify('mon,day', "year=$yc"); ?>"><?php echo $yc;?></a></div>
-                            <?php if ($YS == $yc) { ?>
-                                <?php foreach ($TM as $mc => $cm) { ?>
-                                    <div class="mons<?php if ($mc == $MS) echo '-b'. ($DS? '' : 'wm'); ?>"><a href="<?php echo cn_url_modify('day', "year=$yc", "mon=$mc"); ?>"><?php echo cn_modify_month($mc);?></a></div>
-                                    <?php if ($mc == $MS) { ?>
-                                        <?php foreach ($TD as $dc => $cd) { ?>
-                                            <div class="days<?php if ($dc == $DS) echo '-b'; ?>"><a href="<?php echo cn_url_modify("year=$yc", "mon=$mc", "day=$dc"); ?>"><?php echo $dc;?></a> <?php if ($cd) echo '<small>('.$cd.')</small>'; ?></div>
-                                        <?php } } } } } } ?>
+                        <?php } 
+                        else
+                        {
+                            foreach ($TY as $yc => $cy)
+                            { ?>
+                                <div class="years<?php if ($yc == $YS){ echo '-b' . ($MS ? '' : 'wm'); } ?>">
+                                    <a href="<?php echo cn_url_modify('mod=editnews', 'mon,day', "year=$yc"); ?>"><?php echo $yc; ?></a>
+                                </div>
+                                <?php if ($YS == $yc)
+                                { ?>
+                                    <?php foreach ($TM as $mc => $cm)
+                                    { ?>
+                                        <div class="mons<?php if ($mc == $MS) { echo '-b' . ($DS ? '' : 'wm');} ?>">
+                                            <a href="<?php echo cn_url_modify('mod=editnews', 'day', "year=$yc", "mon=$mc"); ?>"><?php echo cn_modify_month($mc); ?></a>
+                                        </div>
+                                        <?php if ($mc == $MS)
+                                        { ?>
+                                            <?php foreach ($TD as $dc => $cd)
+                                            { ?>
+                                                <div class="days<?php if ($dc == $DS){ echo '-b';} ?>">
+                                                    <a href="<?php echo cn_url_modify('mod=editnews', "year=$yc", "mon=$mc", "day=$dc"); ?>"><?php echo $dc; ?></a> 
+                                                    <?php if ($cd) { echo '<small>(' . $cd . ')</small>'; } ?>
+                                                </div>
+                                            <?php }
+                                        }
+                                    }
+                                }
+                            }
+                        } ?>
                     </td>
                 </tr>
             </table>
@@ -148,14 +181,18 @@ $category   = cn_get_categories();
             <?php if ($category) { ?>
                 <br/>
                 <table class="std-table" width="100%">
-                    <tr><th><nobr><a href="<?php echo cn_url_modify('cat_filter'); ?>">All categories</a></nobr></th></tr>
+                    <tr><th><nobr><a href="<?php echo cn_url_modify('mod=editnews', 'cat_filter'); ?>">All categories</a></nobr></th></tr>
                     <tr>
                         <td >
-                            <div><a <?php if ($cat_filter === '-') echo 'class="bold" '; ?>href="<?php echo cn_url_modify('cat_filter=-'); ?>">Free news only</a></div>
+                            <div>
+                                <a <?php if ($cat_filter === '-') { echo 'class="bold" '; } ?>href="<?php echo cn_url_modify('mod=editnews', 'cat_filter=-'); ?>">Free news only</a>
+                            </div>
                             <hr/>
                             <?php
                                 foreach ($category as $id => $cat)
-                                    echo '<div style="word-wrap:break-word; width: 200px;"><a '.($id == $cat_filter ? 'class="bold" ' : '').'href="'.cn_url_modify("cat_filter=$id").'">'.cn_htmlspecialchars($cat['memo'] ? $cat['memo'] : $cat['name']).'</b></div>';
+                                {
+                                    echo '<div style="word-wrap:break-word; width: 200px;"><a '.(($id == $cat_filter) || in_array($id, $category_filters) ? 'class="bold" ' : '').'href="'.cn_url_modify('mod=editnews', "cat_filter=$id").'">'.cn_htmlspecialchars($cat['memo'] ? $cat['memo'] : $cat['name']).'</b></div>';
+                                }
                             ?>
                         </td>
                     </tr>
@@ -188,38 +225,58 @@ $category   = cn_get_categories();
                             <?php hook('template/editnews/list_item_before', array($ID, $entry)); ?>
                             <td>
                                 <div style="word-wrap: break-word; width:200px;">
-                                <?php if ($entry['can']) {
-
-                                    $title = $entry['title'] ? $entry['title'] : '<no title:'.$entry['id'].'>';
-                                    ?>
-                                    <a title="<?php echo cn_htmlspecialchars($title.($entry['pg'] ? ' ('.$entry['pg'].')' : '')); ?>" href="<?php echo cn_url_modify('action=editnews', "id=$ID"); ?>"><?php echo cn_htmlspecialchars($title); ?></a>
-                                <?php } else echo cn_htmlspecialchars($entry['title']); ?>
+                                <?php if ($entry['can']) 
+                                {
+                                    $pg = isset($entry['pg']) ? $entry['pg'] : '';
+                                    $title = $entry['title'] ? $entry['title'] : '<no title:'.(isset($entry['id']) ? $entry['id'] : 0).'>';?>
+                                    <a title="<?php echo cn_htmlspecialchars($title.($pg ? ' ('.$pg.')' : '')); ?>" href="<?php echo cn_url_modify('mod=editnews', 'action=editnews', "id=$ID"); ?>"><?php echo cn_htmlspecialchars($title); ?></a>
+                                <?php } 
+                                else 
+                                {
+                                    echo cn_htmlspecialchars($entry['title']);                                 
+                                }?>
                                 </div>
                             </td>
-                            <td align='center'><?php echo count($entry['co']); ?></td>
+                            <td align='center'><?php $co = isset($entry['co']) ? $entry['co'] : array(); echo count($co); ?></td>
                             <td align='center'><?php
 
                                 // show category name(s)
                                 $_cats = count($entry['cats']);
 
                                 // No category
-                                if ($_cats == 0) echo '-';
+                                if (($_cats == 0 || count($category)==0)) 
+                                { 
+                                    echo '-';                                     
+                                }
                                 // Single category
                                 elseif ($_cats == 1)
-                                {
-                                    echo '<a href="'.cn_url_modify('add_category_filter='.$entry['cats'][0]).'">'.$category[$entry['cats'][0]]['name'].'</a>';
+                                {                                    
+                                    if(isset($category[$entry['cats'][0]]))
+                                    {
+                                        echo '<a href="'.cn_url_modify('mod=editnews', 'add_category_filter='.$entry['cats'][0]).'">'.$category[$entry['cats'][0]]['name'].'</a>';                                                                        
+                                    }
+                                    else
+                                    {
+                                        echo '-';
+                                    }
                                 }
                                 // Multiply
                                 else
                                 {
                                     $_cat_name = array();
-                                    foreach ($entry['cats'] as $_cid) $_cat_name[] = $category[$_cid]['name'];
-                                    echo '<a href="'.cn_url_modify('add_category_filter='.join(',', $entry['cats'])).'" title="'.join(', ', $_cat_name).'"><b>multiply</b></a>';
+                                    foreach ($entry['cats'] as $_cid) 
+                                    { 
+                                        if(isset($category[$_cid]))
+                                        {
+                                            $_cat_name[] = $category[$_cid]['name'];                                         
+                                        }
+                                    }
+                                    echo '<a href="'.cn_url_modify('mod=editnews', 'add_category_filter='.join(',', $entry['cats'])).'" title="'.join(', ', $_cat_name).'"><b>multiply</b></a>';
                                 }
 
                             ?></td>
                             <td align="center" title="<?php echo $entry['date_full']; ?>"><nobr><?php echo $entry['date']; ?></nobr></td>
-                            <td align="center"><a href="<?php echo cn_url_modify('add_user_filter='.$entry['user']); ?>"><?php echo cn_htmlspecialchars($entry['user']); ?></a><sup></td>
+                            <td align="center"><a href="<?php echo cn_url_modify('mod=editnews', 'add_user_filter='.$entry['user']); ?>"><?php echo cn_htmlspecialchars($entry['user']); ?></a><sup></td>
                             <?php hook('template/editnews/list_item_after', array($ID, $entry)); ?>
                             <td align="center"><?php if ($entry['can']) { ?><input name="selected_news[]" value="<?php echo $ID; ?>" style="border:0;" type='checkbox'><?php } ?></td>
 
@@ -262,15 +319,24 @@ $category   = cn_get_categories();
             <div class="pagination">
                 <?php
                     if ($page - $per_page >= 0)
-                        echo '<a href="'.cn_url_modify('page='.($page - $per_page)).'">&lt;&lt; Prev page</a>';
+                    {
+                        echo '<a href="'.cn_url_modify('mod=editnews', 'page='.($page - $per_page)).'">&lt;&lt; Prev page</a>';
+                    }
                     elseif ($page && $page < $per_page)
-                        echo '<a href="'.cn_url_modify('page').'">&lt;&lt; Prev page</a>';
+                    {
+                        echo '<a href="'.cn_url_modify('mod=editnews', 'page').'">&lt;&lt; Prev page</a>';
+                    }
                     else
+                    {
                         echo '&lt;&lt; Prev page';
+                    }
 
                     echo ' [<b>'.intval($page / $per_page).'</b>] ';
 
-                    if ($has_next) echo '<a href="'.cn_url_modify('page='.($page + $per_page)).'">Next page &gt;&gt;</a>';
+                    if ($has_next) 
+                    {
+                        echo '<a href="'.cn_url_modify('mod=editnews', 'page='.($page + $per_page)).'">Next page &gt;&gt;</a>';
+                    }
                 ?>
             </div>
         <?php } ?>

@@ -15,6 +15,39 @@ Requirements
     - There is &ldquo;iconv&rdquo; library available, in case of using a charset different from UTF-8;
     - To add images from Media Manager via the https protocol it is required that open ssl for PHP works on the server.
 
+CuteNews 2.0.3 release notes.
+------------------------------------------------------------------------------------------------------------------------
+
+    - Fixed generation of thumbnails in Dashboard > Media manager.
+    - Fixed error of storing thumbnails when deleting the original image file in Dashboard > Media manager.
+    - Separated the functions of thumbnail generation and image resizing in Dashboard > Media manager.
+    - Fixed bug with thumbnails not moving when the original image was moved in Media manager.
+    - Fixed behavior of multiple files uploading form in Dashboard > Media manager, now the contents of previous file selection field is not reset when adding a new file selection field.
+    - Adjusted pop-up message appearing when trying to download a file with a size larger than that specified in the option PHP upload_max_filesize in Dashboard> Media manager.
+    - Fixed error with moving file groups to different folders in Dashboard > Media manager.
+    - Added message 'No selected files for upload' to Dashboard > Media manager.
+    - Corrected behavior of checkbox Move up when moving files to media Manager.
+    - Fixed layout of messages displayed in inline Media manager.
+    - Added avatars to Dashboard > Personal options and output avatars variable {avatar} to news  templates.
+    - Fixed bug with saving flag 'Hide my e-mail from visitors' in Dashboard > Personal options.
+    - Removed duplicate message 'Confirm new password' in Dashboard > Personal options.
+    - Added preview of quick and full news according to their templates when editing / adding news.
+    - Fixed bug of links generating in news preview block when editing / adding news.
+    - Improved the conversion of diacritics when generating a page alias when editing / adding news.
+    - Fixed the bug of resetting the date of publication when previewing news when editing / adding news.
+    - Added protection against Clickjacking attacks in Dashboard.
+    - Eliminated possibility of  XSS-attack via error when editing comments.
+    - Fixed bug with access rights checking when deleting user comments.
+    - Added message 'No data for update when editing the group' in Dashboard > Groups.
+    - Fixed bug in Dashboard > Block IP, which was leading to users blocking themselves.
+    - Added message 'No selected options for migration' in Dashboard > Maintenance> Migration.
+    - Added option 'Overwrite current system settings' in Dashboard > Maintenance> Migration, allowing for overwriting configured settings.
+    - Removed dot in news identifier in the link to comments.
+    - Adjusted displaying of a list of recent comments in Dashboard > Comments.
+    - Fixed bug with saving configurations during the installation of CuteNews, now CuteNews is not trying to save a configuration when the user doesn't have rights to write to cdata.
+    - Improved the work of CuteNews with paths during file operations in Windows.
+    - Improved overall stability of the system.
+
 CuteNews 2.0.2 release notes.
 ------------------------------------------------------------------------------------------------------------------------
 

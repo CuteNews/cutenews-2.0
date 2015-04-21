@@ -1,4 +1,4 @@
-Сutenews 2.0
+Сutenews
 ============
 
 CuteNews is a FREE, powerful and easy-to-use news management system based on flat files 

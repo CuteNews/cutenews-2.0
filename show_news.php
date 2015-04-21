@@ -1,5 +1,6 @@
 <?php
-if(!defined('SHOW_NEWS')) define('SHOW_NEWS', TRUE);
+
+if (!defined('SHOW_NEWS')) define('SHOW_NEWS', TRUE);
 require_once (dirname(__FILE__).'/core/init.php');
 
 // Quick Redirect
@@ -14,7 +15,10 @@ if (isset($_GET['cn_rewrite_url']) && $_GET['cn_rewrite_url'])
 }
 
 // plugin tells us: he is fork, stop
-if ( hook('fork_news', false) ) return;
+if ( hook('fork_news', false) ) 
+{
+    return;
+}
 
 // Check including & init
 check_direct_including('show_news.php');
@@ -44,7 +48,10 @@ $allow_active_news  = false;
 $allow_comments     = false;
 
 // Short urls [only id]
-if ($subaction == '' && $id) $subaction = 'showfull';
+if ($subaction == '' && $id) 
+{
+    $subaction = 'showfull';
+}
 
 // ID starts from 'c' symbol
 if ($id[0] === '.')
@@ -77,10 +84,14 @@ if ($is_in_category && empty($CN_HALT))
 
         // Additional tuning
         if (($subaction == "showcomments" || $allow_comments == true) && getoption('show_full_with_comments'))
+        {
             $allow_full_story = true;
-
+        }
+        
         if ($subaction == "showfull" && getoption('show_comments_with_full'))
+        {
             $allow_comments = true;
+        }
 
         // For popup
         if ($subaction == "only_comments")

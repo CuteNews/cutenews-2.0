@@ -42,8 +42,7 @@ if (($user=member_get()) && defined('AREA') && AREA == 'ADMIN')
         if($user['acl']==ACL_LEVEL_BANNED)
         {
             global $_SESS;
-            $_SESS=array();
-            cn_save_session();            
+            $_SESSION=array();        
         }
         msg_info('Section ['.cn_htmlspecialchars($_module).'] disabled for you', PHP_SELF);        
     }    

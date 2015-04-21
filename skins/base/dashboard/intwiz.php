@@ -9,8 +9,8 @@ cn_snippet_bc();
 
 ?>
 <ul class="sysconf_top">
-    <li<?php if ($sub == '') echo " class='selected'"; ?>><a href="<?php echo cn_url_modify('sub='); ?>">Integrate news in site</a></li>
-    <li<?php if ($sub == 'rss') echo " class='selected'"; ?>><a href="<?php echo cn_url_modify('sub=rss'); ?>">RSS Setup</a></li>
+    <li<?php if ($sub == '') { echo " class='selected'"; } ?>><a href="<?php echo cn_url_modify('sub='); ?>">Integrate news in site</a></li>
+    <li<?php if ($sub == 'rss') { echo " class='selected'"; } ?>><a href="<?php echo cn_url_modify('sub=rss'); ?>">RSS Setup</a></li>
 </ul>
 <div style="clear: both;"></div>
 
@@ -34,27 +34,56 @@ cn_snippet_bc();
     if (REQ('w_number'))
     {
         if (preg_match('/^[0-9]+$/', REQ('w_number')))
+        {
             echo '    $number = '.REQ('w_number').';' . "\n";
+        }
         else
+        {
             echo '    $number = "'.cn_htmlspecialchars(REQ('w_number')).'";' . "\n";
+        }
     }
 
     // Detect numeric for start from
     if (REQ('w_start_from'))
     {
         if (preg_match('/^[0-9]+$/', REQ('w_start_from')))
+        {
             echo '    $start_from = '.REQ('w_start_from').';' . "\n";
+        }
         else
+        {
             echo '    $start_from = "'.cn_htmlspecialchars(REQ('w_start_from')).'";' . "\n";
+        }
     }
 
-    if (REQ('w_template') && REQ('w_template') !== 'default') echo '    $template = "'.cn_htmlspecialchars(REQ('w_template')).'";' . "\n";
-    if (REQ('w_allcategory') == FALSE && REQ('w_category')) echo '    $category = "'.(is_array(REQ('w_category')) ? cn_htmlspecialchars(join(',', REQ('w_category'))) : '').'";' . "\n";
-    if (REQ('w_reverse')) echo '    $reverse = TRUE;' . "\n";
-    if (REQ('w_only_active')) echo '    $only_active = TRUE;' . "\n";
-    if (REQ('w_static')) echo '    $static = TRUE;' . "\n";
+    if (REQ('w_template') && REQ('w_template') !== 'default') 
+    {
+        echo '    $template = "'.cn_htmlspecialchars(REQ('w_template')).'";' . "\n";
+    }
+    if (REQ('w_allcategory') == FALSE && REQ('w_category')) 
+    {
+        echo '    $category = "'.(is_array(REQ('w_category')) ? cn_htmlspecialchars(join(',', REQ('w_category'))) : '').'";' . "\n";
+    }
+    if (REQ('w_reverse')) 
+    {
+        echo '    $reverse = TRUE;' . "\n";
+    }
+    if (REQ('w_only_active')) 
+    {
+        echo '    $only_active = TRUE;' . "\n";
+    }
+    if (REQ('w_static')) 
+    {
+        echo '    $static = TRUE;' . "\n";
+    }
 
-?>    include("<?php echo SERVDIR.'/show_news.php'; ?>");
+    $inc_path=SERVDIR.DIRECTORY_SEPARATOR.'show_news.php';
+    $os=PHP_OS;
+    if(preg_match('/win/i', $os))
+    {        
+        $inc_path=  addcslashes($inc_path,'\\');
+    }
+?>    include("<?=$inc_path ?>");
 
 ?&gt;</pre>
         </div>
@@ -84,7 +113,7 @@ cn_snippet_bc();
             <td rowspan="2" align="center">
                 <select name="w_template">
                     <?php foreach ($all_tpls as $template_id => $template) { ?>
-                        <option <?php if (REQ('w_template') == $template_id) echo 'selected="selected"'; ?> value="<?php echo $template_id; ?>"><?php echo cn_htmlspecialchars(ucfirst($template)); ?></option>
+                        <option <?php if (REQ('w_template') == $template_id) { echo 'selected="selected"'; } ?> value="<?php echo $template_id; ?>"><?php echo cn_htmlspecialchars(ucfirst($template)); ?></option>
                     <?php } ?>
                 </select>
             </td>
@@ -100,14 +129,14 @@ cn_snippet_bc();
 
                 <?php if ($categories) { ?>
 
-                    <select <?php if (REQ('w_allcategory')) echo 'style="display: none;"'; else echo 'style="display: block;"'; ?> name="w_category[]" id="category" multiple="">
-                        <?php if (is_array($categories)) foreach ($categories as $id => $cat) { ?>
-                            <option <?php if (is_array(REQ('w_category')) && in_array($id, REQ('w_category'))) echo 'selected="selected"'; ?> value="<?php echo $id; ?>">(ID:<?php echo $id; ?>) <?php echo $cat['name']; ?></option>
-                        <?php } ?>
+                    <select <?php if (REQ('w_allcategory')) { echo 'style="display: none;"'; } else { echo 'style="display: block;"'; } ?> name="w_category[]" id="category" multiple="">
+                        <?php if (is_array($categories)) { foreach ($categories as $id => $cat) { ?>
+                            <option <?php if (is_array(REQ('w_category')) && in_array($id, REQ('w_category'))) { echo 'selected="selected"'; } ?> value="<?php echo $id; ?>">(ID:<?php echo $id; ?>) <?php echo $cat['name']; ?></option>
+                        <?php } } ?>
                     </select>
                         <br>
                     <label for="allcategory">
-                        <input id="allcategory" <?php if (REQ('w_allcategory')) echo "checked=''"; ?> onclick="if (this.checked) { getElementById('category').style.display='none';} else {getElementById('category').style.display='';}" type="checkbox" value="yes" name="w_allcategory"> Or show from all allowed categories
+                        <input id="allcategory" <?php if (REQ('w_allcategory')) { echo "checked=''"; } ?> onclick="if (this.checked) { getElementById('category').style.display='none';} else {getElementById('category').style.display='';}" type="checkbox" value="yes" name="w_allcategory"> Or show from all allowed categories
                     </label>
 
                 <?php } else { ?><em>All</em><?php } ?>
@@ -140,7 +169,7 @@ cn_snippet_bc();
 
         <tr>
             <td><b>Reverse News Order:</b></td>
-            <td rowspan="2" align="center"><input type="checkbox" <?php if (REQ('w_reverse')) echo "checked=''"; ?> value="yes" name="w_reverse"></td>
+            <td rowspan="2" align="center"><input type="checkbox" <?php if (REQ('w_reverse')) { echo "checked=''"; } ?> value="yes" name="w_reverse"></td>
         </tr>
 
         <tr>
@@ -149,7 +178,9 @@ cn_snippet_bc();
 
         <tr>
             <td><b>Show Only Active News:</b></td>
-            <td rowspan="2" align="center"><input type="checkbox" <?php if (REQ('w_only_active')) echo "checked=''"; ?> value="yes" name="w_only_active"></td>
+            <td rowspan="2" align="center">
+                <input type="checkbox" <?php if (REQ('w_only_active')) { echo "checked=''"; } ?> value="yes" name="w_only_active">
+            </td>
         </tr>
 
         <tr>
@@ -161,7 +192,7 @@ cn_snippet_bc();
 
         <tr>
             <td><b>Static Include:</b></td>
-            <td rowspan="2" align="center"><input type="checkbox" <?php if (REQ('w_static')) echo "checked=''"; ?> value="yes" name="w_static"></td>
+            <td rowspan="2" align="center"><input type="checkbox" <?php if (REQ('w_static')) { echo "checked=''"; } ?> value="yes" name="w_static"></td>
         </tr>
 
         <tr>
@@ -190,18 +221,27 @@ cn_snippet_bc();
     <?php if (request_type('POST')) { // Show form
 
         $rss_clause = array();
-        if (REQ('rss_category') && !REQ('rss_allcategory')) $rss_clause[] = 'category='.join(',', REQ('rss_category'));
-        if (REQ('rss_number')) $rss_clause[] = 'number=' . intval( REQ('rss_number') );
+        if (REQ('rss_category') && !REQ('rss_allcategory')) 
+        { 
+            $rss_clause[] = 'category='.join(',', REQ('rss_category'));            
+        }
+        if (REQ('rss_number')) 
+        {
+            $rss_clause[] = 'number=' . intval( REQ('rss_number') );
+        }
         $rss_clause = join('&amp;', $rss_clause);
-        if ($rss_clause) $rss_clause = "?$rss_clause";
+        if ($rss_clause) 
+        {
+            $rss_clause = "?$rss_clause";
+        }
     ?>
         <div class="notice-form">
             <div style="float: right"><a target="_blank" title="RSS Feed" href="<?php echo getoption('http_script_dir'); ?>/rss.php<?php echo $rss_clause; ?>"><img src="/skins/images/rss_icon.gif" border=0/></a></div>
             <h2>Generated html-code for site</h2>
 
                 <pre>&lt;a title="RSS Feed" href="<?php echo getoption('http_script_dir'); ?>/rss.php<?php echo $rss_clause; ?>"&gt;
-    &lt;img src="<?php echo getoption('http_script_dir'); ?>/skins/images/rss_icon.gif" border=0 /&gt;
-&lt;/a&gt;</pre>
+        &lt;img src="<?php echo getoption('http_script_dir'); ?>/skins/images/rss_icon.gif" border=0 /&gt;
+    &lt;/a&gt;</pre>
 
         </div>
     <?php } ?>
@@ -233,15 +273,15 @@ cn_snippet_bc();
 
                 <?php if ($categories) { ?>
 
-                    <select <?php if (REQ('rss_allcategory')) echo 'style="display: none;"'; else echo 'style="display: block;"'; ?> name="rss_category[]" id="category" multiple="">
-                        <?php if (is_array($categories)) foreach ($categories as $id => $cat) { ?>
-                            <option <?php if (is_array(REQ('rss_category')) && in_array($id, REQ('rss_category'))) echo 'selected="selected"'; ?> value="<?php echo $id; ?>">(ID:<?php echo $id; ?>) <?php echo $cat['name']; ?></option>
-                        <?php } ?>
+                    <select <?php if (REQ('rss_allcategory')) { echo 'style="display: none;"'; } else { echo 'style="display: block;"'; } ?> name="rss_category[]" id="category" multiple="">
+                        <?php if (is_array($categories)) { foreach ($categories as $id => $cat) { ?>
+                            <option <?php if (is_array(REQ('rss_category')) && in_array($id, REQ('rss_category'))) { echo 'selected="selected"'; } ?> value="<?php echo $id; ?>">(ID:<?php echo $id; ?>) <?php echo $cat['name']; ?></option>
+                        <?php } } ?>
                     </select>
 
                     <br>
                     <label for="allcategory">
-                        <input id="allcategory" <?php if (REQ('rss_allcategory')) echo "checked=''"; ?> onclick="if (this.checked) { getElementById('category').style.display='none';} else {getElementById('category').style.display='';}" type="checkbox" value="yes" name="rss_allcategory"> Or show from all allowed categories
+                        <input id="allcategory" <?php if (REQ('rss_allcategory')) { echo "checked=''"; } ?> onclick="if (this.checked) { getElementById('category').style.display='none';} else {getElementById('category').style.display='';}" type="checkbox" value="yes" name="rss_allcategory"> Or show from all allowed categories
                     </label>
 
                 <?php } else { ?><em>All</em><?php } ?>

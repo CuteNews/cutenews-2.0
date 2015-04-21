@@ -4,18 +4,21 @@ list($member, $acl_write_news, $accesslevel, $personal_more) = _GL('member, acl_
 
 $username       =isset($member['name'])? $member['name']:'';
 $nickname       =isset($member['nick'])? $member['nick']:'';
+$avatar_url     =isset($member['avatar'])? (getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads').'/'.$member['avatar']:'';
 $usermail       =isset($member['email'])? $member['email']:'';
 $written_news   =isset($member['cnt'])?  $member['cnt']:0;
 $register_date  =isset($member['id'])?  $member['id']:0;
 $hide_email     =isset($member['e-hide'])?  $member['e-hide']:0;
 $ban_times      =isset($member['ban'])?  $member['ban']:0;
 
+$callback='personal';
+
 cn_snippet_messages();
 cn_snippet_bc();
 
 ?>
 
-<form action="<?php echo PHP_SELF; ?>" method="POST">
+<form action="<?php echo PHP_SELF; ?>" enctype="multipart/form-data" method="POST">
 
     <?php cn_form_open('mod, opt'); ?>
 
@@ -31,7 +34,7 @@ cn_snippet_bc();
             <td align="right">Email</td>
             <td>
                 <input type="text" name="editmail" disabled="disabled" style="background: #f0f0f0; width: 250px;" value="<?php echo cn_htmlspecialchars($usermail); ?>">
-                <input type="checkbox" name="edithidemail" <?php if ($hide_email) echo 'checked="checked"'; ?>> Hide my e-mail from visitors
+                <input type="checkbox" name="edithidemail" <?php if ($hide_email) { echo 'checked="checked"'; } ?>> Hide my e-mail from visitors
             </td>
         </tr>
 
@@ -41,8 +44,8 @@ cn_snippet_bc();
         </tr>
 
         <tr class="row">
-            <td align="right">Confirm Password</td>
-            <td><input type="password" name="confirmpassword"> Confirm new password</td>
+            <td align="right">Confirm New Password</td>
+            <td><input type="password" name="confirmpassword"></td>
         </tr>
 
         <tr>
@@ -50,8 +53,17 @@ cn_snippet_bc();
             <td><input type=text style="width: 350px;" name="editnickname" value="<?php echo cn_htmlspecialchars($nickname); ?>"></td>
         </tr>
 
+        <tr>
+            <td align="right">Avatar</td>
+            <td>
+                <img src="<?=$avatar_url; ?>" width="50" height="50" /><br/>
+                <input type="file" name="avatar_file" style="width: 350px;"/>
+            </td>
+        </tr>
+        
         <!-- more personal data -->
-        <?php if (is_array($personal_more)) foreach ($personal_more as $name => $pdata) { ?>
+        <?php if (is_array($personal_more)) { 
+            foreach ($personal_more as $name => $pdata) { ?>
 
             <tr>
                 <td valign="top" align="right" style="padding: 12px 4px 0 0;"><?php echo $pdata['name']; ?></td>
@@ -64,7 +76,7 @@ cn_snippet_bc();
                 </td>
             </tr>
 
-        <?php } ?>
+        <?php } } ?>
 
         <tr>
             <td>&nbsp;</td>

@@ -11,6 +11,7 @@
     <tr> <td class="r">{date}</td>            <td>Date when the story is written</td>  </tr>
     <tr> <td class="r">{author}</td>          <td>Author of the article, with link to his email (if any)</td>  </tr>
     <tr> <td class="r">{author-name}</td>     <td>The name of the author, without email</td>  </tr>
+    <tr> <td class="r">{avatar|width|heigth}</td>          <td>Author avatar (size parameters not required)</td>  </tr>
     <tr> <td class="r">{comments-num}</td>    <td>This will display the number of comments posted for article</td>  </tr>
     <tr> <td class="r">{category}</td>        <td>Name of the category where article is posted (if any). If there is no category for the article, it is empty.</td>  </tr>
     <tr> <td class="r">{category-icon}</td>   <td>Shows the category icon. If there is no category for the article, it is empty.</td>  </tr>
@@ -54,13 +55,11 @@
     <tr> <td class="r">[more] ... [/more]</td> <td>Make "more" field</td>  </tr>
     <tr> <td class="r">[youtube] ... [/youtube]</td> <td>Make youtube link</td>  </tr>
     <tr> <td class="r">[cdata] ...[bb-tags]... [/cdata]</td> <td>Save the text unchanged</td>  </tr>
-
-    {$More_Active_News}
 </table>
 <br/>
 <h2>Comment, Add coment form</h2>
 <table width="100%">
-    <tr> <td class="r">{author}</td>        <td>Name of the comment poster</td>  </tr>
+    <tr> <td class="r">{author}</td>        <td>Name of the comment poster</td>  </tr>    
     <tr> <td class="r">{date}</td>          <td>Date when the comment was posted</td>  </tr>
     <tr> <td class="r">{smilies}</td>       <td>Show smiles tab</td>  </tr>
     <tr> <td class="r">{remember_me}</td>   <td>Remember form</td>  </tr>
@@ -81,8 +80,6 @@
     <tr> <td class="r">{usermail}</td>              <td>If user logged, show e-mail</td>  </tr>
     <tr> <td class="r">{comment-id}</td>            <td>The Comment ID</td>  </tr>
     <tr> <td class="r">{comment-iteration}</td>     <td>Show the sequential number of individual comment</td>  </tr>
-
-    {$More_Comment_Form}
 </table>
 
 <h2>Stylize search form</h2>
@@ -95,8 +92,6 @@
     <tr> <td class="r">[submit]...[/submit]</td>    <td>Submit button wrapper</td>  </tr>
     <tr> <td class="r">[hid={FIELD}]</td>           <td>HIDDEN input box for custom user query</td>  </tr>
     <tr> <td class="r">{select=year:from}<br>{select=mon:from}<br>{select=day:from}<br>{select=year:to}<br>{select=mon:to}<br>{select=day:to}</td>  <td>SELECT box for date range</td>  </tr>
-
-    {$More_Search_Pages}
 </table>
 
 <br/>
@@ -105,7 +100,4 @@
     <tr> <td class="r">[prev-link] ... [/prev-link]</td>    <td>Will generate a link to previous page (if there is)</td>  </tr>
     <tr> <td class="r">[next-link] ... [/next-link]</td>    <td>Will generate a link to next page (if there is)</td>  </tr>
     <tr> <td class="r">{pages}</td>                         <td>Shows current page number</td></tr>
-    {$More_Com_Pages}
 </table>
-
-{$More_Sections}

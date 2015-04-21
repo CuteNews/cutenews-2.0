@@ -41,12 +41,16 @@ function cn_extrn_raw_template($template, $apply_patch = NULL)
 function cn_extrn_replace($input)
 {
     if (!getoption('use_replacement'))
+    {
         return $input;
-
+    }
+    
     if ($rword = getoption('#rword'))
     {
         foreach ($rword as $f => $t)
+        {
             $input = preg_replace('/'.preg_sanitize($f).'/i', trim($t), $input);
+        }
     }
 
     return $input;
@@ -62,7 +66,14 @@ function cn_extrn_morefields($t, $e)
     {
         foreach ($c as $v)
         {
-            if (isset($mb['more'][$v[1]])) $r = $mb['more'][$v[1]]; else $r = '';
+            if (isset($mb['more'][$v[1]])) 
+            {
+                $r = $mb['more'][$v[1]]; 
+            }
+            else 
+            {
+                $r = '';
+            }
             $t = str_replace($v[0], cn_htmlspecialchars($r), $t);
         }
     }
@@ -72,8 +83,12 @@ function cn_extrn_morefields($t, $e)
         $mf = join('|', array_keys($e['mf']));
         // Common purpose more fields
         if (preg_match_all('/\{('.$mf.')\}/i', $t, $c, PREG_SET_ORDER))
+        {
             foreach ($c as $v)
+            {
                 $t = str_replace($v[0], $e['mf'][$v[1]], $t);
+            }
+        }
     }
     return $t;
 }
@@ -120,10 +135,15 @@ function cn_extrn_init()
     global $template;
 
     if ($template == 'rss')
+    {
         return;
+    }
 
     $i18n = getoption('i18n');
-    if (!$i18n) $i18n = 'en_US';
+    if (!$i18n) 
+    {
+        $i18n = 'en_US';
+    }
 
     // Facebook initialzie
     if ((getoption('use_fbcomments') || getoption('use_fblike')) && !mcache_get('fb_js_on') && $template != 'rss')
@@ -157,21 +177,22 @@ function login_guest($keep_data = NULL, $username = NULL)
 
     // Logout
     if (isset($_GET['widget_personal_logout']))
-        $_SESS = array();
-
+    {
+        $_SESSION = array();
+    }
+    
     // Send new data
-    $_SESS['.CSRF'] = md5(mt_rand());
-    cn_save_session(TRUE);
+    $_SESSION['.CSRF'] = md5(mt_rand());
 
     if (!member_get())
     {
         // Widget's login form
         echo proc_tpl('widgets/personal_login_form',
-            "CSRF=".$_SESS['.CSRF'],
+            "CSRF=".$_SESSION['.CSRF'],
             'KEEP='.base64_encode(serialize($keep_data)),
             'MSG='.cn_front_msg_show('login', 'widget_personal_msg'),
             'username='.$username,
-            'rememberme='.(isset($_POST['cn_remember_me'])&&!empty($_POST['cn_remember_me'])?'checked':'')
+            'rememberme='.(isset($_POST['cn_remember_me']) && !empty($_POST['cn_remember_me'])?'checked':'')
             );
     }
 }
@@ -191,45 +212,46 @@ if (isset($_POST['widget_personal_keep']))
     // Try authorize
     if ($_REQ['widget_personal_action'] === 'login')
     {
-        if ($_REQ['widget_personal_csrf'] && $_REQ['widget_personal_csrf'] === $_SESS['.CSRF'])
+        if (!isset($_SESSION['.CSRF'])) { $_SESSION['.CSRF'] = ''; }
+        if ($_REQ['widget_personal_csrf'] && $_REQ['widget_personal_csrf'] === $_SESSION['.CSRF'])
         {
             $login = $_REQ['widget_personal_username'];
             $pass  = $_REQ['widget_personal_password'];
             $rem   = isset($_REQ['widget_personal_rememberme'])&&!empty($_REQ['widget_personal_rememberme']);
 
             // Get User Session
-            $_SESS['user'] = $login;
+            $_SESSION['user'] = $login;
             $user = member_get();
 
             if ($user['acl'] == ACL_LEVEL_ADMIN)
             {
                 cn_front_message("Admin login denied from this place", 'login');                
-                $_SESS['user'] = null;
+                $_SESSION['user'] = null;
             }
             elseif ($login && $pass)
             {                          
                 $gp = hash_generate($pass);                
                 if (in_array($user['pass'], $gp))
                 {
-                    $_SESS['user'] = $login;
-                    if($rem) $_POST['cn_remember_me'] = $rem;
+                    $_SESSION['user'] = $login;
+                    if ($rem) { $_POST['cn_remember_me'] = $rem; }
                     $_POST['CN_COOKIE_POSTPROCESS'] = TRUE;                    
                 }
                 else
                 {
-                    $_SESS['user'] = null;
+                    $_SESSION['user'] = null;
                     cn_front_message('Invalid login or password', 'login');
                 }                
             }
             else
             {
-                $_SESS['user'] = null;
+                $_SESSION['user'] = null;
             }
         }
         else 
         {
             cn_front_message("CSRF attempt!", 'login');                
-            $_SESS['user'] = null;
+            $_SESSION['user'] = null;
         }
             
     }

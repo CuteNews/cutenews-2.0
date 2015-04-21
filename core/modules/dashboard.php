@@ -107,14 +107,12 @@ function dashboard_invoke()
     $drafts =isset($meta_draft['locs'])? intval(array_sum($meta_draft['locs'])):false;
 
     if ($drafts && test('Cvn'))
-        $greeting_message = i18n('News in draft: %1', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
-    else
-        $greeting_message = i18n('Have a nice day!');
-
-    global $_SESS;
-    if(isset($_SESS['adm_need_migrate'])&&$_SESS['adm_need_migrate'])
     {
-        $greeting_message=  i18n('<b style="color:red;"> Need convert data by migration tools. </b>');        
+        $greeting_message = i18n('News in draft: %1', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
+    }
+    else
+    {
+        $greeting_message = i18n('Have a nice day!');
     }
 
     cn_assign('dashboard, username, greeting_message', $dashboard, $member['name'], $greeting_message);
@@ -128,22 +126,33 @@ function dashboard_invoke()
 function dashboard_sysconf()
 {
     $lng   = $grps = $all_skins = array();
-    $skins = scan_dir(SERVDIR.'/skins');
-    $langs = scan_dir(SERVDIR.'/core/lang', 'txt');
+    $skins = scan_dir(cn_path_construct(SERVDIR,'skins'));
+    $langs = scan_dir(cn_path_construct(SERVDIR,'core','lang'), 'txt');
     $_grps = getoption('#grp');
 
     // fetch skins
     foreach ($skins as $skin)
+    {
         if (preg_match('/(.*)\.skin\.php/i', $skin, $c))
+        {
             $all_skins[$c[1]] = $c[1];
+        }
+    }
 
     // fetch lang packets
     foreach ($langs as  $lf)
+    {
         if (preg_match('/(.*)\.txt/i', $lf, $c))
+        {
             $lng[$c[1]] = $c[1];
+        }
+    }
 
     // fetch groups
-    foreach ($_grps as $id => $vn) $grps[$id] = ucfirst($vn['N']);
+    foreach ($_grps as $id => $vn) 
+    {
+        $grps[$id] = ucfirst($vn['N']);
+    }
 
     $options_list = array
     (
@@ -192,7 +201,7 @@ function dashboard_sysconf()
             'client_online'         => array('int', 'Expiration time client online|If 0, client online disabled'),
             'show_thumbs'           => array('Y/N', 'Show thumbnail files in media gallery'),
             'thumbnail_with_upload'  => array('Y/N', 'Generate thumbnail after upload big image'),
-            'max_thumbnail_widht'   => array('int', 'Max image width (in px)|Larger than the specified size is considered a big'),
+            'max_thumbnail_width'   => array('int', 'Max image width (in px)|Larger than the specified size is considered a big'),
             'uploads_dir'           => array('text', 'Server upload dir|Real path on server'),
             'uploads_ext'           => array('text', 'Frontend upload dir|Frontend path for uploads'),
         ),
@@ -321,16 +330,19 @@ function dashboard_sysconf()
 
     // Set .htaccess root
     $SN = dirname($_SERVER['SCRIPT_NAME']);
-
+    
     // Make rewrite path
-    $cfg['%site']['rw_htaccess'] = (($SN == DIRECTORY_SEPARATOR) ? SERVDIR : substr(SERVDIR, 0, -strlen($SN))) . '/.htaccess';
+    $cfg['%site']['rw_htaccess'] = (($SN == DIRECTORY_SEPARATOR) ? SERVDIR : substr(SERVDIR, 0, -strlen($SN))) .DIRECTORY_SEPARATOR.'.htaccess';
 
     // Save cached copy
     mcache_set('config', $cfg);
 
     // ------------------
     $sub = REQ('sub', "GETPOST");
-    if (!isset($options_list[$sub])) $sub = 'general';
+    if (!isset($options_list[$sub])) 
+    {
+        $sub = 'general';
+    }
 
     // Save data
     if (request_type('POST'))
@@ -346,17 +358,31 @@ function dashboard_sysconf()
         $script_path = "http://".$_SERVER['SERVER_NAME'] . (($SN == '/' || $SN == '\\') ? '' : $SN);
 
         // Fill empty fields
-        if (empty($post_cfg['http_script_dir'])) $post_cfg['http_script_dir'] = $script_path;
-        if (empty($post_cfg['uploads_dir']))     $post_cfg['uploads_dir'] = SERVDIR . '/uploads';
-        if (empty($post_cfg['uploads_ext']))     $post_cfg['uploads_ext'] = $script_path . '/uploads';
-        if (empty($post_cfg['rw_layout']))       $post_cfg['rw_layout']   = SERVDIR . '/example.php';
+        if (empty($post_cfg['http_script_dir'])) 
+        {
+            $post_cfg['http_script_dir'] = $script_path;
+        }
+        if (empty($post_cfg['uploads_dir']))     
+        {
+            $post_cfg['uploads_dir'] =  cn_path_construct( SERVDIR , 'uploads');
+        }
+        if (empty($post_cfg['uploads_ext']))     
+        {
+            $post_cfg['uploads_ext'] = $script_path . '/uploads';
+        }
+        if (empty($post_cfg['rw_layout']))
+        {
+            $post_cfg['rw_layout']   = SERVDIR .DIRECTORY_SEPARATOR .'example.php';
+        }
 
         // .htaccess rewrite
         if (isset($post_cfg['rw_engine'])&&$post_cfg['rw_engine'])
         {
             if (!file_exists($fn = getoption('rw_htaccess')))
+            {
                 fclose(fopen($fn, "w+"));
-
+            }
+            
             // refresh .htaccess file
             $w  = array();
             $s  = FALSE;
@@ -366,26 +392,43 @@ function dashboard_sysconf()
             // Exclude Cutenews rewrite section
             foreach ($fx as $v)
             {
-                if (trim($v) == '# --- CUTENEWS[ST]') $s = TRUE;
+                if (trim($v) == '# --- CUTENEWS[ST]') 
+                {
+                    $s = TRUE;
+                }
                 if (!$s)
                 {
                     $v = trim($v);
                     if (preg_match('/^RewriteEngine\s+ON/i', $v))
+                    {
                         $rw_engine_on = TRUE;
+                    }
 
                     $w[] = trim($v)."\n";
                 }
-                if (trim($v) == '# --- CUTENEWS[ED]') $s = FALSE;
+                if (trim($v) == '# --- CUTENEWS[ED]') 
+                {
+                    $s = FALSE;
+                }
             }
 
             $URI = dirname(preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']) . '.html' );
-            if ($URI == '/') $URI = '/show_news.php'; else $URI .= '/show_news.php';
+            if ($URI == '/') 
+            {
+                $URI = '/show_news.php'; 
+            }
+            else 
+            {
+                $URI .= '/show_news.php';
+            }
 
             // Add Cutenews rewrite rules
             $w[] = "# --- CUTENEWS[ST]\n";
 
             if (!$rw_engine_on)
+            {
                 $w[] = "RewriteEngine ON\n";
+            }
 
             $w[] = "RewriteCond %{REQUEST_FILENAME} !-d\n";
             $w[] = "RewriteCond %{REQUEST_FILENAME} !-f\n";
@@ -400,10 +443,22 @@ function dashboard_sysconf()
         // all
         foreach ($by_default as $id => $var)
         {
-            if ($var[0] == 'text' || $var[0] == 'select') $opt_result[$id] = $post_cfg[$id];
-            elseif ($var[0] == 'int') $opt_result[$id] = intval($post_cfg[$id]);
-            elseif ($var[0] == 'Y/N') $opt_result[$id] = (isset($post_cfg[$id]) && 'Y' == $post_cfg[$id]) ? 1 : 0;
-            elseif (isset($post_cfg[$id])) unset($opt_result[$id]);
+            if ($var[0] == 'text' || $var[0] == 'select') 
+            {
+                $opt_result[$id] = $post_cfg[$id];
+            }
+            elseif ($var[0] == 'int') 
+            {
+                $opt_result[$id] = intval($post_cfg[$id]);
+            }
+            elseif ($var[0] == 'Y/N') 
+            {
+                $opt_result[$id] = (isset($post_cfg[$id]) && 'Y' == $post_cfg[$id]) ? 1 : 0;
+            }
+            elseif (isset($post_cfg[$id])) 
+            {
+                unset($opt_result[$id]);
+            }
         }
 
         setoption('#%site', $opt_result);
@@ -460,10 +515,18 @@ function dashboard_personal()
         $clause = '';
         $any_changes = FALSE;
         list($editpassword, $confirmpassword, $editnickname, $edithidemail, $more) = GET('editpassword, confirmpassword, editnickname, edithidemail, more', 'POST');
-
-        if ($member['nick'] !== $editnickname)
+        $avatar_file=  isset($_FILES['avatar_file'])?$_FILES['avatar_file']:null;
+                
+        if ( (!isset($member['nick']) && !empty($editnickname)) || (isset($member['nick']) && $member['nick'] !== $editnickname))
+        {
             $any_changes = TRUE;
+        }
 
+        if((!isset($member['e-hide'])&&!empty($edithidemail)) || (isset($member['e-hide']) && $member['e-hide'] !== $edithidemail))
+        {
+            $any_changes=TRUE;
+        }
+        
         if ($editpassword)
         {
             if ($editpassword === $confirmpassword)
@@ -478,7 +541,9 @@ function dashboard_personal()
                 cn_send_mail($member['email'], i18n("Password was changed"), $notification);
             }
             else
+            {
                 cn_throw_message('Password and confirm do not match', 'e');
+            }
         }
 
         // Update additional fields for personal data
@@ -490,7 +555,23 @@ function dashboard_personal()
             $any_changes = TRUE;
             db_user_update($member['name'], "more=".$n_more);
         }
-
+        // Set an avatar
+        if(!empty($avatar_file)&&$avatar_file['error']==0)
+        {
+            $uploads_dir=getoption('uploads_dir');                        
+            if($uploads_dir)
+            {                
+                $file_name='avatar_'.$member['name'].'_'.$avatar_file['name'];                              
+                if(isset($member['avatar'])&&$member['avatar']!=$file_name)
+                {
+                    // remove old avatar
+                    unlink($uploads_dir.$member['avatar']);
+                }
+                move_uploaded_file($avatar_file['tmp_name'], $uploads_dir.$file_name);                
+                db_user_update($member['name'], "avatar=".$file_name);
+                $any_changes = TRUE;
+            }            
+        }
         // Has changes?
         if ($any_changes)
         {
@@ -503,7 +584,9 @@ function dashboard_personal()
             cn_throw_message("User info updated! $clause");
         }
         else
+        {
             cn_throw_message("No changes", 'w');
+        }
     }
 
     $grp = getoption('#grp');
@@ -513,9 +596,11 @@ function dashboard_personal()
     foreach ($personal_more as $name => $pdata)
     {
         if (isset($member['more'][$name]))
+        {
             $personal_more[$name]['value'] = $member['more'][$name];
+        }
     }
-
+    
     cn_assign('member, acl_write_news, acl_desc, personal_more', $member, test('Can'), $acl_desc, $personal_more);
     echoheader('-@dashboard/style.css', "Personal options"); echo exec_tpl('dashboard/personal'); echofooter();
 }
@@ -577,7 +662,7 @@ function dashboard_category()
                 }
                 else
                 {
-                    cn_throw_message('This category alredy exist','e');
+                    cn_throw_message('This category already exist','e');
                 }            
             }
             elseif($is_edit)
@@ -671,22 +756,42 @@ function dashboard_templates()
     $tuser = getoption('#templates');
 
     // Basic template name and fetch data (user/system)
-    if (!$template) $template = 'default';
+    if (!$template) 
+    {
+        $template = 'default';
+    }
 
     // Copy default subtemplate, if not exists
-    if (!isset($tuser[$template])) foreach ($list[$template] as $_sub => $_var) $tuser[$template][$_sub] = $_var;
+    if (!isset($tuser[$template])) 
+    {
+        foreach ($list[$template] as $_sub => $_var) 
+        {
+            $tuser[$template][$_sub] = $_var;
+        }
+    }
 
     // Get all templates, mark it as user/system
-    foreach ($tuser as $id => $vs) $all_templates[ $id ] = 'User';
-    foreach ($list as $id => $vs) $all_templates[ $id ] = 'Sys';
+    foreach ($tuser as $id => $vs) 
+    {
+        $all_templates[ $id ] = 'User';
+    }
+    
+    foreach ($list as $id => $vs) 
+    {
+        $all_templates[ $id ] = 'Sys';
+    }
 
     $odata = array();
     foreach ($tuser[$template] as $id => $subtpl)
     {
         if (isset($def_ids[$id]))
+        {
             $_name = $def_ids[$id];
+        }
         else
+        {
             $_name = ucfirst(str_replace('_', ' ', $id));
+        }
 
         $odata[$id] = $subtpl;
         $template_parts[$id] = $_name;
@@ -695,7 +800,10 @@ function dashboard_templates()
     reset($odata);
 
     // Get subtmpl by default
-    if (!$sub) $sub = key($odata);
+    if (!$sub) 
+    {
+        $sub = key($odata);
+    }
 
     // ------------------------------------------------------------------------------------ ACTIONS --------------------
     // save template?
@@ -723,6 +831,8 @@ function dashboard_templates()
             }
             else
             {
+                $tuser[$template][$sub] = REQ('save_template_text', 'POST');
+
                 setoption("#templates/$template_name", $tuser[$template]);
                 msg_info('Template ['.$template_name.'] created', cn_url_modify(array('reset'), 'mod='.REQ('mod'), 'opt='.REQ('opt'), 'template='.$template_name));
             }
@@ -767,8 +877,15 @@ function dashboard_templates()
         }
     }
 
-    if (isset($_POST['template']))  $_GET['template'] = $_POST['template'];
-    if (isset($_POST['sub']))       $_GET['sub'] = $_POST['sub'];
+    if (isset($_POST['template']))  
+    {
+        $_GET['template'] = $_POST['template'];
+    }
+    
+    if (isset($_POST['sub']))       
+    {
+        $_GET['sub'] = $_POST['sub'];
+    }
 
     // user can't delete system template, only modify
     $can_delete = $all_templates[$template] == 'Sys' ? FALSE : TRUE;
@@ -957,7 +1074,7 @@ function dashboard_selfchk()
     foreach (hook('cnsc_dirs', $check_dirs) as $dir)
     {
         // Try create file in cdata
-        $test_file = SERVDIR.'/'.$dir.'/.test.html';
+        $test_file = cn_path_construct(SERVDIR,$dir).'test.html';
         fclose( fopen($test_file, 'w+') );
 
         // File exists?
@@ -967,19 +1084,29 @@ function dashboard_selfchk()
         }
         else
         {
-            $errors[] = array('perm' => '---', 'file' => SERVDIR.'/'.$dir, 'msg' => i18n('<b>Directory not writable</b>'));
+            $errors[] = array('perm' => '---', 'file' => SERVDIR.DIRECTORY_SEPARATOR.$dir, 'msg' => i18n('<b>Directory not writable</b>'));
         }
     }
 
     // --- Check uploads dir
     if (getoption('uploads_dir'))
+    {
         $updir = getoption('uploads_dir');
+    }
     else
-        $updir = SERVDIR . '/uploads';
+    {
+        $updir = cn_path_construct(SERVDIR , 'uploads');
+    }
 
-    fclose(fopen($cfile = "$updir/.test.html", 'w+'));
-    if (file_exists($cfile)) unlink($cfile);
-    else $errors[] = array('perm' => '---', 'file' => $updir, 'msg' => i18n('<b>Directory not writable</b>'));
+    fclose(fopen($cfile = $updir.'test.html', 'w+'));
+    if (file_exists($cfile)) 
+    {
+        unlink($cfile);
+    }
+    else 
+    {
+        $errors[] = array('perm' => '---', 'file' => $updir, 'msg' => i18n('<b>Directory not writable</b>'));
+    }
 
     // ---
     $check_files  = array
@@ -1060,7 +1187,10 @@ function dashboard_backup()
         $name = trim(preg_replace('/[^a-z0_9_]/i', '', REQ('backup_name')));
         $backup_sysonly = REQ('backup_sysonly');
 
-        if (!$name) cn_throw_message('Enter correct backup name', 'e');
+        if (!$name) 
+        {
+            cn_throw_message('Enter correct backup name', 'e');
+        }
         else
         {
             // Do compress files
@@ -1072,19 +1202,19 @@ function dashboard_backup()
                 $zip->create_dir('users/');
 
                 // Compress news
-                $news = scan_dir(SERVDIR.'/cdata/news');
+                $news = scan_dir(cn_path_construct(SERVDIR,'cdata','news'));
                 foreach ($news as $file)
                 {
-                    $data = join('', file(SERVDIR.'/cdata/news/'.$file));
-                    $zip->create_file($data, "news/$file");
+                    $data = join('', file(cn_path_construct(SERVDIR,'cdata','news').$file));
+                    $zip->create_file($data, 'news'.DIRECTORY_SEPARATOR.$file);
                 }
 
                 // Compress users
-                $news = scan_dir(SERVDIR.'/cdata/users');
+                $news = scan_dir(cn_path_construct(SERVDIR,'cdata','users'));
                 foreach ($news as $file)
                 {
-                    $data = join('', file(SERVDIR.'/cdata/users/'.$file));
-                    $zip->create_file($data, "news/$file");
+                    $data = join('', file(cn_path_construct(SERVDIR,'cdata','users').$file));
+                    $zip->create_file($data, 'news'.DIRECTORY_SEPARATOR.$file);
                 }
 
                 $files = array('conf.php', 'users.txt');
@@ -1097,12 +1227,12 @@ function dashboard_backup()
             // Append files
             foreach ($files as $file)
             {
-                $data = join('', file(SERVDIR.'/cdata/'.$file));
+                $data = join('', file(cn_path_construct(SERVDIR,'cdata').$file));
                 $zip->create_file($data, $file);
             }
 
             // write compressed data
-            $wb = fopen(SERVDIR.'/cdata/backup/'.$name.'.zip', 'w+');
+            $wb = fopen(cn_path_construct(SERVDIR,'cdata','backup').$name.'.zip', 'w+');
             fwrite($wb, $zip->zipped_file());
             fclose($wb);
 
@@ -1115,36 +1245,39 @@ function dashboard_backup()
     }
     // Unpack procedure called
     elseif ($unpack_file = REQ('unpack', 'GET'))
-    {
+    {        
         cn_dsi_check();
 
-        if (file_exists($cf = SERVDIR."/cdata/backup/$unpack_file.zip"))
+        if (file_exists($cf = cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'zip'))
         {
             $zip = new zipfile();
-            $files = $zip->read_zip(SERVDIR."/cdata/backup/$unpack_file.zip");
+            $files = $zip->read_zip(cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'zip');
             unset($zip);
 
             // replace files from zip-archive
             foreach ($files as $fdata)
             {
-                $file = $fdata['dir'] . '/' . $fdata['name'];
-                $w = fopen(SERVDIR . '/cdata/' . $file, 'w+');
+                $file = $fdata['dir'] . DIRECTORY_SEPARATOR . $fdata['name'];
+                $w = fopen(cn_path_construct(SERVDIR , 'cdata'). $file, 'w+');
                 fwrite($w, $fdata['data']);
                 fclose($w);
             }
 
-            @unlink($cf);
+            unlink($cf);
             cn_throw_message('File decompressed, backup removed');
         }
-        else cn_throw_message('File ['.cn_htmlspecialchars($unpack_file).'] not exists', 'e');
+        else 
+        {
+            cn_throw_message('File ['.cn_htmlspecialchars($unpack_file).'] not exists', 'e');
+        }
     }
 
     $archives = array();
 
-    $list = scan_dir(SERVDIR . '/cdata/backup/', '\.zip' );
+    $list = scan_dir(cn_path_construct(SERVDIR , 'cdata','backup'), '\.zip' );
     foreach ($list as $d)
     {
-        $file = SERVDIR.'/cdata/backup/'.$d;
+        $file = cn_path_construct(SERVDIR,'cdata','backup').$d;
         $archives[] = array
         (
             'name' => str_replace('.zip', '', $d),
@@ -1173,8 +1306,14 @@ function dashboard_intwiz()
     $rss_language           =isset($rss['language'])? $rss['language']:'en-us';
 
     // Default: view
-    if ($rss_encoding == '') $rss_encoding = 'UTF-8';
-    if ($rss_language == '') $rss_language = 'en-us';
+    if ($rss_encoding == '') 
+    {
+        $rss_encoding = 'UTF-8';
+    }
+    if ($rss_language == '') 
+    {
+        $rss_language = 'en-us';
+    }
 
     // Check submit
     if (request_type('POST'))
@@ -1190,8 +1329,14 @@ function dashboard_intwiz()
             $rss['language']         = $rss_language         = REQ('rss_language');
 
             // Default: save
-            if ($rss_encoding == '') $rss_encoding = 'UTF-8';
-            if ($rss_language == '') $rss_language = 'en-us';
+            if ($rss_encoding == '') 
+            {
+                $rss_encoding = 'UTF-8';
+            }
+            if ($rss_language == '') 
+            {
+                $rss_language = 'en-us';
+            }
 
             setoption('#rss', $rss);
         }
@@ -1202,8 +1347,14 @@ function dashboard_intwiz()
     $templates = getoption('#templates');
 
     // Get all templates
-    foreach ($listsys as $id => $_t) $all_tpls[ $id ] = $id;
-    foreach ($templates as $id => $_t) $all_tpls[ $id ] = $id;
+    foreach ($listsys as $id => $_t) 
+    {
+        $all_tpls[ $id ] = $id;
+    }
+    foreach ($templates as $id => $_t) 
+    {
+        $all_tpls[ $id ] = $id;
+    }
 
     cn_assign('sub, categories, all_tpls', $sub, $categories, $all_tpls);
     cn_assign('rss_news_include_url, rss_encoding, rss_language, rss_title', $rss_news_include_url, $rss_encoding, $rss_language, $rss_title);
@@ -1217,7 +1368,10 @@ function dashboard_intwiz()
 function dashboard_ipban()
 {
     $ipban = getoption('#ipban');
-    if (!is_array($ipban)) $ipban = array();
+    if (!is_array($ipban)) 
+    {
+        $ipban = array();
+    }
 
     // Submit new IP
     if (request_type('POST'))
@@ -1225,12 +1379,18 @@ function dashboard_ipban()
         cn_dsi_check();
 
         $ip = trim(REQ('add_ip'));
+        if(!empty($ip))
+        {
+            // Times blocked : Expire time
+            $ipban[$ip] = array(0, 0);
 
-        // Times blocked : Expire time
-        $ipban[$ip] = array(0, 0);
-
-        setoption('#ipban', $ipban);
-        cn_throw_message('IP or name mask ['.$ip.'] add/replaced');
+            setoption('#ipban', $ipban);
+            cn_throw_message('IP or name mask ['.$ip.'] add/replaced');
+        }
+        else
+        {
+            cn_throw_message('IP Address must be filled','w');
+        }
     }
     // Unblock IP
     elseif ($ip = REQ('unblock'))
@@ -1238,8 +1398,10 @@ function dashboard_ipban()
         cn_dsi_check();
 
         if (isset($ipban[$ip]))
+        {
             unset($ipban[$ip]);
-
+        }
+        
         setoption('#ipban', $ipban);
     }
 
@@ -1269,7 +1431,7 @@ function dashboard_logs()
     // --- System section ---
     if (!$section)
     {
-        $path=SERVDIR. path_construct('cdata','log','error_dump.log');
+        $path=cn_path_construct(SERVDIR,'cdata','log').'error_dump.log';
         if(file_exists($path))
         {
             $r = fopen($path, 'r');
@@ -1312,9 +1474,11 @@ function dashboard_logs()
     // --- User log section ---
     elseif ($section === 'user')
     {
-        if (!file_exists($ul = SERVDIR.'/cdata/log/user.log'))
+        if (!file_exists($ul = cn_path_construct(SERVDIR,'cdata','log').'user.log'))
+        {
             fclose(fopen($ul, 'w+'));
-
+        }
+        
         $r = fopen($ul, 'r');
 
         do
@@ -1368,7 +1532,9 @@ function dashboard_archives()
             elseif ($arch_action == 'extr')
             {
                 if (!db_extract_archive($req_archive_id))
+                {
                     cn_throw_message("Archive not extracted correctly", 'e');
+                }
                 else
                 {
                     $req_archive_id = 0;
@@ -1376,7 +1542,9 @@ function dashboard_archives()
                 }
             }
             else
+            {
                 cn_throw_message('@SYSINFO: Unrecognized request', 'e');
+            }
         }
         // Make archive
         else
@@ -1398,10 +1566,13 @@ function dashboard_archives()
             $cc = db_make_archive($date_f, $date_t);
 
             if ($cc)
+            {
                 cn_throw_message(i18n('Archive created (%1 articles)', $cc));
+            }
             else
+            {
                 cn_throw_message('There is nothing to archive', 'e');
-
+            }
         }
     }
 
@@ -1597,12 +1768,17 @@ function dashboard_group()
     $gn = file(SKIN.'/defaults/groups_names.tpl');
     foreach ($gn as $G)
     {
-        if (($G = trim($G)) == '') continue;
+        if (($G = trim($G)) == '') 
+        {
+            continue;
+        }
         list($cc, $xgrp, $name_desc) = explode('|', $G, 3);
 
         if (!isset($access_desc[$xgrp]))
+        {
             $access_desc[$xgrp] = array();
-
+        }
+        
         $access_desc[$xgrp][$cc] = $name_desc;
         $form_desc[$cc] = explode('|', $name_desc);
     }
@@ -1628,27 +1804,40 @@ function dashboard_group()
         }
         elseif($mode=='edit')
         {
+            $is_edited=true;
+            
             // Update exists or new group
             if ($group_id > 1)
             {
-                $groups[$group_id] = array
-                (
-                    '#' => $groups[$group_id]['#'],
-                    'N' => $group_name,
-                    'G' => $group_grp,
-                    'A' => join(',', $ACL),
-                );
+                if(!empty($groups[$group_id]))
+                {
+                    $is_edited=  md5($groups[$group_id]['N'].$groups[$group_id]['G'].$groups[$group_id]['A'])!=md5($group_name.$group_grp.(!empty($ACL)?join(',', $ACL):''));
+                }
+                if($is_edited)
+                {
+                    $groups[$group_id] = array
+                    (
+                        '#' => $groups[$group_id]['#'],
+                        'N' => $group_name,
+                        'G' => $group_grp,
+                        'A' => (!empty($ACL)?join(',', $ACL):''),
+                    );
+                }
             }
             
             if ($group_id == 1)
             {
                 cn_throw_message("Can't update admin group", 'e');
             }
-            else
+            elseif($is_edited)
             {
                 // Save to config
                 setoption('#grp', $groups);                             
                 cn_throw_message("Group updated");                           
+            }
+            else
+            {
+                cn_throw_message("No data for update",'w');
             }
         }
         elseif($mode=='add')
@@ -1673,7 +1862,7 @@ function dashboard_group()
                     '#' => '',
                     'N' => $group_name,
                     'G' => $group_grp,
-                    'A' => join(',', $ACL),
+                    'A' => (!empty($ACL)?join(',', $ACL):''),
                 );                
                 // Save to config
                 setoption('#grp', $groups);                          
@@ -1681,7 +1870,7 @@ function dashboard_group()
             }
             elseif($is_exists)
             {
-                cn_throw_message("Group with that name alredy exist",'e');
+                cn_throw_message("Group with that name already exist",'e');
                 $group_id=0;
             }
             else
@@ -1698,10 +1887,14 @@ function dashboard_group()
             foreach ($groups as $id => $dt)
             {
                 if ($id == $group_id && $dt['#'])
+                {
                     $edit_system = TRUE;
+                }
 
                 if ($dt['N'] == $group_name)
+                {
                     $edit_exists = TRUE;
+                }
             }
 
             // Reset group rights
@@ -1712,7 +1905,9 @@ function dashboard_group()
                 {
                     $G = trim($G);
                     if ($G[0] === '#')
+                    {
                         continue;
+                    }
 
                     list($id, $name, $group, $access) = explode('|', $G);
                     $id = intval($id);
@@ -1725,7 +1920,7 @@ function dashboard_group()
                             '#' => TRUE,
                             'N' => $name,
                             'G' => $group,
-                            'A' => join(',', $ACL),
+                            'A' => (!empty($ACL)?join(',', $ACL):''),
                         );                            
                         
                         cn_throw_message("Group reset");
@@ -1737,9 +1932,13 @@ function dashboard_group()
             elseif ($edit_exists && !$delete_group)
             {
                 if ($group_id == 1)
+                {
                     cn_throw_message("Can't update admin group", 'e');
+                }
                 else
-                    cn_throw_message('Parameters for a group are not correct specified or group alredy exists','e');
+                {
+                    cn_throw_message('Parameters for a group are not correct specified or group already exists','e');
+                }
             }
             // Unable remove system group
             elseif ($delete_group && $edit_exists)
@@ -1770,7 +1969,12 @@ function dashboard_group()
         $G = spsep($data['G']);
 
         foreach ($G as $id)
-            if(isset ($groups[$id]))$_gtext[] = $groups[$id]['N'];
+        {
+            if(isset ($groups[$id]))
+            {
+                $_gtext[] = $groups[$id]['N'];
+            }
+        }
 
         $grp[$name] = array
         (
@@ -1787,7 +1991,9 @@ function dashboard_group()
 
     // Get user acl data
     if ($group_id && $groups[$group_id])
+    {
         $bc = spsep($groups[$group_id]['A']);
+    }
 
     foreach ($_CN_access as $Gp => $Ex)
     {
@@ -1857,15 +2063,21 @@ function dashboard_wreplace()
             setoption('#rword', $wlist);
         }
         elseif ($word && $replace)
-        {
+        {            
             $wlist[$word] = $replace;
             setoption('#rword', $wlist);
         }
-        else cn_throw_message("Can't save");
+        else 
+        {
+            cn_throw_message("Can't save");
+        }
     }
 
     // Require additional data
-    if ($word) $replace = $wlist[$word];
+    if (isset($wlist[$word])) 
+    {
+        $replace = $wlist[$word];
+    }
     $is_replace_opt=getoption('use_replacement');
     cn_assign('wlist, word, replace, repopt', $wlist, $word, $replace, $is_replace_opt);
     echoheader('-@dashboard/style.css', 'Replace words'); echo exec_tpl('dashboard/replace'); echofooter();
@@ -1977,7 +2189,9 @@ function dashboard_script()
     list($snippet, $text) = GET('snippet, text');
 
     if ($snippet == '')
+    {
         $snippet = 'sandbox';
+    }
 
     // Prevent subfoldering
     $snippet = preg_replace('/[^a-z0-9\-\.]/i', '_', $snippet);
@@ -2000,7 +2214,9 @@ function dashboard_script()
             {
                 // Create new snippet
                 if (REQ('create', 'POST'))
+                {
                     $snippet = REQ('create');
+                }
 
                 setoption('#snippets/'.$snippet, $text);
                 cn_throw_message('Changes saved');
@@ -2013,7 +2229,10 @@ function dashboard_script()
     }
 
     $list = getoption('#snippets');
-    if (empty($list)) $list['sandbox'] = '';
+    if (empty($list)) 
+    {
+        $list['sandbox'] = '';
+    }
 
     $opt_txt=getoption('#snippets/'.$snippet);
     

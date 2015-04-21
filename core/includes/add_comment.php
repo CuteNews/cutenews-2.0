@@ -1,8 +1,19 @@
-<?php if (!defined('EXEC_TIME')) die('Access restricted');
+<?php if (!defined('EXEC_TIME')) { die('Access restricted'); }
 
-global $PHP_SELF, $_SESS;
+global $PHP_SELF;
 
-list($id, $action) = GET('id, action', 'GPG');
+list($id, $action, $is_forgetme) = GET('id, action, isforgetme', 'GPG');
+
+// Prevent false as 'false'
+if ($is_forgetme === 'false') { $is_forgetme = false; }
+
+// Logout user if clicked on "Forget me"
+if ($is_forgetme)
+{
+    cn_logout($_REQUEST['referer']);
+    return FALSE;
+}
+
 $id = cn_id_alias($id);
 
 // ------------------------------------
@@ -13,10 +24,6 @@ if ($user)
     $logged_as_member = TRUE;
     $name = $user['name'];
     $mail = $user['email'];
-    
-    // Extern call from internal widget (login), if checkbox 'remember_me' is set
-    if ((isset($_POST['CN_COOKIE_POSTPROCESS'])) && isset($_POST['cn_remember_me']))
-        cn_save_session(TRUE);
 }
 else
 {
@@ -25,6 +32,10 @@ else
     $mail = trim(REQ('mail', 'POST'));          
 }
 
+$comment    = trim(REQ('comments', 'POST'));
+$refer      = cn_htmlspecialchars(REQ('referer'));
+$regex_site = '/(ftps?|n?ntp|pop3|https?):\/\/[^\s]+/is';
+
 // Can't add comment
 if ($user && !test('Mac'))
 {
@@ -32,17 +43,19 @@ if ($user && !test('Mac'))
     return FALSE;
 }
 
-$comment    = trim(REQ('comments', 'POST'));
-$refer      = cn_htmlspecialchars(REQ('referer'));
-$regex_site = '/(ftps?|n?ntp|pop3|https?):\/\/[^\s]+/is';
-
 // ----------------------------------
 if ($action == 'comment_process')
 {
     cn_dsi_check();
 
     list($comm_delete) = GET('comm_delete');
-    if (is_array($comm_delete)) foreach ($comm_delete as $cid) db_comm_delete($id, $cid);
+    if (is_array($comm_delete))
+    {
+        foreach ($comm_delete as $cid)
+        {
+            db_comm_delete($id, $cid);
+        }
+    }
 
     // Redirect...
     echo '<script type="text/javascript">window.location="'.addslashes(REQ('referer')).'";</script>';
@@ -99,7 +112,7 @@ if (!$logged_as_member)
     if (getoption('use_captcha'))
     {
         $cm_captcha = REQ('cm_captcha', 'POST');
-        if ($_SESS['CSW'] && $_SESS['CSW'] !== $cm_captcha)
+        if ($_SESSION['CSW'] && $_SESSION['CSW'] !== $cm_captcha)
         {
             echo '<div class="cn_error_comment">'.i18n('Invalid CAPTCHA code').'. <a href="'.$refer.'">Go back</a></div>';
             return FALSE;
@@ -110,11 +123,23 @@ if (!$logged_as_member)
     {
         $email_check = FALSE;
 
-        if (getoption('allow_url_instead_mail') && preg_match($regex_site, $mail))
-            $email_check = TRUE;
+        if (getoption('allow_url_instead_mail'))
+        {
+            if (preg_match($regex_site, $mail))
+            {
+                $email_check = TRUE;
+            }
+            // Alternative variant for site
+            elseif (preg_match('/www.?\..*\.[a-z]{2,6}$/i', $mail))
+            {
+                $email_check = TRUE;
+            }
+        }
 
         if (check_email($mail))
+        {
             $email_check = TRUE;
+        }
 
         if (!$email_check)
         {
@@ -143,7 +168,7 @@ foreach ($block_list as $ip_test => $_t)
     // Create test string
     $match = '/'.str_replace('\x2a', '.*?', preg_sanitize($ip_test)).'/';
 
-    if (preg_match($match, CLIENT_IP) || !$logged_as_member && preg_match($match, $name))
+    if (preg_match($match, CLIENT_IP) || (!$logged_as_member && preg_match($match, $name)))
     {
         echo '<div class="cn_error_comment">'.i18n('Sorry but you have been blocked from posting comments').' (IP='.cn_htmlspecialchars(CLIENT_IP).'). <a href="'.$refer.'">Go back</a></div>';
         return FALSE;
@@ -153,8 +178,10 @@ foreach ($block_list as $ip_test => $_t)
 // Check for flood (if enabled)
 if ($flood_time = getoption('flood_time'))
 {
-    if (!file_exists($fn = SERVDIR.'/cdata/flood.txt'))
+    if (!file_exists($fn = cn_path_construct(SERVDIR, 'cdata').'flood.txt'))
+    {
         fclose(fopen($fn, 'w+'));
+    }
 
     $flood = file($fn);
 
@@ -169,12 +196,18 @@ if ($flood_time = getoption('flood_time'))
         if (time() <= intval($time))
         {
             fwrite($w, "$ip|$time");
-            if (CLIENT_IP == $ip) $found = TRUE;
+            if (CLIENT_IP == $ip)
+            {
+                $found = TRUE;
+            }
         }
     }
 
     // Not found client ip, add to end of file
-    if (!$found) fwrite($w, CLIENT_IP."|".(time() + $flood_time)."\n");
+    if (!$found)
+    {
+        fwrite($w, CLIENT_IP."|".(time() + $flood_time)."\n");
+    }
 
     flock($w, LOCK_UN);
     fclose($w);
@@ -203,9 +236,10 @@ if (!$logged_as_member)
             break;
         }
     }
-    if(!$is_true_user)
+
+    if (!$is_true_user)
     {
-        echo '<div class="cn_error_comment">'.i18n('This user name alredy exist, choose another').'. <a href="'.$refer.'">Go back</a></div>';
+        echo '<div class="cn_error_comment">'.i18n('This user name already exist, choose another').'. <a href="'.$refer.'">Go back</a></div>';
         return FALSE;
     }
 }
@@ -213,11 +247,13 @@ if (!$logged_as_member)
 // Can edit comment?
 $acl_edit_comment = FALSE;
 $edit_id          = intval(REQ('edit_id'));
-$_target_user     = db_user_by_name($db[$id]['co'][$edit_id]['u']);
+$_target_user     = isset($db[$id]['co'][$edit_id]) ?  db_user_by_name($db[$id]['co'][$edit_id]['u']) : FALSE;
 
 // Check: self [if can], group, and edit all
 if ($edit_id && (test('Mes') && $_target_user && $_target_user['name'] == $user['name'] || test('Meg', $_target_user) || test('Mea')))
+{
     $acl_edit_comment = TRUE;
+}
 
 // Check access for edit comment
 if ($acl_edit_comment && REQ('cm_edit_comment', 'POST'))
@@ -227,7 +263,10 @@ if ($acl_edit_comment && REQ('cm_edit_comment', 'POST'))
 else
 {
     $cid = ctime();
-    while (isset($db['co'][$cid])) $cid++;
+    while (isset($db['co'][$cid])) 
+    {
+        $cid++;
+    }
 }
 
 //convert to right encoding
@@ -256,7 +295,10 @@ db_save_news($db, $nloc); // save db piece
 db_comm_sync($id, $cid);  // update latest comments
 
 // Hook comment checker
-if ( hook('add_comment_checker', FALSE) ) return FALSE;
+if ( hook('add_comment_checker', FALSE) )
+{
+    return FALSE;
+}
 
 // Notify for New Comment
 if (getoption('notify_comment'))
@@ -270,7 +312,9 @@ if (getoption('notify_comment'))
 
 // Also, remember non authorized user
 if (!$logged_as_member && isset($_POST['cn_remember_me']))
+{
     cn_guest_auth($name, $mail);
+}
 
 // Redirect...
 $ref=  preg_replace('/&edit_id=\d+/', '', REQ('referer'));

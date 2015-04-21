@@ -26,10 +26,15 @@ if (!$_archive)
         $count = intval($info['c']);
 
         if ($url = cn_rewrite('archive', $id))
+        {
+         
             $arch_url = $url;
+        }
         else
+        {
             $arch_url = cn_url_modify('archive='.$id);
-
+        }
+        
         echo "<a href=\"$arch_url\">".date("d M Y", $info['min']) ." &ndash; ".date("d M Y", $info['max'])." (<b>$count</b>)</a><br />";
     }
 

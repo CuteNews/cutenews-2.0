@@ -11,10 +11,13 @@ include dirname(__FILE__).'/core/init.php';
 
 cn_sendheaders();
 cn_load_skin();
-cn_deprecated_check();
 cn_register_form();
 
 if (cn_login())
+{
     hook('index/invoke_module', array($_module) );
+}
 else
+{
     cn_login_form();
+}

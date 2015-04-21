@@ -3,19 +3,24 @@
     list($files, $dirs, $path, $pathes, $popup_form, $root_dir) = _GL('files, dirs, path, pathes, popup_form, root_dir');
 
     $ckeditor = REQ('CKEditorFuncNum');
-    $inline = REQ('opt', 'GETPOST') == 'inline' ? TRUE : FALSE;
+    $inline   = REQ('opt', 'GETPOST') == 'inline' ? TRUE : FALSE;
+    $opts     = REQ('imgopts', 'GETPOST') == 'yes' ? TRUE : FALSE;
+
     $path_dir = '';
 
     // Keep this parameters
-    $KeepString = 'mod, opt, folder, CKEditorFuncNum, callback, style, faddm';
+    $KeepString = 'mod, opt, folder, CKEditorFuncNum, callback, style, faddm, imgopts';
 
     // Set GET for dir links after file operations
     cn_set_GET($KeepString);
 
     cn_snippet_messages();
-
+    
     // BC only for stand-alone form
-    if (REQ('opt') !== 'inline') cn_snippet_bc();
+    if (!$inline)
+    {
+        cn_snippet_bc();
+    }    
 ?>
 
 <script type="text/javascript">
@@ -23,7 +28,9 @@
     function add_file_node()
     {
         var fnode = document.getElementById('file_node');
-        fnode.innerHTML = fnode.innerHTML + '<div><input type="file" name="upload_file[]" /> <a href="#" onclick="return(remove_it_node(this));">&ndash; remove</a></div>';
+        var ndiv=document.createElement('div');
+        ndiv.innerHTML = '<input type="file" name="upload_file[]" /> <a href="#" onclick="return(remove_it_node(this));">&ndash; remove</a>';
+        fnode.appendChild(ndiv);
         return false;
     }
 
@@ -34,24 +41,28 @@
     }
 
     function parentInsert(obj, cb)
-    {
-        var w = parseInt(getId('image_width').value);
-        var h = parseInt(getId('image_height').value);
-        var a = getId('image_alt').value;
-        var p = getId('image_popup').checked;
-
+    {      
         // resouse (field additional)
         <?php if (REQ('faddm')) { ?>
             var out = obj.href;
         <?php } else { ?>
+            var w = parseInt(getId('image_width').value);
+            var h = parseInt(getId('image_height').value);
+            var a = getId('image_alt').value;
+            var p = getId('image_popup').checked;            
+            
             var out = '[img' + (w != 0?' width='+w : '') + (p?' popup=Y' : '') + (h?' height='+h : '')  + (a?' alt='+a : '') +']' + obj.title + '[/img]';
         <?php } ?>
 
         // style: add or replace
         <?php if (REQ('style', 'GETPOST') == 'add')
+        {
              echo 'insertAtCursor(opener.document.getElementById(cb), out);';
+        }
         else
+        {
              echo 'opener.document.getElementById(cb).value = out;';
+        }
         ?>
 
         window.close();
@@ -65,6 +76,19 @@
         return false;
     }
 
+    function hideFolderList(obj,id)
+    {        
+        var box=document.getElementsByName('place_folder_'+id)[0];        
+        if(obj.checked)
+        {
+            box.style.display='none';
+        }
+        else
+        {
+            box.style.display='inline-block';
+        }
+    }
+
 </script>
 
 <!-- media breadcrumbs -->
@@ -73,15 +97,19 @@
     <?php
 
     if (count($pathes))
+    {
         echo '<a href="'.cn_url_modify("folder").'">uploads</a> ';
+    }
     else
+    {
         echo 'uploads';
+    }
 
     $cp = array();
     foreach ($pathes as $path_folder)
     {
         $cp[] = $path_folder;
-        $path_dir = join('/', $cp);
+        $path_dir = join(DIRECTORY_SEPARATOR, $cp);
         echo '&rarr; <a href="'.cn_url_modify("folder=".$path_dir).'">'.$path_folder.'</a>';
     } ?>
 </div>
@@ -98,7 +126,7 @@
                 <tr><td>Upload by URL [<a href="#" title="Must be EXACT link to image, else not uploaded" onclick="return(tiny_msg(this));">?</a>]</td><td><input type="text" style="width: 400px;" name="upload_from_inet" /> (optional)</td></tr>
             <?php } else { ?>Upload by url not allowed by server<?php } ?>
 
-            <?php if (!$ckeditor && $inline) { ?>
+            <?php if (!$ckeditor && $opts) { ?>
                 <tr><td>Image width</td><td><input type="text" style="width: 150px;" id="image_width" name="image_width" value="<?php echo intval(REQ('image_width')); ?>" /></td></tr>
                 <tr><td>Image height</td><td><input type="text" style="width: 150px;" id="image_height"  name="image_height" value="<?php echo intval(REQ('image_height')); ?>" /></td></tr>
                 <tr><td>Image alt</td><td><input type="text" style="width: 250px;" id="image_alt" name="image_alt" value="<?php echo cn_htmlspecialchars(REQ('image_alt')); ?>"/></td></tr>
@@ -128,13 +156,13 @@
         <!-- make UP button -->
         <?php if ($cp) {
 
-            $prev_folder = join('/', array_slice($cp, 0, -1));
+            $prev_folder = join(DIRECTORY_SEPARATOR, array_slice($cp, 0, -1));
             ?><tr><td align="center">&nbsp;</td><td colspan="5"><a href="<?php echo cn_url_modify("folder=$prev_folder"); ?>">..</a></td> </tr>
 
         <?php } ?>
 
         <!-- show dirs -->
-        <?php foreach ($dirs as $dir) { $next_folder = join('/', array_merge( $cp, array($dir['name']))); ?>
+        <?php foreach ($dirs as $dir) { $next_folder = join(DIRECTORY_SEPARATOR, array_merge( $cp, array($dir['name']))); ?>
             <tr>
                 <td align="center"><img src="skins/images/dir.png" /></td>
                 <td colspan="4"><a href="<?php echo cn_url_modify("folder=$next_folder"); ?>" style="color: #C04000"><b><?php echo $dir['name']; ?></b></a></td>
@@ -143,26 +171,42 @@
         <?php } ?>
 
         <!-- show files -->
-        <?php if (is_array($files)) foreach ($files as $file) { ?>
+        <?php if (is_array($files)) { foreach ($files as $file) { ?>
             <tr<?php
 
-                    if ($file['is_thumb']) echo ' style="background: #f0f0f0; '.(getoption('show_thumbs') ? '' : 'display: none;').'" ';
-                    elseif ($file['just_uploaded']) echo ' style="background: #f0fff0" ';
+                    if ($file['is_thumb']) 
+                    { 
+                        echo ' style="background: #f0f0f0; '.(getoption('show_thumbs') ? '' : 'display: none;').'" '; 
+                        
+                    }
+                    elseif ($file['just_uploaded']) 
+                    {
+                        echo ' style="background: #f0fff0" ';
+                    }
 
                 ?>>
                 <td align="center"><a href="<?php echo $file['url']; ?>" target="_blank">
                 <?php
-                    if ($file['w'] == 0) echo 'n/a';
+                    if ($file['w'] == 0) 
+                    {
+                        echo 'n/a';
+                    }
                     elseif ($file['thumb']) { ?><img src="<?php echo $file['thumb']; ?>" width="32" /><?php }
                     elseif ($file['w'] < 368 || $file['is_thumb']) { ?><img src="<?php echo $file['url']; ?>" width="32" /><?php }
-                    else echo "view";
+                    else
+                    {
+                        echo "view";
+                    }
                 ?></a>
                 </td>
                 <td>
                     <?php if ($ckeditor) { ?>
                         <a target="_blank" href="<?php echo $file['url']; ?>" onclick="return(insertCKEditor(this));"><?php echo $file['name']; ?></a>
                     <?php } else { ?>
-                        <a target="_blank" href="<?php echo $file['url']; ?>" title="<?php echo $file['local']; ?>" <?php if ($inline) { ?> onclick="return(parentInsert(this, '<?php echo REQ('callback', 'GETPOST'); ?>'));"<?php } ?>><?php echo $file['name']; ?></a>
+                        <a target="_blank" href="<?php echo $file['url']; ?>" title="<?php echo $file['local']; ?>" 
+                            <?php if ($inline){ ?> onclick="return(parentInsert(this, '<?php echo REQ('callback', 'GETPOST'); ?>'));" <?php } ?>>
+                                <?php echo $file['name']; ?>
+                        </a>
                     <?php } ?>
                 </td>
                 <td align="center"><?php echo $file['w']; ?></td>
@@ -170,7 +214,7 @@
                 <td align="center"><?php echo $file['fs']; ?></td>
                 <td align="center"><input type="checkbox" name="rm[]" value="<?php echo cn_htmlspecialchars($file['name']); ?>" /></td>
             </tr>
-        <?php } if (empty($files)) { ?><tr><td colspan="6" align="center"><b>Files not found</b></td></tr><?php } ?>
+        <?php } } if (empty($files)) { ?><tr><td colspan="6" align="center"><b>Files not found</b></td></tr><?php } ?>
 
     </table>
 
@@ -189,7 +233,8 @@
                 <option value="rename">Rename</option>
                 <option value="delete">Delete</option>
                 <option value="create">Create directory</option>
-                <option value="thumb">Thumbnail / Resize</option>
+                <option value="thumb">Generate thumbnail</option>
+                <option value="resize">Resize source</option>
                 <?php hook('template/media/select_options'); ?>
             </select>
             <input type="submit" value="Run" />

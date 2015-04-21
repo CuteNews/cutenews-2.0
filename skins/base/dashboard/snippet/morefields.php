@@ -23,7 +23,7 @@ global $morefields;
             <?php } elseif ($item['type'] == 'image') { ?>
 
                 <div>
-                    <input id="faddm_<?php echo $name; ?>" type="text" style="width: 500px" value="<?php echo cn_htmlspecialchars($item['#value']); ?>" name="faddm[<?php echo $name; ?>]" />
+                    <input id="faddm_<?php echo $name; ?>" type="text" style="width: 500px" value="<?php echo isset($item['#value'])? cn_htmlspecialchars($item['#value']):''; ?>" name="faddm[<?php echo $name; ?>]" />
                     <a class="external" href="#" onclick="<?php echo cn_snippet_open_win(cn_url_modify('mod=media','opt=inline', 'faddm=Y', 'callback=faddm_'.$name), array('w' => 1000)); ?>">Select resource</a>
                 </div>
 

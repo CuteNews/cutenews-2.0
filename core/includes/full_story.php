@@ -21,7 +21,7 @@ if (!isset($ent[$id]))
 else
 {
     $entry = $ent[$id];
-    $text  = entry_make($entry, 'full', $template);
+    $text  = entry_make($entry, 'full', $template);    
     $text = cn_snippet_search_hl($text, $qhl);
 
     echo $text;

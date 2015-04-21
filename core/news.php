@@ -122,19 +122,11 @@ function cn_helper_smiles($template)
     return $template;
 }
 
-// BB-TAGS -------------------------------------------------------------------------------------------------------------
-function cn_modify_s1bb_upimage($o)
-{
-    list($src, $dt) = explode(' ', $o);
-    return '<img '.$dt.' src="'.getoption('http_script_dir').'/skins/images/upskins/images/'.substr($src, 1).'" style="border: none;" alt="" />';
-}
-
+//// BB-TAGS -------------------------------------------------------------------------------------------------------------
 function cn_modify_s2bb_link($t, $o)
 {
     return '<a href="'.substr($o, 1).'">'.$t.'</a>';
 }
-
-function cn_modify_s1bb_image($t, $o) { return cn_modify_s1bb_upimage($t, $o); } // alias upimage
 
 function cn_modify_s2bb_b($t) { return '<strong>'.$t.'</strong>'; }
 function cn_modify_s2bb_i($t) { return '<em>'.$t.'</em>'; }
@@ -155,20 +147,26 @@ function cn_modify_s2bb_img($t, $bb)
 {
     $bb = cn_bb_decode($bb);
 
-    $w = $bb['width'] ? ' width="'.intval($bb['width']).'" ' : '';
-    $h = $bb['height'] ? ' height="'.intval($bb['height']).'" ' : '';
-    $a = $bb['alt'] ? ' alt="'.cn_htmlspecialchars($bb['alt']).'" ' : '';
+    $w = isset($bb['width']) ? ' width="'.intval($bb['width']).'" ' : '';
+    $h = isset($bb['height']) ? ' height="'.intval($bb['height']).'" ' : '';
+    $a = isset($bb['alt']) ? ' alt="'.cn_htmlspecialchars($bb['alt']).'" ' : '';
 
     // Default upload dir
     $upext = getoption('uploads_ext') ?  getoption('uploads_ext') : getoption('http_script_dir') . '/uploads';
 
     if (!preg_match('/https?:\/\//i', $t))
+    {
         $t = $upext . '/' . str_replace('%2F', '/', urlencode($t));
+    }
 
-    if ($bb['popup'])
+    if (!empty($bb['popup']))
+    {
         return '<a href="'.$t.'" target="_blank"><img src="'.$t.'"'.$w.$h.$a.'/></a>';
+    }
     else
+    {
         return '<img src="'.$t.'"'.$w.$h.$a.'/>';
+    }
 }
 
 function cn_modify_s2bb_more($t)
@@ -243,27 +241,57 @@ function cn_modify_author($e)
 {
     $user = db_user_by_name($e['u']);
     if (is_null($user))
+    {
         return cn_htmlspecialchars($e['u']);
-
+    }
+    
     // base username
     $username = cn_htmlspecialchars($e['u']);
 
     // user has nick
-    if (isset($user['nick'])&&$user['nick']) $username = cn_htmlspecialchars($user['nick']);
+    if (isset($user['nick'])&&$user['nick']) 
+    {
+        $username = cn_htmlspecialchars($user['nick']);
+    }
 
     // user allow to show his email?
     if (isset($user['e-hide'])&&$user['e-hide'])
+    {
         return $username;
+    }
     else
-        return '<a href="mailto:'.cn_htmlspecialchars($user['email']).'">'.$username.'</a>';
+    {
+        return cn_user_email_as_site($user['email'], $username);
+    }
+}
+
+function cn_modify_avatar($e,$p)
+{    
+    $user = db_user_by_name($e['u']);
+    $result='';
+    if (!is_null($user))
+    {
+        if(isset($user['avatar'])&&!empty($user['avatar']))
+        {
+            $pathtoavatar=(getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads').'/'.$user['avatar'];
+            $w=isset($p[0])?$p[0]:50;
+            $h=  isset($p[1])?$p[1]:50;
+            $result='<img src="'.$pathtoavatar.'" style="width:'.$w.'px;height:'.$h.'px; margin:0px 5px;"/>';
+        }
+    }        
+    return $result;
 }
 
 function cn_modify_author_name($e)
 {
     if ($e['u'])
+    {
         return cn_htmlspecialchars($e['u']);
+    }
     else
+    {
         return '<b>author undefined</b>';
+    }
 }
 
 function cn_modify_comments_num($e)
@@ -370,9 +398,13 @@ function cn_modify_tagline($e)
 
         // tag selected?
         if ($tag_extrn === strtolower($tag))
+        {
             $esrc = preg_replace('/\{tag\:selected\|(.*?)\}/i', '\\1', $esrc);
+        }
         else
+        {
             $esrc = preg_replace('/\{tag\:selected\|(.*?)\}/i', '', $esrc);
+        }
 
         // get url tag
         if (preg_match_all('/\{url(.*?)\}/i', $esrc, $c, PREG_SET_ORDER))
@@ -384,7 +416,7 @@ function cn_modify_tagline($e)
                 $_get       = $_GET;
 
                 // Additional parameters
-                $group = $v[1] ? cn_params(substr($v[1], 1)) : array();
+                $group = $v[1] ? cn_params(substr($v[1], 1)) : '';
 
                 // manual php-self setting
                 if (isset($group['php_self']))
@@ -394,7 +426,7 @@ function cn_modify_tagline($e)
                 }
 
                 // Manual rewrite disable
-                if ($group[':disable_rw'])
+                if (!empty($group[':disable_rw']))
                 {
                     $disable_rw = TRUE;
                     unset($group[':disable_rw']);
@@ -403,10 +435,11 @@ function cn_modify_tagline($e)
                 // Tagline - remove ID
                 unset($_GET['id']);
 
+                $url = cn_url_modify("tag=$tag", array('group' => $group));
                 if (getoption('rw_engine') && !$disable_rw)
+                {
                     $url = cn_rewrite('tag', $tag, 0, $group);
-                else
-                    $url = cn_url_modify("tag=$tag", array('group' => $group));
+                }
 
                 $esrc = str_replace($v[0], $url, $esrc);
                 $PHP_SELF = $_phpself;  // store php-self
@@ -415,10 +448,14 @@ function cn_modify_tagline($e)
         }
 
         if ($ix === $tc)
+        {
             $esrc = preg_replace('/\{comma\|.*?\}/is', '', $esrc);
+        }
         else
+        {
             $esrc = preg_replace('/\{comma\|(.*?)\}/is', '\\1', $esrc);
-
+        }
+        
         $echo[] = str_replace('{tag}', cn_htmlspecialchars($tag), $esrc);
 
         $ix++;
@@ -455,7 +492,9 @@ function cn_modify_fb_comments($e)
 
     $unique_url = 'http://'.$_SERVER['SERVER_NAME'] . $PHP_SELF . '?id='.$e['id'];
     if (getoption('use_fbcomments') && (!$allow_active_news || $allow_active_news && getoption('fb_inactive')))
+    {
         return '<div class="fb-comments cutenews-fb-comments" data-href="'.$unique_url.'" data-num-posts="'.getoption('fb_comments').'" data-width="'.getoption('fb_box_width').'" data-colorscheme="'.getoption('fbcomments_color').'"></div>';
+    }
 
     return '';
 }
@@ -468,26 +507,34 @@ function cn_modify_fb_like($e)
 
     $unique_url = 'http://'.$_SERVER['SERVER_NAME'] . $PHP_SELF . '?id='.$e['id'];
     if (getoption('use_fblike'))
+    {
         return '<div class="fb-like cutenews-fb-comments" data-href="'.$unique_url.'" data-send="'.(getoption('fblike_send_btn') ? "true" : "false").'" data-layout="'.getoption('fblike_style').'" data-width="'.getoption('fblike_width').'" data-show-faces="'.(getoption('fblike_show_faces')? "true" : "false").'" data-font="'.getoption('fblike_font').'" data-colorscheme="'.getoption('fblike_color').'" data-action="'.getoption('fblike_verb').'"></div>';
-
+    }
     return '';
 }
 
 function cn_modify_twitter($e)
 {
     global $template, $PHP_SELF;
-
+    
     if ($template == 'rss')
+    {
         return '';
-
+    }
+    
     if (!getoption('use_twitter'))
+    {
         return '';
+    }
 
     $data_href    = 'http://'.$_SERVER['SERVER_NAME'] . $PHP_SELF . '?id='.$e['id'];
-    $twitter_text = getoption('tw_text') ? getoption('tw_text') : cn_htmlspecialchars($e['title']);
+    $twitter_text = getoption('tw_text') ? getoption('tw_text') : cn_htmlspecialchars($e['t']);
 
     $i18n = getoption('i18n');
-    if (!$i18n) $i18n = 'en_US';
+    if (!$i18n) 
+    {
+        $i18n = 'en_US';
+    }
 
     return '<div class="cutenews-twitter-send"><a href="https://twitter.com/share" class="twitter-share-button" data-url="'.trim($data_href).'" data-text="'.trim($twitter_text).'" data-via="'.trim(getoption('tw_via')).'" data-related="'.trim(getoption('tw_recommended')).'" data-count="'.getoption('tw_show_count').'" data-hashtags="'.trim(getoption('tw_hashtag')).'" data-lang="'.str_replace('_', '-', $i18n.'" data-size="'.(getoption('tw_large')? "large" : "medium")).'"></a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></div>';
 }
@@ -500,8 +547,10 @@ function cn_modify_gplus($e)
         return '';
 
     if (getoption('use_gplus'))
+    {
         return '<div class="g-plusone" data-href="'.cn_url_modify(array('reset'), 'id=' . $e['id']).'" data-size="'.getoption('gplus_size').'" data-annotation="'.getoption('gplus_annotation').'" data-width="'.getoption('gplus_width').'"></div>';
-
+    }
+    
     return '';
 }
 
@@ -510,7 +559,7 @@ function cn_modify_online() // Since 2.0
 {
     if ($expire = getoption('client_online'))
     {
-        $online = cn_touch_get('/cdata/online.php');
+        $online = cn_touch_get(cn_path_construct(SERVDIR, 'cdata').'online.php');
         return count($online['%']);
     }
 
@@ -521,7 +570,7 @@ function cn_modify_online_own_hits() // Since 2.0
 {
     if ($expire = getoption('client_online'))
     {
-        $online = cn_touch_get('/cdata/online.php');
+        $online = cn_touch_get(cn_path_construct(SERVDIR, 'cdata').'online.php');
         return intval($online['%'][CLIENT_IP]);
     }
 
@@ -568,8 +617,10 @@ function cn_modify_bb_full_link($e, $t, $bb)
     list($opts, $anchor) = cn_helper_bb_decode($bb);
 
     if ($e['f'] == '' and $action !== 'showheadlines')
+    {
         return '<!-- no full story-->';
-
+    }
+    
     $id = intval($e['id']);
     $id = cn_put_alias($id);
 
@@ -580,8 +631,9 @@ function cn_modify_bb_full_link($e, $t, $bb)
     else
     {
         if (NULL === ($url = cn_rewrite('full_story', $id)))
+        {
             $url = cn_url_modify("id=$id");
-
+        }
         return '<a '.$opts.'href="'.$url.$anchor.'">'.$t.'</a>';
     }
 }
@@ -599,8 +651,10 @@ function cn_modify_bb_com_link($e, $t, $bb)
     else
     {
         if (NULL === ($url = cn_rewrite('comments', $id)))
-            $url = cn_url_modify("id=." . $id);
-
+        {
+            $url = cn_url_modify("id=" . $id);
+        }
+        
         return '<a href="'.$url.$anchor.'">'.$t.'</a>';
     }
 }
@@ -632,7 +686,7 @@ function cn_modify_bb_mail($e, $t)
     $user = db_user_by_name($e['u']);
 
     if ($user['e-hide']) return $user['name'];
-    return '<a href="mailto:'.$user[ 'email' ].'">'.$t.'</a>';
+    return cn_user_email_as_site($user[ 'email' ], $t);
 }
 
 // multicategory bb-tag [cat-NUM]... [$catid] ...[/cat]
@@ -682,10 +736,10 @@ function cn_modify_comm_author($e)
     $username = $user['name']? cn_htmlspecialchars($username) : 'Anonymous';
 
     // user allow to show his email?
-    if (isset($user['e-hide']) && $user['e-hide'] || empty($user['email']))
+    if ((isset($user['e-hide']) && $user['e-hide']) || empty($user['email']))
         return $username;
     else
-        return '<a href="mailto:'.cn_htmlspecialchars($user['email']).'">'.$username.'</a>';
+        return cn_user_email_as_site($user[ 'email' ], $username);
 }
 
 function cn_modify_comm_date($e)
@@ -711,7 +765,7 @@ function cn_modify_comm_input_username()
     }
     else
     {
-        $guest_name=isset($_SESS['guest_name'])?$_SESS['guest_name']:'';
+        $guest_name=isset($_SESSION['guest_name'])?$_SESSION['guest_name']:'';
         $name_input = REQ('name', 'POST') ? REQ('name', 'POST') : $guest_name;
         return '<input type="text" class="cn_comm_username" name="name" value="'.cn_htmlspecialchars($name_input).'"/>';
     }
@@ -729,26 +783,30 @@ function cn_modify_comm_input_email()
     }
     else
     {
-        $guest_name=isset($_SESS['guest_name'])?$_SESS['guest_name']:'';
-        $email_input = REQ('mail', 'POST') ? REQ('mail', 'POST') : $guest_name;
+        $guest_name  = isset($_SESSION['guest_name']) ? $_SESSION['guest_name'] : '';
+        $guest_email = isset($_SESSION['guest_email']) ? $_SESSION['guest_email'] : '';
+
+        $email_input = REQ('mail', 'POST') ? REQ('mail', 'POST') : $guest_email;
         return '<input type="text" name="mail" class="cn_comm_email" value="'.cn_htmlspecialchars($email_input).'"/>';
     }
 }
 
 function cn_modify_comm_input_commentbox($e)
 {
-    $edit_id = REQ('edit_id');
+    $edit_id = intval(REQ('edit_id'));
     $cm_text = REQ('comments', 'POST');
     
-    if(!empty($edit_id))
+    if (!empty($edit_id))
     {
-        $username    =$e['co'][$edit_id]['u'];
+        $username    = $e['co'][$edit_id]['u'];
         $member      = member_get();
         $target_user = db_user_by_name($username);
 
         // Check ACL for edit
-        if (test('Mes') && $username == $member['name'] || test('Meg', $target_user) || test('Mea'))
+        if ((test('Mes') && $username == $member['name']) || test('Meg', $target_user) || test('Mea'))
+        {
             $cm_text = str_replace('[', '&#91;', $e['co'][$edit_id]['c']);
+        }
     }
     return '<textarea cols="40" rows="6" name="comments" class="cn_comm_textarea" id="ncomm_'.$e['id'].'">'.cn_htmlspecialchars($cm_text).'</textarea>';
 }
@@ -759,34 +817,46 @@ function cn_modify_comm_smilies($e)
 }
 
 function cn_modify_comm_remember_me()
-{
-    global $_SESS;
+{    
     $member_name = REQ('member_name');
 
-    $user = member_get();
+    $user = member_get();    
     $name = '';
 
-    if (isset($_SESS['guest_name'])) $name = $_SESS['guest_name'];
-    elseif (!is_null($user)) $name = $user['name'];
+    if (isset($_SESSION['guest_name'])) {
+        $name = $_SESSION['guest_name'];
+    }
+    elseif (!is_null($user)) {
+        $name = $user['name'];
+    }
+
+    $echo = '<input class="cn_comm_remember" type="checkbox" name="cn_remember_me" value="Y" /> '.i18n('Remember me').' ';
+    if ($member_name) 
+    {
+        $echo .= '<input type="hidden" name="isforgetme" value="" />';
+        $echo .= '<span class="cn_comm_forget"><a href="#" onclick="forget_me(); return false;">'.i18n('Forget me').'</a></span>';
+    }
 
     if ($name)
     {
-        return '<span class="cn_com_logged">'.i18n('Logged as').' <b>'.cn_htmlspecialchars($name).'</b></span> <span class="cn_com_forger"><a href="#" onclick="forget_me(); return false;">'.i18n('Forget me').'</a></span>';
+        $echo  = '<span class="cn_com_logged">'.i18n('Logged as').' <b>'.cn_htmlspecialchars($name).'</b></span>';
+        $echo .= ' <input type="hidden" name="isforgetme" value="" />';
+        $echo .= ' <span class="cn_comm_forget"><a href="#" onclick="forget_me(); return false;">'.i18n('Forget me').'</a></span>';
     }
-    else
-    {
-        $echo = '<input class="cn_comm_remember" type="checkbox" name="cn_remember_me" value="Y" /> '.i18n('Remember me').' ';
-        if ($member_name) $echo .= '<span class="cn_comm_forget"><a href="#" onclick="forget_me(); return false;">'.i18n('Forget me').'</a></span>';
-        return $echo;
-    }
+
+    return $echo;
 }
 
 function cn_modify_bb_comm_captcha($e, $t)
 {
     if (getoption('use_captcha') && !member_get())
+    {
         return $t;
+    }
     else
+    {
         return '';
+    }
 }
 
 function cn_modify_comm_captcha($e)
@@ -807,7 +877,6 @@ function cn_modify_comm_captcha($e)
         // Image generation
         ob_start(); $captcha->CreateImage(true); $captcha_text = ob_get_clean();
 
-        cn_save_session(TRUE);
         $echo = '<div class="cn_comm_captcha"><img src="data:image/png;base64,'.base64_encode($captcha_text).'" /></div>';
     }
     else
@@ -823,8 +892,10 @@ function cn_modify_bb_comm_submit($e, $t)
 {
     $echo = '<input type="submit" value="'.cn_htmlspecialchars($t).'" class="cn_submit_bb"/>';
 
-    if ((test('Mea')||test('Mes')) && REQ('edit_id'))
+    if ((test('Mea')||test('Mes')) && intval(REQ('edit_id')))
+    {
         $echo .= '<input type="submit" name="cm_edit_comment" value="Edit comment" class="cn_edit_bb"/>';
+    }
 
     return $echo;
 }
@@ -862,13 +933,16 @@ function cn_modify_comm_comment_iteration()
 function cn_modify_bb_comm_edit($e, $t)
 {
     $user = member_get();
-    $edit_link = '<a href="'.cn_url_modify('id='.$_GET['id'], 'edit_id='.intval($e['id'])).'">'.$t.'</a>';
-
+    $edit_link = '<a href="'.cn_url_modify('id='.intval($_GET['id']), 'edit_id='.intval($e['id'])).'">'.$t.'</a>';
     if (test('Mes') && $e['u'] == $user['name'])
+    {
         return $edit_link;
+    }
 
     if (test('Mea'))
+    {
         return $edit_link;
+    }
 
     return '';
 }
@@ -876,8 +950,11 @@ function cn_modify_bb_comm_edit($e, $t)
 function cn_modify_bb_comm_delete($e, $t)
 {
     $user = member_get();
-    if (test('Mda')||test('Mds'))
+   
+    if (test('Mda')||(test('Mds')&&$user['name']==$e['u']))
+    {
         return str_replace('%cbox', '<input type="checkbox" name="comm_delete[]" value="'.intval($e['id']).'" />', $t);
+    }
 
     return '';
 }
@@ -885,7 +962,8 @@ function cn_modify_bb_comm_delete($e, $t)
 function cn_modify_bb_comm_edited($e, $t)
 {
     if ($e['ed'])
+    {
         return  str_replace('%edited', date(getoption('timestamp_active'), $e['ed']), $t);
-
+    }
     return '';
 }

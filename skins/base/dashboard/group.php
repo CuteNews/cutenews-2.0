@@ -17,7 +17,7 @@ cn_snippet_bc();
 
         <?php foreach ($grp as $id => $acl) { ?>
 
-            <tr<?php if ($id == $group_id) echo ' class="row_selected"'; ?>>
+            <tr<?php if ($id == $group_id) { echo ' class="row_selected"'; } ?>>
 
                 <td align="center"><?php echo $id; ?></td>
                 <td><a href="<?php echo cn_url_modify("group_id=$id"); ?>"><?php echo cn_htmlspecialchars($acl['name']); ?></a></td>
@@ -27,8 +27,9 @@ cn_snippet_bc();
                     $sp = spsep($acl['acl']);
 
                     foreach ($sp as $name)
+                    {
                         $ps[] = '<a href="#" title="'.join('; ', $form_desc[$name]).'" onclick="return(tiny_msg(this));">'.$name.'</a>';
-
+                    }
                     echo join(', ', $ps);
 
                 ?>
@@ -68,12 +69,16 @@ cn_snippet_bc();
                 <td>
                     <?php foreach ($cons as $name => $desc) { ?>
                         <span style="float: left; width: 200px;">
-                            <input title="<?php echo $name; ?>" type="checkbox" name="acl[]" <?php if ($desc['c']) echo 'checked'; ?> value="<?php echo $name; ?>" />
+                            <input title="<?php echo $name; ?>" type="checkbox" name="acl[]" <?php if ($desc['c']) { echo 'checked'; } ?> value="<?php echo $name; ?>" />
                             <?php
                                 if ($desc['t'])
+                                {
                                     echo '<a href="#" title="'.cn_htmlspecialchars($desc['t']).'" onclick="return (tiny_msg(this));">'.cn_htmlspecialchars($desc['d']).'</a>';
+                                }
                                 else
+                                {
                                     echo cn_htmlspecialchars($desc['d']);
+                                }
                             ?>
                         </span>
                     <?php } ?>

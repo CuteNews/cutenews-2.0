@@ -16,7 +16,7 @@
     if (isset($pw['sortby'])&&$pw['sortby']) $sortby = $pw['sortby'];
     if (isset($pw['dir'])&&$pw['dir']) $dir = $pw['dir'];
     if (isset($pw['page_alias'])&&$pw['page_alias']) $page_alias = $pw['page_alias'];
-    if (isset($pw['tag'])&&$pw['tag']) $page_alias = $pw['tag'];
+    if (isset($pw['tag'])&&$pw['tag']) $tag = $pw['tag'];
     if (isset($pw['user_by'])&&$pw['user_by']) $user_by = $pw['user_by'];
 
     if (isset($pw['static'])&&$pw['static']) $static = $pw['static'];
@@ -117,12 +117,20 @@
     <div id="wrapper">
 
         <div class="nav">
+            <?php
+
+            $_self_page = explode('/', PHP_SELF);
+            $_self_page = $_self_page[count($_self_page)-1];
+            if ($_self_page[0] === '/') { $_self_page = substr($_self_page, 1); }
+            $_self_page = getoption('http_script_dir') . '/' . $_self_page;
+
+            ?>
             <div style="float: right"><a href="<?php echo getoption('http_script_dir'); ?>/rss.php"><img src="<?php echo getoption('http_script_dir'); ?>/skins/images/rss_icon.gif" alt="RSS"></a></div>
             <b>Navigation</b>:
-            <a href="<?php echo PHP_SELF; ?>">Main page</a> |
-            <a href="<?php echo PHP_SELF; ?>?do=archives">Archives</a> |
-            <a href="<?php echo PHP_SELF; ?>?do=rss">RSS</a> |
-            <a href="<?php echo PHP_SELF; ?>?do=stats">Stats</a> |
+            <a href="<?php echo $_self_page; ?>">Main page</a> |
+            <a href="<?php echo $_self_page; ?>?do=archives">Archives</a> |
+            <a href="<?php echo $_self_page; ?>?do=rss">RSS</a> |
+            <a href="<?php echo $_self_page; ?>?do=stats">Stats</a> |
             <a href="#">Link 1</a> |
             <a href="#">Link 2</a> | ...
         </div>
@@ -136,15 +144,15 @@
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 Here we decide what page to include
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-                if (isset($_GET['search'])&&$_GET['search'])
+                if (isset($_GET['search']) && $_GET['search'])
                 {
                     include ("search.php");
                 }
-                elseif (isset($_GET['do'])&&$_GET['do'] == 'archives')
+                elseif (isset($_GET['do']) && $_GET['do'] == 'archives')
                 {
                     include ("show_archives.php");
                 }
-                elseif (isset($_GET['do'])&&$_GET['do'] == "stats")
+                elseif (isset($_GET['do']) && $_GET['do'] == "stats")
                 {
                     echo "You can download the stats addon and include it here to show how many news, comments ... you have"; // include("$path/stats.php");
                 }

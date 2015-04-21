@@ -1,7 +1,7 @@
 <?php
 
     // initialize
-    list($preview_html, $vTitle, $vPage, $categories, $vCategory, $gstamp, $archive_id) = _GL('preview_html, vTitle, vPage, categories, vCategory, gstamp, archive_id');
+    list($preview_html,$preview_html_full , $vTitle, $vPage, $categories, $vCategory, $gstamp, $archive_id) = _GL('preview_html, preview_html_full, vTitle, vPage, categories, vCategory, gstamp, archive_id');    
     list($vShort, $EDITMODE, $vFull, $is_active_html, $vUseHtml, $is_draft, $vConcat, $vTags) = _GL('vShort, EDITMODE, vFull, is_active_html, vUseHtml, is_draft, vConcat, vTags');
     list($_dateD, $_dateM, $_dateY, $_dateH, $_dateI, $_dateS) = make_postponed_date($gstamp);
     list($morefields) = _GL('morefields');
@@ -11,7 +11,9 @@
 
     // DRAFT
     if (test('Bd'))
+    {
         $is_draft = TRUE;
+    }
 
     // MESSAGES BLOCK
     cn_snippet_messages();
@@ -26,6 +28,15 @@
             <div style="height: 8px"></div>
         </div>
 
+        <?php if($preview_html_full) { ?>
+            <div style="margin: 10px 0 30px 0;">
+                <div style="border: 1px dashed gray; float: left; width: 50%;">
+                    <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px; text-align: center;"><b>PREVIEW FULL STORY ENTRY</b></div>
+                    <div style="border:4px solid #f0f0a0;"><?php echo $preview_html_full; ?></div> </div>
+                <div style="clear:left;"></div>
+                <div style="height: 8px"></div>
+            </div>        
+        <?php } ?>
     <?php } ?>
 
 <form method="post" action="<?php echo PHP_SELF; ?>">
@@ -34,7 +45,7 @@
     <input type="hidden" name="id" value="<?php echo intval($id); ?>" />
 
     <div class="section">
-        <div class="name">Article title<?php if (!getoption('disable_title')) echo ' <span class="req">*</span>'; ?></div>
+        <div class="name">Article title<?php if (!getoption('disable_title')) { echo ' <span class="req">*</span>'; } ?></div>
         <div><input type="text" style="width: 100%" value="<?php echo cn_htmlspecialchars($vTitle); ?>" name="title" tabindex=1></div>
     </div>
 
@@ -50,7 +61,7 @@
                 <select name="category">
                     <option value="">---</option>
                     <?php foreach ($categories as $catid => $cat_data) { ?>
-                        <option <?php if (in_array($catid, $vCategory)) echo 'selected="selected"'; ?> value="<?php echo $catid; ?>"><?php echo cn_htmlspecialchars($cat_data['name']); ?></option>
+                        <option <?php if (in_array($catid, $vCategory)) { echo 'selected="selected"'; } ?> value="<?php echo $catid; ?>"><?php echo cn_htmlspecialchars($cat_data['name']); ?></option>
                     <?php } ?>
                 </select>
 
@@ -78,7 +89,7 @@
     <!-- Short story -->
     <div class="section">
 
-        <div class="name">Short Story<?php if (!getoption('disable_short')) echo ' <span class="req">*</span>'; ?></div>
+        <div class="name">Short Story<?php if (!getoption('disable_short')) { echo ' <span class="req">*</span>'; } ?></div>
         <div><textarea rows="12" cols="74" id="short_story" name="short_story" tabindex=2><?php echo cn_htmlspecialchars($vShort); ?></textarea></div>
 
         <?php if ($CKEDITOR_Active == 0) { ?>
@@ -91,7 +102,7 @@
     </div>
 
     <!-- Full story -->
-    <div class="section" id="full-story" <?php if (!$vFull) echo 'style="display: none;"'; ?>>
+    <div class="section" id="full-story" <?php if (!$vFull) { echo 'style="display: none;"'; } ?>>
 
         <div class="name">Full Story (optional)</div>
         <div> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=3><?php echo cn_htmlspecialchars($vFull); ?></textarea> </div>
@@ -112,7 +123,7 @@
                 <input type="button" onClick="if (confirm('Please confirm')) { window.location = '<?php echo cn_url_modify('action=delete', cn_snippet_digital_signature('a')); ?>'; return true; } else return false;" value="Delete">
             <?php } ?>
             <?php if (empty($_POST['full_story'])) { ?><input type=button onClick="ShowOrHide('full-story','');" value="Toggle Full-Story"><?php } ?>
-            <input type=submit name="do_editsave" style='font-weight: bold' title="Post the New Article" value="     <?php if (!$EDITMODE) echo 'Add News'; else echo 'Edit'; ?>     " accesskey="s">
+            <input type=submit name="do_editsave" style='font-weight: bold' title="Post the New Article" value="     <?php if (!$EDITMODE) { echo 'Add News'; } else { echo 'Edit'; } ?>     " accesskey="s">
         </div>
         <input type="hidden" name="preview" id="chkPreview" value=""/>
         <input type="submit" value="  Preview  " onclick="CheckPreview();" /> 

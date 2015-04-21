@@ -1,22 +1,16 @@
-<?php
-
-if (!defined('EXEC_TIME')) die('Access restricted');
-
-// Strong check for deprecated -----------------------------------------------------------------------------------------
-function cn_deprecated_check()
-{
-    // @stub
-}
+<?php if (!defined('EXEC_TIME')) { die('Access restricted'); }
 
 // External implemented modules ----------------------------------------------------------------------------------------
 
 // @url http://www.php.net/manual/de/function.utf8-decode.php#100478
 // Since 1.5.0: UTF-8 to HTML-Entities
 function UTF8ToEntities($string)
-{
+{      
     if (is_array($string))
+    {
         return $string;
-
+    }
+    
     // @Note May be deprecated in next versions
     $HTML_SPECIAL_CHARS_UTF8 = array
     (
@@ -260,10 +254,19 @@ function UTF8ToEntities($string)
     foreach ($HTML_SPECIAL_CHARS_UTF8 as $hex => $html)
     {
         $key = '';
-        if (strlen($hex) == 4)      $key = pack("CC",  hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)));
-        elseif (strlen($hex) == 6)  $key = pack("CCC", hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
+        if (strlen($hex) == 4)      
+        {
+            $key = pack("CC",  hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)));
+        }
+        elseif (strlen($hex) == 6)  
+        {
+            $key = pack("CCC", hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
+        }
 
-        if ($key) $HTML_SPECIAL_CHARS[$key] = $html;
+        if ($key) 
+        {
+            $HTML_SPECIAL_CHARS[$key] = $html;
+        }
     }
 
     // Common conversion
@@ -273,7 +276,9 @@ function UTF8ToEntities($string)
     /* Only do the slow convert if there are 8-bit characters */
     /* avoid using 0xA0 (\240) in ereg ranges. RH73 does not like that */
     if (!preg_match("~[\200-\237]~", $string) and ! preg_match("~[\241-\377]~", $string))
+    {
         return $string;
+    }
 
     // reject too-short sequences
     $string = preg_replace("/[\302-\375]([\001-\177])/", "&#65533;\\1", $string);
@@ -290,26 +295,50 @@ function UTF8ToEntities($string)
     $string = preg_replace("/[\302-\364]{2,}/", "&#65533;", $string);
 
     // decode four byte unicode characters
-    $string = preg_replace(
-        "/([\360-\364])([\200-\277])([\200-\277])([\200-\277])/e",
-        "'&#'.((ord('\\1')&7)<<18 | (ord('\\2')&63)<<12 |" .
-        " (ord('\\3')&63)<<6 | (ord('\\4')&63)).';'",
-        $string);
-
-    // decode three byte unicode characters
-    $string = preg_replace("/([\340-\357])([\200-\277])([\200-\277])/e",
-        "'&#'.((ord('\\1')&15)<<12 | (ord('\\2')&63)<<6 | (ord('\\3')&63)).';'",
-        $string);
-
+    $string = preg_replace_callback(
+        "/([\360-\364])([\200-\277])([\200-\277])([\200-\277])/",
+        function ($matches)
+        {
+            return '&#'.((ord($matches[1])&7)<<18 | (ord($matches[2])&63)<<12 |(ord($matches[3])&63)<<6 | (ord($matches[4])&63)).';';
+        },
+        $string);    
+    
+    // decode three byte unicode characters        
+    $string = preg_replace_callback(
+        "/([\340-\357])([\200-\277])([\200-\277])/",
+        function ($matches)
+        {
+            return '&#'.((ord($matches[1])&15)<<12 | (ord($matches[2])&63)<<6 | (ord($matches[3])&63)).';';
+        },        
+        $string);       
+        
     // decode two byte unicode characters
-    $string = preg_replace("/([\300-\337])([\200-\277])/e",
-        "'&#'.((ord('\\1')&31)<<6 | (ord('\\2')&63)).';'",
-        $string);
+    $string = preg_replace_callback(
+        "/([\300-\337])([\200-\277])/",
+        function ($matches)
+        {
+            return '&#'.((ord($matches[1])&31)<<6 | (ord($matches[2])&63)).';';
+        },
+        $string);    
 
     // reject leftover continuation bytes
     $string = preg_replace("/[\200-\277]/", "&#65533;", $string);
 
     return $string;
+}
+
+//Since 2.0.3 crossplatform path generator
+function cn_path_construct()
+{
+    $args = array();
+    $arg_list = func_get_args();
+
+    foreach ($arg_list as $varg)
+    {
+        if ($varg !== '') { $args[] = $varg; }
+    }
+
+    return implode(DIRECTORY_SEPARATOR, $args) . DIRECTORY_SEPARATOR;
 }
 
 //Since 2.0.1: tranliterate for cyrilic page aliases
@@ -323,9 +352,19 @@ function cn_transliterate($input)
                     "д"=>"d", "е"=>"e","ё"=>"yo","ж"=>"zh", "з"=>"z","и"=>"i","й"=>"j","к"=>"k","л"=>"l", 
                     "м"=>"m","н"=>"n","о"=>"o","п"=>"p","р"=>"r", "с"=>"s","т"=>"t","у"=>"u","ф"=>"f",
                     "х"=>"x", "ц"=>"c","ч"=>"ch","ш"=>"sh","щ"=>"shh","ъ"=>"", "ы"=>"y","ь"=>"","э"=>"e",
-                    "ю"=>"yu","я"=>"ya", " "=>"_","—"=>"_",","=>"_","!"=>"_","@"=>"_", "#"=>"-","$"=>"","%"=>"",
-                    "^"=>"","&"=>"","*"=>"", "("=>"",")"=>"","+"=>"","="=>"",";"=>"",":"=>"", "'"=>"",
-                    "\""=>"","~"=>"","`"=>"","?"=>"","/"=>"", "\\"=>"","["=>"","]"=>"","{"=>"","}"=>"","|"=>"" ); 
+                    "ю"=>"yu","я"=>"ya", "À"=>"A", "à"=>"a", "Á"=>"A", "á"=>"a", "Â"=>"A", "â"=>"a", 
+                    "Ä"=>"A", "ä"=>"a", "Ã"=>"A", "ã"=>"a", "Å"=>"A", "å"=>"a", "Æ"=>"AE", "æ"=>"ae", 
+                    "Ç"=>"C", "ç"=>"c", "Ð"=>"D", "È"=>"E", "è"=>"e", "É"=>"E", "é"=>"e", "Ê"=>"E", 
+                    "ê"=>"e", "Ì"=>"I", "ì"=>"i", "Í"=>"I", "í"=>"i", "Î"=>"I", 
+                    "î"=>"i", "Ï"=>"I", "ï"=>"i", "Ñ"=>"N", "ñ"=>"n", "Ò"=>"O", "ò"=>"o", "Ó"=>"O", 
+                    "ó"=>"o", "Ô"=>"O", "ô"=>"o", "Ö"=>"O", "ö"=>"o", "Õ"=>"O", "õ"=>"o", "Ø"=>"O", 
+                    "ø"=>"o", "Œ"=>"OE", "œ"=>"oe", "Š"=>"S", "š"=>"s", "Ù"=>"U", "ù"=>"u", "Û"=>"U", 
+                    "û"=>"u", "Ú"=>"U", "ú"=>"u", "Ü"=>"U", "ü"=>"u", "Ý"=>"Y", "ý"=>"y", "Ÿ"=>"Y", 
+                    "ÿ"=>"y", "Ž"=>"Z", "ž"=>"z", "Þ"=>"B", "þ"=>"b", "ß"=>"Ss", "£"=>"pf", "¥"=>"ien", 
+                    "§"=>"pr", "ð"=>"eth", "ѓ"=>"r", " "=>"_","—"=>"_",","=>"_",
+                    "!"=>"_","@"=>"_", "#"=>"-","$"=>"","%"=>"", "^"=>"","&"=>"","*"=>"", "("=>"",")"=>"",
+                    "+"=>"","="=>"",";"=>"",":"=>"", "'"=>"","\""=>"","~"=>"","`"=>"","?"=>"","/"=>"", 
+                    "\\"=>"","["=>"","]"=>"","{"=>"","}"=>"","|"=>"" ); 
     return strtr($input, $gost);    
 }
 
@@ -361,10 +400,15 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
 
     // Debug log not enabled, see in error.log
     if (!file_exists(SERVDIR.'/cdata/debug'))
+    {
         return;
-
+    }
+    
     // E_NOTICE skip
-    if ($errno == E_NOTICE) return;
+    if ($errno == E_NOTICE) 
+    {
+        return;
+    }
     
     $out = $errtypes[$errno].': '.$errmsg.'; '.trim($filename).':'.$linenum.";";
     $out = str_replace(array("\n", "\r", "\t"), ' ', $out);
@@ -376,17 +420,21 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
     if (function_exists('debug_backtrace') && CN_DEBUG)
     {
         foreach (debug_backtrace() as $item)
+        {
             if ($item['function'] != 'user_error_handler')
+            {
                 $dbg_info .= '   '.str_replace(SERVDIR, '', $item['file']).":".$item['line']." ".$item['function'].'('.count($item['args']).')'."\n";
+            }
+        }
 
         $dbg_info .= "\n";
     }
 
     $str = trim(str_replace(array("\n","\r",SERVDIR), array(" ", " ", ''), $out));
-    if (is_writable(SERVDIR.'/cdata/log'))
+    if (is_writable(cn_path_construct(SERVDIR,'cdata','log')))
     {
         $time = time();
-        $log = fopen(SERVDIR.'/cdata/log/error_dump.log', 'a');
+        $log = fopen(cn_path_construct(SERVDIR,'cdata','log').'error_dump.log', 'a');
         fwrite($log, '['.$time.'] '.date('Y-m-d H:i:s', $time).'|'.$str."\n$dbg_info");
         fclose($log);
     }
@@ -411,7 +459,7 @@ function time_since_format($diff)
 function bt_get_id($id, $area = 'std')
 {
     $m5 = md5($id);
-    $vd = cn_touch_get('/cdata/btree/'.substr($m5, 0, 2).'.php');
+    $vd = cn_touch_get(cn_path_construct(SERVDIR, 'cdata','btree').substr($m5, 0, 2).'.php');
     return isset($vd[$area][$m5]) ? $vd[$area][$m5] : NULL;
 }
 
@@ -419,10 +467,13 @@ function bt_get_id($id, $area = 'std')
 function bt_set_id($id, $data, $area = 'std')
 {
     $m5 = md5($id);
-    $sn = '/cdata/btree/'.substr($m5, 0, 2).'.php';
+    $sn = cn_path_construct(SERVDIR, 'cdata','btree').substr($m5, 0, 2).'.php';
     $vd = cn_touch_get($sn);
 
-    if (!isset($vd[$area])) $vd[$area] = array();
+    if (!isset($vd[$area])) 
+    {
+        $vd[$area] = array();
+    }
     $vd[$area][$m5] = $data;
 
     cn_fsave($sn, $vd);
@@ -432,11 +483,13 @@ function bt_set_id($id, $data, $area = 'std')
 function bt_del_id($id, $area)
 {
     $m5 = md5($id);
-    $sn = '/cdata/btree/'.substr($m5, 0, 2).'.php';
+    $sn = cn_path_construct(SERVDIR,'cdata','btree').substr($m5, 0, 2).'.php';
     $vd = cn_touch_get($sn);
 
     if (isset($vd[$area][$m5]))
+    {
         unset($vd[$area][$m5]);
+    }
 
     cn_fsave($sn, $vd);
 }
@@ -650,7 +703,11 @@ function exec_tpl()
     {
         if (is_array($arg))
         {
-            foreach ($arg as $k0 => $v) { $k = "__$k0"; $$k = $v; }
+            foreach ($arg as $k0 => $v) 
+            { 
+                $k = "__$k0"; 
+                $$k = $v;                 
+            }
         }
         else
         {
@@ -663,7 +720,7 @@ function exec_tpl()
     }
 
     if (file_exists($open))
-    {
+    {        
         ob_start(); include $open; $echo = ob_get_clean();
         return $echo;
     }
@@ -676,20 +733,38 @@ function read_tpl($tpl = 'index')
 {
     // get from cache
     $cached = mcache_get("tpl:$tpl");
-    if ($cached) return $cached;
+    if ($cached) 
+    {
+        return $cached;
+    }
 
     // Get asset path
-    if (preg_match('/\.(css|js)/i', $tpl)) $fine = ''; else $fine = '.tpl';
+    if (preg_match('/\.(css|js)/i', $tpl)) 
+    {
+        $fine = ''; 
+    }
+    else 
+    {
+        $fine = '.tpl';
+    }
 
     // Get plugin path
     if  ($tpl[0] == '/')
-         $open = SERVDIR.'/cdata/plugins/'.substr($tpl, 1) .$fine;
-    else $open = SKIN.'/'.($tpl? $tpl : 'default') . $fine;
+    {
+         $open =  cn_path_construct(SERVDIR,'cdata','plugins').substr($tpl, 1).$fine;
+    }
+    else 
+    {
+        $open = SKIN.DIRECTORY_SEPARATOR.($tpl? $tpl : 'default') . $fine;
+    }
 
     // Try open
     $not_open = false;
     $r = fopen($open, 'r') or $not_open = true;
-    if ($not_open) return false;
+    if ($not_open)
+    {
+        return false;
+    }
 
     ob_start();
     fpassthru($r);
@@ -715,7 +790,10 @@ function proc_tpl()
     {
         if (is_array($A))
         {
-            foreach ($A as $i => $v) $args[$i] = $v;
+            foreach ($A as $i => $v) 
+            {
+                $args[$i] = $v;
+            }
         }
         else
         {
@@ -731,9 +809,14 @@ function proc_tpl()
     foreach ($GLOBALS as $gi => $gv)
     {
         if (in_array($gi, array('session', '_CN_SESS_CACHE', '_HOOKS', 'HTML_SPECIAL_CHARS', '_SESS', 'GLOBALS', '_ENV', '_REQUEST', '_SERVER', '_FILES', '_COOKIE', '_POST', '_GET')))
+        {
             continue;
+        }
 
-        if (!isset($args[$gi])) $args[$gi] = $gv;
+        if (!isset($args[$gi])) 
+        {
+            $args[$gi] = $gv;
+        }
     }
 
     // reading template
@@ -762,8 +845,16 @@ function proc_tpl()
 
                     // String simply replaces {$FromValue.}, Array -> {$FromValue.Precise}
                     if  (is_array($x))
-                        foreach ($x as $ik => $iv) $bulk = str_replace('{$'.$v[1].".$ik}", $iv, $bulk);
-                    else $bulk = str_replace('{$'.$v[1].".}", $x, $bulk);
+                    {
+                        foreach ($x as $ik => $iv) 
+                        {
+                            $bulk = str_replace('{$'.$v[1].".$ik}", $iv, $bulk);
+                        }
+                    }
+                    else 
+                    {
+                        $bulk = str_replace('{$'.$v[1].".}", $x, $bulk);
+                    }
 
                     $rpl .= $bulk;
                 }
@@ -796,17 +887,22 @@ function proc_tpl()
             $mods = explode('|', $modify);
 
             // apply modifier [+params]
-            foreach ($mods as $func) if ($func)
+            foreach ($mods as $func) 
             {
-                $varx = $func = explode(':', $func);
+                if ($func)
+                {
+                    $varx = $func = explode(':', $func);
 
-                // it's variable or string
-                $varx[0] = ($ct[1] == '$')? $var : substr($av, 0, -1);
+                    // it's variable or string
+                    $varx[0] = ($ct[1] == '$')? $var : substr($av, 0, -1);
 
-                // process the variable
-                if (function_exists($func[0])) $var = call_user_func_array($func[0], $varx);
+                    // process the variable
+                    if (function_exists($func[0])) 
+                    {
+                        $var = call_user_func_array($func[0], $varx);
+                    }
+                }
             }
-
             // save
             $vars[ $ct[0] ] = $var;
         }
@@ -882,7 +978,9 @@ function cn_front_msg_show($area, $css = 'fe_css')
     if (!is_array($cn_FE_Messages[$area])) return;
 
     foreach ($cn_FE_Messages[$area] as $msg)
+    {
         echo '<div class="'.$css.'">'.$msg[0].'</div>';
+    }
 }
 
 // Since 2.0: @bootstrap Select DB mechanism
@@ -896,7 +994,10 @@ function cn_db_init()
 function cn_lang_init()
 {
     $lang = getoption('cn_language');
-    if (!$lang) $lang = 'en';
+    if (!$lang) 
+    {
+        $lang = 'en';
+    }
 
     $st = array();
     $ln = file(SERVDIR.'/core/lang/'.$lang.'.txt');
@@ -913,8 +1014,14 @@ function cn_lang_init()
 function cn_config_load()
 {
     global $_CN_access;
-
-    $conf_path='/cdata/conf.php';
+    //checking permission for load config 
+    $conf_dir=cn_path_construct(SERVDIR,'cdata');
+    if(!is_dir($conf_dir)||!is_writable($conf_dir))
+    {
+        return false;
+    }
+                    
+    $conf_path=cn_path_construct(SERVDIR,'cdata').'conf.php';    
     $cfg = cn_touch_get($conf_path);
     if(!$cfg) 
     {
@@ -968,7 +1075,7 @@ function cn_config_load()
         'week_list'                     => 'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
         'active_news_def'               => 20,
         'thumbnail_with_upload'         => 0,
-        'max_thumbnail_widht'           => 256,
+        'max_thumbnail_width'            => 256,
         'auto_news_alias'               =>0,                    
         // 'phpself_full'                  => '',
         // 'phpself_popup'                 => '',
@@ -1003,17 +1110,29 @@ function cn_config_load()
     );
 
     // Set default values
-    foreach ($default_conf as $k => $v) if (!isset($cfg['%site'][$k])) $cfg['%site'][$k] = $v;
+    foreach ($default_conf as $k => $v) 
+    {
+        if (!isset($cfg['%site'][$k])) 
+        {
+            $cfg['%site'][$k] = $v;
+        }
+    }
 
     // Set basic groups
-    if (!isset($cfg['grp'])) $cfg['grp'] = array();
+    if (!isset($cfg['grp'])) 
+    {
+        $cfg['grp'] = array();
+    }
 
     // Make default groups
-    $cgrp = file(SKIN.'/defaults/groups.tpl');
+    $cgrp = file(cn_path_construct(SKIN,'defaults').'groups.tpl');
     foreach ($cgrp as $G)
     {
         $G = trim($G);
-        if ($G[0] === '#') continue;
+        if ($G[0] === '#') 
+        {
+            continue;
+        }
 
         list($id, $name, $group, $access) = explode('|', $G);
         $id = intval($id);
@@ -1045,7 +1164,11 @@ function cn_config_load()
     }
 
     if (!getoption('#grp'))
+    {
         setoption("#grp", $cfg['grp']);
+    }
+    
+    return TRUE;
 }
 
 // Since 2.0.1: Filter magic quotes gpc
@@ -1061,7 +1184,10 @@ function cn_filter_magic_quotes($in = null, $lv = 0)
     }
     elseif (is_array($in))
     {
-        foreach ($in as $a => $b) $in[$a] = cn_filter_magic_quotes($b, $lv + 1);
+        foreach ($in as $a => $b)
+        {
+            $in[$a] = cn_filter_magic_quotes($b, $lv + 1);
+        }
         return $in;
     }
     else
@@ -1073,9 +1199,12 @@ function cn_filter_magic_quotes($in = null, $lv = 0)
 // Since 2.0: Save whole config
 function cn_config_save($cfg = null)
 {
-    if ($cfg === null) $cfg = mcache_get('config');
+    if ($cfg === null) 
+    {
+        $cfg = mcache_get('config');
+    }
 
-    $fn = SERVDIR.'/cdata/conf.php';
+    $fn = cn_path_construct(SERVDIR,'cdata').'conf.php';
     $dest = $fn.'-'.mt_rand().'.bak';
 
     // save all config
@@ -1130,10 +1259,15 @@ function scan_dir($dir, $cond = '')
 {
     $files = array();
     if($dh = opendir($dir))
+    {
         while (false !== ($filename = readdir($dh)))
+        {            
             if (!in_array($filename, array('.', '..')) && ($cond == '' || $cond && preg_match("/$cond/i", $filename)))
+            {
                 $files[] = $filename;
-
+            }
+        }
+    }
     return $files;
 }
 
@@ -1145,9 +1279,13 @@ function del_dir($dir)
     foreach ($files as $file)
     {
         if (is_dir("$dir/$file"))
+        {
             del_dir("$dir/$file");
+        }
         else
+        {
             unlink("$dir/$file");
+        }
     }
     return rmdir($dir);
 }
@@ -1188,10 +1326,18 @@ function hook($hook, $args = null)
         foreach ($_HOOKS[$hook] as $hookfunc)
         {
             if ($hookfunc[0] == '*')
+            {
                  $_args = call_user_func_array(substr($hookfunc, 1), $args);
-            else $_args = call_user_func($hookfunc, $args);
+            }
+            else 
+            {
+                $_args = call_user_func($hookfunc, $args);
+            }
 
-            if (!is_null($_args)) $args = $_args;
+            if (!is_null($_args)) 
+            {
+                $args = $_args;
+            }
         }
     }
 
@@ -1260,7 +1406,7 @@ function confirm_post($text, $required = 'mod,action,subaction,source')
 // $image = img@custom_style_tpl
 function echoheader($image, $header_text, $bread_crumbs = false)
 {
-    global $skin_header, $lang_content_type, $skin_menu, $skin_prefix, $_SESS;
+    global $skin_header, $lang_content_type, $skin_menu, $skin_prefix, $_SESS, $_SERV_SESS;
 
     $header_time = date('H:i:s M, d', ctime());
     
@@ -1269,9 +1415,14 @@ function echoheader($image, $header_text, $bread_crumbs = false)
     $custom_style=isset($customs[1])?$customs[1]:false;
     $custom_js=isset($customs[2])?$customs[2]:false;
     
-    if (isset($_SESS['user']))
+    if (isset($_SESSION['user']))
+    {
          $skin_header = preg_replace("/{menu}/", $skin_menu, $skin_header);
-    else $skin_header = preg_replace("/{menu}/", "<div style='padding: 5px;'><a href='".PHP_SELF."'>".VERSION_NAME."</a></div>", $skin_header);
+    }
+    else 
+    {
+        $skin_header = preg_replace("/{menu}/", "<div style='padding: 5px;'><a href='".PHP_SELF."'>".VERSION_NAME."</a></div>", $skin_header);
+    }
 
     $skin_header = get_skin($skin_header);
     $skin_header = str_replace('{title}', ($header_text? $header_text.' / ' : ''). 'CuteNews', $skin_header);
@@ -1281,10 +1432,16 @@ function echoheader($image, $header_text, $bread_crumbs = false)
     $skin_header = str_replace("{content-type}", $lang_content_type, $skin_header);
     $skin_header = str_replace("{breadcrumbs}", $bread_crumbs, $skin_header);
 
-    if ($custom_style) $custom_style = read_tpl($custom_style);
+    if ($custom_style) 
+    {
+        $custom_style = read_tpl($custom_style);
+    }
     $skin_header = str_replace("{CustomStyle}", $custom_style, $skin_header);
 
-    if ($custom_js) $custom_js = '<script type="text/javascript">'.read_tpl($custom_js).'</script>';
+    if ($custom_js) 
+    {
+        $custom_js = '<script type="text/javascript">'.read_tpl($custom_js).'</script>';
+    }
     $skin_header = str_replace("{CustomJS}", $custom_js, $skin_header);
 
     echo $skin_header;
@@ -1328,7 +1485,19 @@ function fcutenewslic()
 {
     global $reg_site_key;
     $clst = bd_config("PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPlBvd2VyZWQgYnkgPGEgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGl0bGU9IkN1dGVOZXdzIC0gUEhQIE5ld3MgTWFuYWdlbWVudCBTeXN0ZW0iIHRhcmdldD0iX2JsYW5rIj5DdXRlTmV3czwvYT48L2Rpdj4=");
-    if (!file_exists(SERVDIR."/cdata/reg.php")) { echo $clst; } else { include SERVDIR."/cdata/reg.php"; if (!preg_match(base64_decode("L1xBKFx3ezZ9KS1cd3s2fS1cd3s2fVx6Lw=="), $reg_site_key)) echo $clst; } return 0;
+    if (!file_exists( cn_path_construct(SERVDIR,'cdata').'reg.php')) 
+    { 
+        echo $clst;         
+    } 
+    else 
+    { 
+        include SERVDIR."/cdata/reg.php"; 
+        if (!preg_match(base64_decode("L1xBKFx3ezZ9KS1cd3s2fS1cd3s2fVx6Lw=="), $reg_site_key)) 
+        {
+            echo $clst;
+        }        
+    } 
+    return 0;
 }
 
 // ===================== ACL SECTION =====================
@@ -1337,7 +1506,9 @@ function fcutenewslic()
 function cn_get_categories($is_frontend = FALSE)
 {
     if ($cc = mcache_get('#categories'))
+    {
         $catgl = $cc;
+    }
     else
     {
         $catgl = getoption('#category');
@@ -1347,8 +1518,14 @@ function cn_get_categories($is_frontend = FALSE)
     // Delete not allowed cats
     foreach ($catgl as $id => $v)
     {
-        if ($id == '#') unset($catgl[$id]);
-        elseif (!test_cat($id) && !$is_frontend) unset($catgl[$id]);
+        if ($id == '#') 
+        {
+            unset($catgl[$id]);
+        }
+        elseif (!test_cat($id) && !$is_frontend) 
+        {
+            unset($catgl[$id]);
+        }
     }
 
     return $catgl;
@@ -1424,16 +1601,24 @@ function insert_smilies($insert_location, $break_location = FALSE, $admincp = FA
         else
         {
             if (getoption('base64_encode_smile'))
+            {
                 $url = "data:image/png;base64,".base64_encode(join('', file(SERVDIR.'/skins/emoticons/'.$smile.'.gif')));
+            }
             else
+            {
                 $url = getoption('http_script_dir')."/skins/emoticons/".$smile.".gif";
-
+            }
             $output .= "<a href='#' onclick='insertext(\":$smile:\", \"$insert_location\"); return false;'><img style=\"border: none;\" alt=\"$smile\" src=\"$url\" /></a>";
         }
 
         if ( isset($break_location) && intval($break_location) > 0 && $i % $break_location == 0)
+        {
              $output .= "<br />";
-        else $output .= "&nbsp;";
+        }
+        else 
+        {
+            $output .= "&nbsp;";
+        }
     }
 
     return $output;
@@ -1443,20 +1628,35 @@ function insert_smilies($insert_location, $break_location = FALSE, $admincp = FA
 function get_skin($skin)
 {
     $licensed = false;
-    if (!file_exists(SERVDIR.'/cdata/reg.php')) $stts = base64_decode('KHVucmVnaXN0ZXJlZCk=');
+    if (!file_exists(cn_path_construct(SERVDIR,'cdata').'reg.php')) 
+    {
+        $stts = base64_decode('KHVucmVnaXN0ZXJlZCk=');
+    }
     else
     {
         include (SERVDIR.'/cdata/reg.php');
-        if (isset($reg_site_key) == false) $reg_site_key = false;
-
+        if (isset($reg_site_key) == false) 
+        {
+            $reg_site_key = false;
+        }
+        
+        $mmbrid=null;
         if (preg_match('/\\A(\\w{6})-\\w{6}-\\w{6}\\z/', $reg_site_key, $mmbrid))
         {
             if ( !isset($reg_display_name) or !$reg_display_name or $reg_display_name == '')
+            {
                  $stts = "<!-- (-$mmbrid[1]-) -->";
-            else $stts = "<label title='(-$mmbrid[1]-)'>". base64_decode('TGljZW5zZWQgdG86IA==').$reg_display_name.'</label>';
+            }
+            else 
+            {
+                $stts = "<label title='(-$mmbrid[1]-)'>". base64_decode('TGljZW5zZWQgdG86IA==').$reg_display_name.'</label>';
+            }
             $licensed = true;
         }
-        else $stts = '!'.base64_decode('KHVucmVnaXN0ZXJlZCk=').'!';
+        else 
+        {
+            $stts = '!'.base64_decode('KHVucmVnaXN0ZXJlZCk=').'!';
+        }
     }
 
     $msn  = bd_config('c2tpbg==');
@@ -1465,7 +1665,10 @@ function get_skin($skin)
     $lct  = preg_replace("/{l-status}/", $stts, $lct);
     $lct  = preg_replace("/{cversion}/", VERSION, $lct);
 
-    if ($licensed == true) $lct = false;
+    if ($licensed == true) 
+    {
+        $lct = false;
+    }
     $$msn = preg_replace("/$cr/", $lct, $$msn);
 
     return $$msn;
@@ -1481,7 +1684,9 @@ function news_make_category($category)
         foreach ($category as $cvalue)
         {
             if (!test_cat($cvalue))
+            {
                 msg_info('Not allowed category');
+            }
 
             $nc[] = intval($cvalue);
         }
@@ -1491,7 +1696,9 @@ function news_make_category($category)
     else
     {
         if (test_cat($category))
+        {
             msg_info(i18n('Not allowed category'));
+        }
 
         return $category;
     }
@@ -1503,7 +1710,10 @@ function make_postponed_date($gstamp = 0)
     $_dateD = $_dateM = $_dateY = false;
 
     // Use current timestamp if no present
-    if ($gstamp == 0) $gstamp = ctime();
+    if ($gstamp == 0) 
+    {
+        $gstamp = ctime();
+    }
 
     $day    = date('j', $gstamp);
     $month  = date('n', $gstamp);
@@ -1512,8 +1722,14 @@ function make_postponed_date($gstamp = 0)
 
     for ($i = 1; $i < 32; $i++)
     {
-        if ($day == $i) $_dateD .= "<option selected value=$i>$i</option>";
-        else            $_dateD .= "<option value=$i>$i</option>";
+        if ($day == $i) 
+        {
+            $_dateD .= "<option selected value=$i>$i</option>";
+        }
+        else
+        {
+            $_dateD .= "<option value=$i>$i</option>";
+        }
     }
 
     for ($i = 1; $i < 13; $i++)
@@ -1522,19 +1738,35 @@ function make_postponed_date($gstamp = 0)
         $curr_mont = date('n', $timestamp) - 1;
 
         if ($ml && isset($ml[ $curr_mont]))
+        {
             $month_name = $ml[ $curr_mont ];
+        }
         else
+        {
             $month_name = date("M", $timestamp);
+        }
 
         // ---
-        if ($month == $i) $_dateM .= "<option selected value=$i>" . $month_name . "</option>";
-        else              $_dateM .= "<option value=$i>" . $month_name . "</option>";
+        if ($month == $i) 
+        {
+            $_dateM .= "<option selected value=$i>" . $month_name . "</option>";
+        }
+        else
+        {
+            $_dateM .= "<option value=$i>" . $month_name . "</option>";
+        }
     }
 
     for ($i = 2003; $i < (date('Y') + 8); $i++)
     {
-        if ($year == $i) $_dateY .= "<option selected value=$i>$i</option>";
-        else             $_dateY .= "<option value=$i>$i</option>";
+        if ($year == $i) 
+        {
+            $_dateY .= "<option selected value=$i>$i</option>";
+        }
+        else
+        {
+            $_dateY .= "<option value=$i>$i</option>";
+        }
     }
 
     return array($_dateD, $_dateM, $_dateY, date('H', $gstamp), date('i', $gstamp), date('s', $gstamp));
@@ -1674,7 +1906,10 @@ function getoption($opt_name = '')
         $cfn = spsep(substr($opt_name, 1), '/');
         foreach ($cfn as $id)
         {
-            if (isset($cfg[$id])) $cfg = $cfg[$id];
+            if (isset($cfg[$id])) 
+            {
+                $cfg = $cfg[$id];
+            }
             else
             {
                 $cfg = array();
@@ -1696,9 +1931,14 @@ function setoption_rc($names, $var, $cfg)
     $the_name = array_shift($names);
 
     if (count($names) == 0)
+    {
         $cfg[$the_name] = $var;
+    }
     else
+    {
+        if (!isset($cfg[$the_name])) { $cfg[$the_name] = ''; }
         $cfg[$the_name] = setoption_rc($names, $var, $cfg[$the_name]);
+    }
 
     return $cfg;
 }
@@ -1742,15 +1982,23 @@ function preg_sanitize($s, $rev = false)
     }
 
     if ($rev)
+    {
          return str_replace($preg_sanitize_at, $preg_sanitize_af, $s);
-    else return str_replace($preg_sanitize_af, $preg_sanitize_at, $s);
+    }
+    else 
+    {
+        return str_replace($preg_sanitize_af, $preg_sanitize_at, $s);
+    }
 }
 
 // Since 1.5.0
 // Separate string to array: imporved "explode" function
 function spsep($separated_string, $seps = ',')
 {
-    if (strlen($separated_string) == 0 ) return array();
+    if (strlen($separated_string) == 0 ) 
+    {
+        return array();
+    }
     $ss = explode($seps, $separated_string);
     return $ss;
 }
@@ -1785,10 +2033,22 @@ function GET($var, $method = 'GETPOST')
     $vars   = spsep($var);
     $method = strtoupper($method);
 
-    if ($method == 'GETPOST') $methods = array('GET','POST');
-    elseif ($method == 'POSTGET') $methods = array('POST','GET');
-    elseif ($method == 'GPG') $methods = array('POST','GET','GLOB');
-    else $methods = spsep($method);
+    if ($method == 'GETPOST') 
+    {
+        $methods = array('GET','POST');
+    }
+    elseif ($method == 'POSTGET') 
+    {
+        $methods = array('POST','GET');
+    }
+    elseif ($method == 'GPG') 
+    {
+        $methods = array('POST','GET','GLOB');
+    }
+    else 
+    {
+        $methods = spsep($method);
+    }
 
     foreach ( $vars as $var )
     {
@@ -1797,23 +2057,53 @@ function GET($var, $method = 'GETPOST')
 
         foreach ($methods as $method)
         {
-            if ($method == 'GLOB' && isset($GLOBALS[$var])) $value = $GLOBALS[$var];
-            elseif ($method == 'POST' && isset($_POST[$var])) $value = $_POST[$var];
-            elseif ($method == 'GET' && isset($_GET[$var])) $value = $_GET[$var];
+            if ($method == 'GLOB' && isset($GLOBALS[$var])) 
+            {
+                $value = $GLOBALS[$var];
+            }
+            elseif ($method == 'POST' && isset($_POST[$var])) 
+            {
+                $value = $_POST[$var];
+            }
+            elseif ($method == 'GET' && isset($_GET[$var])) 
+            {
+                $value = $_GET[$var];
+            }
             elseif ($method == 'POSTGET')
             {
-                if (isset($_POST[$var])) $value = $_POST[$var];
-                elseif (isset($_GET[$var])) $value = $_GET[$var];
+                if (isset($_POST[$var])) 
+                {
+                    $value = $_POST[$var];
+                }
+                elseif (isset($_GET[$var])) 
+                {
+                    $value = $_GET[$var];
+                }
             }
             elseif ($method == 'GETPOST')
             {
-                if (isset($_GET[$var])) $value = $_GET[$var];
-                elseif (isset($_POST[$var])) $value = $_POST[$var];
+                if (isset($_GET[$var]))
+                {
+                    $value = $_GET[$var];
+                }
+                elseif (isset($_POST[$var])) 
+                {
+                    $value = $_POST[$var];
+                }
             }
-            elseif ($method == 'REQUEST' && isset($_REQUEST[$var])) $value = $_REQUEST[$var];
-            elseif ($method == 'COOKIE' && isset($_COOKIE[$var])) $value = $_COOKIE[$var];
+            elseif ($method == 'REQUEST' && isset($_REQUEST[$var])) 
+            {
+                $value = $_REQUEST[$var];
+            }
+            elseif ($method == 'COOKIE' && isset($_COOKIE[$var])) 
+            {
+                $value = $_COOKIE[$var];
+            }
 
-            if (!is_null($value)) break;
+            if (!is_null($value)) 
+            {
+                break;
+            }
         }
 
         $result[] = $value;
@@ -1832,7 +2122,7 @@ function REQ($var, $method = 'GETPOST')
         return cn_htmlspecialchars($value);
     }
     else
-    {
+    {    
         list($value) = GET($var, $method);
         return $value;
     }
@@ -1841,17 +2131,19 @@ function REQ($var, $method = 'GETPOST')
 // Since 1.5.3: Member get (current or any)
 function member_get()
 {
-    global $_SESS;
-    
     // Not authorized
-    if (empty($_SESS['user']))
+    if (empty($_SESSION['user']))
+    {
         return NULL;
+    }
 
     // No in cache
     if ($member = mcache_get('#member'))
+    {
         return $member;
+    }
 
-    mcache_set('#member', $user = db_user_by_name($_SESS['user']));
+    mcache_set('#member', $user = db_user_by_name($_SESSION['user']));
     return $user;
 }
 
@@ -1859,45 +2151,68 @@ function member_get()
 function cn_detect_user_ip()
 {
     if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+    {
         $IP = $_SERVER['HTTP_X_FORWARDED_FOR'];
-
+    }
     elseif (isset($_SERVER['HTTP_CLIENT_IP']))
+    {
         $IP = $_SERVER['HTTP_CLIENT_IP'];
-
-    if (empty($IP)) $IP = $_SERVER['REMOTE_ADDR'];
-    if (empty($IP)) $IP = false;
+    }
+            
+    if (empty($IP) && isset($_SERVER['REMOTE_ADDR'])) 
+    {
+        $IP = $_SERVER['REMOTE_ADDR'];
+    }
+    if (empty($IP)) 
+    {
+        $IP = false;
+    }
 
     if (!preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $IP))
+    {
         $IP = '';
-
+    }
+    
     define('CLIENT_IP', $IP);
+    // CRYPT_SALT consists an IP
+    define('CRYPT_SALT', (getoption('ipauth') == '1'? CLIENT_IP : '').'@'.getoption('#crypt_salt'));    
 }
 
 // Since 2.0: @bootstrap
 function cn_load_skin()
 {
     $config_skin = preg_replace('~[^a-z]~i','', getoption('skin'));
-    if (file_exists($skin_file = SERVDIR."/skins/$config_skin.skin.php")) include($skin_file);
-    else die("Can't load skin $config_skin");
+    if (file_exists($skin_file = SERVDIR."/skins/$config_skin.skin.php")) 
+    {
+        include($skin_file);
+    }
+    else 
+    {
+        die("Can't load skin $config_skin");
+    }
 }
 
 // Since 2.0: Create file
 function cn_touch($fn, $php_safe = FALSE)
 {
-    if (!file_exists($cf = SERVDIR . $fn))
+    if (!file_exists($fn))
     {
-        $w = fopen($cf, 'w+');
-        if ($php_safe) fwrite($w, "<?php die('Direct call - access denied'); ?>\n");
+        $w = fopen($fn, 'w+');
+
+        if ($php_safe) 
+        {
+            fwrite($w, "<?php die('Direct call - access denied'); ?>\n");
+        }
         fclose($w);
     }
 
-    return $cf;
+    return $fn;
 }
 
 // Since 2.0: Save serialized array
 function cn_fsave($dest, $data = array())
 {  
-    $fn = SERVDIR . $dest;
+    $fn = $dest;
     $bk = $fn.'-'.mt_rand().'.bak';
 
     $w = fopen($bk, 'w+') or die("Can't save data at [$bk]");
@@ -1912,25 +2227,25 @@ function cn_fsave($dest, $data = array())
 function cn_touch_get($target)
 {
     $fn = cn_touch($target, TRUE);
-    
-    $fc = file($fn); unset($fc[0]); $fc = join('', $fc);   
+    $fc = file($fn); 
+    unset($fc[0]);
+
+    $fc = join('', $fc);
+
     if (!$fc)
     {
         $fc = array(); 
     }
     else
     {
-        $data = unserialize(base64_decode($fc));
-        global $_SESS;
-        if($data===FALSE)
+        $data = unserialize(base64_decode($fc));        
+        if ($data === FALSE)
         {
-            $fc=  unserialize($fc);                          
-            $_SESS['adm_need_migrate']=true;
+            $fc = unserialize($fc);
         }
         else 
         {
-            $fc=$data;
-            unset($_SESS['adm_need_migrate']);
+            $fc = $data;
         }
     }
         
@@ -1943,35 +2258,29 @@ function cn_load_plugins()
     global $_HOOKS;
 
     $_HOOKS = array();
-    if (is_dir(SERVDIR.'/cdata/plugins'))
+    if (is_dir(cn_path_construct( SERVDIR, 'cdata','plugins')))
     {
-        $plugins = scan_dir(SERVDIR . '/cdata/plugins');
+        $plugins = scan_dir( cn_path_construct(SERVDIR , 'cdata','plugins'));
         foreach ($plugins as $plugin)
+        {
             if (preg_match('~\.php$~i', $plugin))
+            {
                 include (SERVDIR . '/cdata/plugins/' . $plugin);
+            }
+        }
     }
 }
 
 // Since 2.0: @bootstrap
 function cn_load_session()
 {
-    global $_SESS;
+    session_name('CUTENEWS_SESSION');
+    session_start();
 
-    // CRYPT_SALT consists an IP?
-    define('CRYPT_SALT', (getoption('ipauth') == '1'? CLIENT_IP : '').'@'.getoption('#crypt_salt'));
-
-    // Cookies
-    if (isset($_COOKIE['session']) && $_COOKIE['session'])
-    {
-        $xb64d = xxtea_decrypt( base64_decode( strtr($_COOKIE['session'], '-_.', '=/+') ), CRYPT_SALT );
-        if ($xb64d) $_SESS = unserialize( $xb64d ); else $_SESS = array();
+    if(isset($_COOKIE['session']) && ($user = cn_cookie_restore()))
+    {        
+        $_SESSION['user'] =  $user;
     }
-    else
-    {
-        $_SESS = array();
-    }
-
-    mcache_set('user:session', $_SESS);
 }
 
 // Since 2.0: Users online
@@ -1979,7 +2288,7 @@ function cn_online_counter()
 {
     if ($expire = getoption('client_online'))
     {
-        $online = cn_touch_get('/cdata/online.php');
+        $online = cn_touch_get(cn_path_construct(SERVDIR, 'cdata'). 'online.php');
 
         $ct       = time();
         $uniq     = array();
@@ -1988,39 +2297,23 @@ function cn_online_counter()
         foreach ($online as $id => $v)
         {
             if ($id == '%')
+            {
                 continue;
-
+            }
+            
             list($t, $ip) = explode('|', $v);
-            if ($t < $ct - $expire) unset($online[$id]); else $uniq[$ip]++;
+            if ($t < $ct - $expire)
+            {
+                unset($online[$id]);
+            }
+            else 
+            {
+                $uniq[$ip]++;
+            }
         }
 
         $online['%'] = $uniq;
-        cn_fsave('/cdata/online.php', $online);
-    }
-}
-
-// Since 1.5.0: Send crypted cookies [$client - client side]
-function cn_save_session($client = FALSE)
-{
-    global $_SESS;
-
-    // Autoset remember flag
-    $remember = isset($_SESS['@rem']) ? FALSE : TRUE;
-
-    // String serialize
-    $cookie = strtr(base64_encode( xxtea_encrypt(serialize($_SESS), CRYPT_SALT) ), '=/+', '-_.');
-
-    if ($client)
-    {
-        echo '<script type="text/javascript">cn_set_cookie("session", "'.$cookie.'")</script>';
-        echo "<noscript>Your browser is not Javascript enable or you have turn it off. COOKIE not saved</noscript>";
-    }
-    else
-    {        
-        // if remember flag exists
-        if ($remember)
-            setcookie('session', $cookie, time() + 60*60*24*30, '/');
-        else setcookie('session', $cookie, 0, '/');
+        cn_fsave(cn_path_construct(SERVDIR, 'cdata'). 'online.php', $online);
     }
 }
 
@@ -2040,6 +2333,7 @@ function hash_generate($password, $md5hash = false)
 // Since 2.0: @bootstrap in case if UTF-8 used in Admin Panel
 function cn_sendheaders()
 {
+    header( 'X-Frame-Options:sameorigin' );
     header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
     header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
     header( 'Cache-Control: no-store, no-cache, must-revalidate' );
@@ -2063,7 +2357,9 @@ function check_direct_including($incln)
     $Uri = '//'.dirname( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 
     if (strpos(getoption('http_script_dir'), $Uri) !== false && strpos($PHP_SELF, $incln) !== false)
+    {
         die(proc_tpl('help/manual/wrong_include', array('category' => REQ('category','GPG'))));
+    }
 }
 
 // Since 2.0: Get messages
@@ -2094,8 +2390,10 @@ function cn_throw_message($msg, $area = 'n')
 function cn_decomposite_options($options)
 {
     if (is_array($options))
+    {
         return $options;
-
+    }
+    
     $result = array();
     $_options = explode(',', $options);
     foreach ($_options as $vc)
@@ -2124,12 +2422,18 @@ function cn_category_trans($cts, $_ct_names, $_cat_conf)
             }
         }
         else
+        {
             $outc[$cat_id] = $cat_id;
+        }
 
         // Subtree category expanded
-        if ($_cat_conf[$cat_id]['ac'])
+        if (isset($_cat_conf[$cat_id]) && $_cat_conf[$cat_id]['ac'])
+        {
             foreach ($_cat_conf[$cat_id]['ac'] as $expand_id)
+            {
                 $outc[$expand_id] = $expand_id;
+            }
+        }
     }
 
     return $outc;
@@ -2150,7 +2454,13 @@ function cn_get_requested_cats($category, $ucat = '', $nocategory = '')
     // Make aliases
     $_ct_names = array();
     $cat_conf  = getoption('#category');
-    foreach ($cat_conf as $id => $cn) if ($id !== '#') $_ct_names[$cn['name']] = $id;
+    foreach ($cat_conf as $id => $cn) 
+    {
+        if ($id !== '#') 
+        {
+            $_ct_names[$cn['name']] = $id;
+        }
+    }
 
     // decode categories name to id
     $_rq_category = cn_category_trans($category, $_ct_names, $cat_conf);
@@ -2160,19 +2470,31 @@ function cn_get_requested_cats($category, $ucat = '', $nocategory = '')
     $requested_cats = array();
     $is_in_category = 1;
 
-    foreach ($_rq_category as $_cat => $_t) if ($_cat)
-    {
-        // no-category param erase category ids
-        if (isset($_no_category[$_cat])) continue;
+    foreach ($_rq_category as $_cat => $_t) 
+    {        
+        if ($_cat)
+        {
+            // no-category param erase category ids
+            if (isset($_no_category[$_cat])) 
+            {
+                continue;
+            }
 
-        // ucat exists, check each entries
-        if (count($_uc_category) && !isset($_uc_category[$_cat])) continue;
+            // ucat exists, check each entries
+            if (count($_uc_category) && !isset($_uc_category[$_cat])) 
+            {
+                continue;
+            }
 
-        $requested_cats[$_cat] = 1;
+            $requested_cats[$_cat] = 1;
+        }
     }
-
+    
     // 'nocategory' or/and 'ucat' erase all category id's - don't show news
-    if (count($_rq_category) && count($requested_cats) == 0) $is_in_category = 0;
+    if (count($_rq_category) && count($requested_cats) == 0) 
+    {
+        $is_in_category = 0;
+    }
 
     return array($requested_cats, $is_in_category);
 }
@@ -2189,8 +2511,9 @@ function cn_translate_active_news($entry, $translate)
     mcache_get(':disable_rw', FALSE);
 
     if (empty($translate) || !is_array($translate))
+    {
         return null;
-
+    }
     // Check filters
     $apply = array();
     foreach ($translate as $rule => $changes)
@@ -2198,15 +2521,23 @@ function cn_translate_active_news($entry, $translate)
         list($ID, $RULE) = explode('=', $rule, 2);
 
         if ($ID == 'category' && array_intersect( spsep($RULE), spsep($entry['c']) ))
+        {
             $apply[] = $changes;
+        }
     }
 
     // Apply changes, if exists
     foreach ($apply as $sh)
     {
         list($ID, $value) = explode('=', $sh, 2);
-        if ($ID == 'php_self') $PHP_SELF = $value;
-        if ($ID == ':disable_rw') mcache_get(':disable_rw', TRUE);
+        if ($ID == 'php_self') 
+        {
+            $PHP_SELF = $value;
+        }
+        if ($ID == ':disable_rw') 
+        {
+            mcache_get(':disable_rw', TRUE);
+        }
     }
 }
 
@@ -2220,7 +2551,9 @@ function cn_replace_text()
     $replace_holders = explode(',', array_shift($args));
 
     foreach ($replace_holders as $holder)
+    {
         $text = str_replace(trim($holder), array_shift($args), $text);
+    }
 
     return $text;
 }
@@ -2228,7 +2561,7 @@ function cn_replace_text()
 // Since 2.0: Decode "defaults/templates" to list
 function cn_template_list()
 {
-    $config = file(SKIN.'/defaults/templates.tpl');
+    $config = file(cn_path_construct( SKIN,'defaults').'templates.tpl');
     $tbasic  = getoption('#templates_basic');    
     $tbasic['hash']=isset($tbasic['hash'])?$tbasic['hash']:'';
     
@@ -2284,15 +2617,18 @@ function cn_get_template($subtemplate, $template_name = 'default')
     $template_name  = strtolower($template_name);
 
     // User template not exists in config... get from defaults
-    if (!isset($templates[$template_name]))
-    {
-        $list = cn_template_list();        
-        return $list[$template_name][$subtemplate];
-    }
-    else
+    if (isset($templates[$template_name]))
     {
         return $templates[$template_name][$subtemplate];
     }
+    
+    $list = cn_template_list();             
+    if(isset($list[$template_name][$subtemplate]))
+    {
+        return $list[$template_name][$subtemplate];
+    }
+    
+    return false;
 }
 
 // Since 2.0: Replace all {name} and [name..] .. [/name] in template file
@@ -2311,7 +2647,7 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
 
     // Hooks before
     list($template) = hook('core/entry_make_start', array($template, $entry, $template_name, $template_glob));
-
+    
     // Catch { ... }
     if (preg_match_all('/\{(.*?)\}/is', $template, $tpls, PREG_SET_ORDER) )
     {
@@ -2325,7 +2661,10 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
             // send modifiers
             $short  = "cn_modify_" . ($section ? $section.'_' : "");
             $short .= preg_replace('/[^a-z]/i', '_', $tplc);
-            if (function_exists($short)) $result = call_user_func($short, $entry, explode('|', $tpla));
+            if (function_exists($short)) 
+            {
+                $result = call_user_func($short, $entry, explode('|', $tpla));
+            }
             $template = str_replace($tpl[0], $result, $template);
         }
     }
@@ -2344,7 +2683,10 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
             $result = '';
             $short  = "cn_modify_bb_" . ($section ? $section.'_' : "");
             $short .= preg_replace('/[^a-z]/i', '_', $tpl[1]);
-            if (function_exists($short)) $result = call_user_func($short, $entry, $tpl[3], $tpl[2]); // entry, text, options
+            if (function_exists($short)) 
+            {
+                $result = call_user_func($short, $entry, $tpl[3], $tpl[2]); // entry, text, options
+            }
             $template = str_replace($tpl[0], $result, $template);
         }
     }
@@ -2361,7 +2703,7 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     {
         $template = UTF8ToEntities($template);
     }
-
+    
     // Return raw data
     list($template) = cn_extrn_raw_template($template, $raw_vars);
 
@@ -2436,14 +2778,26 @@ function cn_set_GET($e)
     {                
         if ($dt = REQ($id, 'GPG'))
         {            
-            $idp=explode('=', $id, 2);
-            $id=isset($idp[0])?$idp[0]:false; 
+            if(is_array($dt))
+            {
+                //use only string
+                $dt=array_pop($dt);
+            }
+            
+            $idp = explode('=', $id, 2);
+            $id  = isset($idp[0])?$idp[0]:false; 
             $def = isset($idp[1])?$idp[1]:false;
             
             // By default, skip this
             if (isset($def) && $def && strtolower($def) == strtolower($dt))
+            {
                 continue;
-            if($id) $_GET[trim($id)] = trim($dt);
+            }
+            
+            if($id) 
+            {
+                $_GET[trim($id)] = trim($dt);
+            }
         }
     }    
 }
@@ -2477,8 +2831,7 @@ function cn_url_modify()
 {
     global $PHP_SELF;
 
-    $GET = $_GET;
-    $DIFF = array();
+    $GET = $_GET;    
     $args = func_get_args();
     $SN   = $PHP_SELF;
 
@@ -2491,6 +2844,7 @@ function cn_url_modify()
             foreach ($ks as $vs)
             {
                 $id=$val='';
+                
                 if(strpos($vs, '=')!==FALSE)
                 {
                     list($id, $var) = explode('=', $vs, 2);
@@ -2499,9 +2853,21 @@ function cn_url_modify()
                 {
                     $id=$vs;
                 }
-                if ($id == 'self') $SN = $var;
-                elseif ($id == 'reset') $GET = array();
-                elseif ($id == 'group') foreach ($vs as $a => $b) $GET[$a] = $b;
+                if ($id == 'self') 
+                {
+                    $SN = $var;
+                }
+                elseif ($id == 'reset') 
+                {
+                    $GET = array();
+                }
+                elseif ($id == 'group') 
+                {
+                    foreach ($vs as $a => $b) 
+                    {
+                        $GET[$a] = $b;
+                    }
+                }
             }
         }
         // 2) Subtract
@@ -2511,8 +2877,11 @@ function cn_url_modify()
 
             foreach ($keys as $key)
             {
-                $DIFF[] = trim($key);
-                if (isset($GET[$key])) unset($GET[$key]);
+                $key = trim($key);
+                if (isset($GET[$key])) 
+                {
+                    unset($GET[$key]);
+                }
             }
         }
         // 3) Add
@@ -2521,7 +2890,10 @@ function cn_url_modify()
             list($k, $v) = explode('=', $ks, 2);
 
             $GET[$k] = $v;
-            if ($v === '') unset($GET[$k]);
+            if ($v === '') 
+            {
+                unset($GET[$k]);
+            }
         }
     }
 
@@ -2594,9 +2966,13 @@ function cn_cookie_unpack($cookie)
     {
         $c = trim($c);
         if (isset($_COOKIE[$c]))
+        {
             $list[] = unserialize( base64_decode($_COOKIE[$c]) );
+        }
         else
+        {
             $list[] = array();
+        }
     }
 
     return $list;
@@ -2612,7 +2988,14 @@ function cn_cookie_pack()
     foreach ($cookies as $id => $cookie)
     {
         $cookie = trim($cookie);
-        if ($args[$id]) $data = base64_encode( serialize($args[$id]) ); else $data = null;
+        if ($args[$id])
+        {
+            $data = base64_encode( serialize($args[$id]) ); 
+        }
+        else
+        {
+            $data = null;
+        }
         setcookie($cookie, $data);
     }
 }
@@ -2621,11 +3004,15 @@ function cn_cookie_pack()
 function cn_user_log($msg)
 {
     if (!getoption('userlogs'))
+    {
         return;
-
-    if (!file_exists($ul = SERVDIR.'/cdata/log/user.log'))
+    }
+    
+    if (!file_exists($ul =  cn_path_construct(SERVDIR,'cdata','log'). 'user.log'))
+    {
         fclose(fopen($ul, 'w+'));
-
+    }
+    
     $a = fopen($ul, 'a');
     fwrite($a, time().'|'.str_replace("\n", ' ', $msg)."\n");
     fclose($a);
@@ -2638,7 +3025,7 @@ function cn_require_install()
 
     if (defined('AREA') && AREA == 'ADMIN')
     {
-        $_SESS = array();
+        $_SESSION = array();
         include SERVDIR . '/skins/default.skin.php';
 
         // Submit
@@ -2650,20 +3037,35 @@ function cn_require_install()
             $email = REQ('email', 'POST');
 
             // Check Username
-            if (!$username) cn_throw_message('Enter username', 'e');
-            elseif (strlen($username) < 2) cn_throw_message('Too short username (must be 2 char min)', 'e');
+            if (!$username) 
+            {
+                cn_throw_message('Enter username', 'e');
+            }
+            elseif (strlen($username) < 2) 
+            {
+                cn_throw_message('Too short username (must be 2 char min)', 'e');
+            }
 
             // Check Password
-            if (!$pass1) cn_throw_message('Enter password', 'e');
-            elseif (strlen($pass1) < 4) cn_throw_message('Too short password (must be 4 char min)', 'e');
+            if (!$pass1) 
+            {
+                cn_throw_message('Enter password', 'e');
+            }
+            elseif (strlen($pass1) < 4) 
+            {
+                cn_throw_message('Too short password (must be 4 char min)', 'e');
+            }
 
             // Check email
             if (!check_email($email))
+            {
                 cn_throw_message('Invalid email', 'e');
-
+            }
+            
             if ($pass1 !== $pass2)
+            {
                 cn_throw_message("Confirm don't match", 'e');
-
+            }
             // All OK
             if (cn_get_message('e', 'c') == 0)
             {
@@ -2672,17 +3074,16 @@ function cn_require_install()
                 db_user_update($username, "email=$email", "pass=" . SHA256_hash($pass1));
 
                 // Authorize user
-                $_SESS['user'] = $username;
-                cn_save_session();
+                $_SESSION['user'] = $username;
 
                 // Detect self pathes
                 $SN = dirname($_SERVER['SCRIPT_NAME']);
                 $script_path = "http://".$_SERVER['SERVER_NAME'] . (($SN == '/') ? '' : $SN);
 
                 setoption('http_script_dir', $script_path);
-                setoption('uploads_dir',     SERVDIR . '/uploads');
+                setoption('uploads_dir', cn_path_construct(SERVDIR , 'uploads'));
                 setoption('uploads_ext',     $script_path . '/uploads');
-                setoption('rw_layout',       SERVDIR . '/example.php');
+                setoption('rw_layout',       SERVDIR .DIRECTORY_SEPARATOR. 'example.php');
 
                 // Greets page
                 cn_relocation("http://cutephp.com/thanks.php?referer=".urlencode(base64_encode('http://'.$_SERVER['SERVER_NAME'] . PHP_SELF)));
@@ -2705,16 +3106,15 @@ function cn_require_install()
         $permission_ok = TRUE;
         foreach ($pc as $id => $_t)
         {
-            $fn = SERVDIR.'/'.$id.'/'.mt_rand().'.tmp';
-            fclose(fopen($fn, 'w+'));
-
-            // Check file exists
-            if (file_exists($fn))
+            $fndir = cn_path_construct(SERVDIR,$id);                        
+            if (is_dir($fndir) && is_writable($fndir))
             {
-                $pc[$id] = TRUE;
-                unlink($fn);
+                $pc[$id] = TRUE;                
             }
-            else $permission_ok = FALSE;
+            else 
+            {
+                $permission_ok = FALSE;
+            }
         }
 
         cn_assign('pc, permission_ok', $pc, $permission_ok);
@@ -2722,58 +3122,112 @@ function cn_require_install()
     }
 }
 
+function cn_cookie_remember($client = false)
+{    
+    // String serialize
+    $cookie = strtr(base64_encode( xxtea_encrypt(serialize($_SESSION['user']), CRYPT_SALT) ), '=/+', '-_.');
+    if ($client)
+    {
+        echo '<script type="text/javascript">cn_set_cookie("session", "'.$cookie.'")</script>';
+        echo "<noscript>Your browser is not Javascript enable or you have turn it off. COOKIE not saved</noscript>";
+    }
+    else
+    {
+        setcookie('session', $cookie, time() + 60*60*24*2, '/');
+    }
+}
+
+function cn_cookie_restore()
+{       
+    $xb64d = xxtea_decrypt( base64_decode( strtr($_COOKIE['session'], '-_.', '=/+') ), CRYPT_SALT );
+    
+    if($xb64d)
+    {    
+        return unserialize($xb64d);
+    }
+    
+    return false;
+}
+
+function cn_cookie_unset()
+{
+    setcookie('session', '', 0, '/');
+}
+
+// Since 2.0.3: Logout user and clean session
+function cn_logout($relocation=PHP_SELF)
+{    
+    cn_cookie_unset();
+    session_unset();
+    session_destroy();
+    cn_relocation($relocation);        
+}
+
 // Since 2.0: Cutenews login routines
 function cn_login()
 {
-    global $_SESS;
-    
     // Get logged username
-    $logged_username = isset($_SESS['user']) ? $_SESS['user'] : NULL;
-
+    $logged_username = isset($_SESSION['user']) ? $_SESSION['user'] : FALSE;
+    
     // Check user exists. If user logged, but not exists, logout now
     if ($logged_username && !db_user_by_name($logged_username))
-    {
-        $_SESS = array();
-        cn_save_session();
-        cn_relocation(PHP_SELF);
+    {        
+        cn_logout();
     }
 
-    $logged = 0;
+    $is_logged = false; 
+
     list($action) = GET('action', 'GET,POST');
     list($username, $password, $remember) = GET('username, password, rememberme', 'POST');
-
+    
     // user not authorized now
     if (!$logged_username)
     {
         // last url for return after user logged in
         if ($_SERVER['REQUEST_METHOD'] == 'GET')
-            $_SESS['RQU'] = preg_replace('/[^\/\.\?\=\&a-z_0-9]/i', '', $_SERVER['REQUEST_URI']);
-
+        {
+            $_SESSION['RQU'] = preg_replace('/[^\/\.\?\=\&a-z_0-9]/i', '', $_SERVER['REQUEST_URI']);
+        }
+        
         if ($action == 'dologin')
         {
             if ($username && $password)
             {
                 $member   = db_user_by_name($username);
-                $ban_time = $member['ban'];
+                $ban_time = isset($member['ban']) ? (int)$member['ban'] : 0;
 
                 // ban limit
                 if ($ban_time && $ban_time > time())
+                {
                     msg_info('Too frequent queries. Wait '.($ban_time - time().' sec.'));
-
+                }
+                
                 $compares = hash_generate($password);
+
+                if (!isset($member['pass'])) { $member['pass'] = ''; }
+
                 if (in_array($member['pass'], $compares))
                 {
-                    $logged = 1;
-
+                    $is_logged = true;
+                    
                     // set user to session
-                    $_SESS['user'] = $username;
+                    $_SESSION['user'] = $username;
+
+                    // Save remember flag
+                    $_SESSION['@rem'] = $remember;
+
+                    if ($remember) {
+                        cn_cookie_remember();
+                    }
 
                     // save last login status, clear ban
                     db_user_update($username, 'lts='.time(), 'ban=0');
-
+                    
                     // send return header (if exists)
-                    if (isset($_SESS['RQU']))
-                        header('Location: '.$_SESS['RQU']);
+                    if (isset($_SESSION['RQU']))
+                    {                        
+                        cn_relocation($_SESSION['RQU']);
+                    }                    
                 }
                 else
                 {
@@ -2783,52 +3237,46 @@ function cn_login()
                     db_user_update($username, 'ban='.(time() + getoption('ban_attempts')));
                 }
             }
-            else cn_throw_message('Enter login or password', 'e');
+            else 
+            {
+                cn_throw_message('Enter login or password', 'e');
+            }
         }
     }
     else
     {
-        $logged = 1;
+        $is_logged=true;
     }
-
     // --------
     if ($action == 'logout')
     {
-        $logged = 0;
-        unset($_SESS['user']);          // remove user, RQU
-        unset($_SESS['@rem']);          // remove @rem[ember] flag
-        header('Location: '.PHP_SELF);  // disable RQU
+        $is_logged = false;
+        cn_logout();
     }
 
     // clear require url
-    if ($logged && isset($_SESS['RQU']))
-        unset($_SESS['RQU']);
-
-    // Save remember flag
-    $_SESS['@rem'] = $remember;
-
-    // Send secured cookies
-    cn_save_session();
-
-    return $logged;
+    if ($is_logged && isset($_SESSION['RQU']))
+    {
+        unset($_SESSION['RQU']);
+    }
+        
+    return $is_logged;
 }
 
 // Since 2.0: Save auth data for Guest user
 function cn_guest_auth($name, $email, $client = TRUE)
 {
-    global $_SESS;
-
-    $_SESS['guest_name']  = $name;
-    $_SESS['guest_email'] = $email;
-
-    cn_save_session($client);
+    $_SESSION['guest_name']  = $name;
+    $_SESSION['guest_email'] = $email;
 }
 
 // Since 2.0: Show login form
 function cn_login_form($admin = TRUE)
 {
     if ($admin)
+    {
         echoheader("user", i18n("Please Login"));
+    }
 
     echo exec_tpl('auth/login');
 
@@ -2844,6 +3292,8 @@ function cn_register_form($admin = TRUE)
 {
     global $_SESS;
 
+    $flatDb = new FlatDB();
+
     // Restore active status
     if (isset($_GET['lostpass']) && $_GET['lostpass'])
     {
@@ -2856,8 +3306,7 @@ function cn_register_form($admin = TRUE)
             list(,$d_username) = explode(' ', $d_string, 2);
 
             // All OK: authorize user
-            $_SESS['user'] = $d_username;
-            cn_save_session();
+            $_SESSION['user'] = $d_username;
 
             cn_relocation(cn_url_modify('lostpass'));
             die();
@@ -2871,11 +3320,12 @@ function cn_register_form($admin = TRUE)
     {
         $user = db_user_by_name(REQ('username'));
 
-        if (is_null($user))
-            msg_info('User not exists');
+        if (is_null($user)) { msg_info('User not exists'); }
+
+        $email = isset($user['email']) ? $user['email'] : '';
 
         // Check user name & mail
-        if ($user && $user['email'] && $user['email'] == REQ('email'))
+        if ($user && $email && $email == REQ('email'))
         {
             $rand = '';
             $set = 'qwertyuiop[],./!@#$%^&*()_asdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
@@ -2919,18 +3369,20 @@ function cn_register_form($admin = TRUE)
                 if (!preg_match('/[\w]\@[\w]/i', $regemail)) $errors[] = i18n("Email is invalid");
 
                 if ($regpassword !== $confirm) $errors[] = i18n("Confirm password not match");
-                if ($captcha !== $_SESS['CSW']) $errors[] = i18n("Captcha not match");
+                if ($captcha !== $_SESSION['CSW']) $errors[] = i18n("Captcha not match");
 
                 if (strlen($regpassword) < 3) $errors[] = i18n('Too short password');
 
                 // Do register
                 if (empty($errors))
                 {
-                    // user not exists?
-                    $user = db_user_by_name($regusername);
+                    // get real user in index file
+                    $user = $flatDb->user_lookup($regusername);
+
                     if (is_null($user))
                     {
                         $user = db_user_by($regemail, 'email');
+
                         if (is_null($user))
                         {
                             $pass = SHA256_hash($regpassword);
@@ -2941,7 +3393,7 @@ function cn_register_form($admin = TRUE)
 
                             $Register_OK = TRUE;
                         }
-                        else $errors[] = i18n("Email already exists");
+                        else { $errors[] = i18n("Email already exists"); }
                     }
                     else
                     {
@@ -2952,13 +3404,18 @@ function cn_register_form($admin = TRUE)
                 // Registration OK, authorize user
                 if ($Register_OK === TRUE)
                 {
-                    $_SESS['user'] = $regusername;
+                    $_SESSION['user'] = $regusername;
 
                     // Clean old data
-                    if (isset($_SESS['RQU'])) unset($_SESS['RQU']);
-                    if (isset($_SESS['CSW'])) unset($_SESS['CSW']);
-
-                    cn_save_session();
+                    if (isset($_SESSION['RQU'])) 
+                    {
+                        unset($_SESSION['RQU']);
+                    }
+                    
+                    if (isset($_SESSION['CSW'])) 
+                    {
+                        unset($_SESSION['CSW']);
+                    }
 
                     // Send notify about register
                     if (getoption('notify_registration'))
@@ -2982,9 +3439,14 @@ function cn_register_form($admin = TRUE)
     }
 
     if (empty($template))
+    {
         return FALSE;
-
-    if ($admin) echoheader('Register', $Action);
+    }
+    
+    if ($admin) 
+    {
+        echoheader('Register', $Action);
+    }
     echo exec_tpl( $template );
     if ($admin)
     {
@@ -2999,8 +3461,12 @@ function cn_register_form($admin = TRUE)
 function cn_htmlspecialchars($str)
 {
     $key = array('&'=>'&amp;','"' => '&quot;', "'" => '&#039;', '<' => '&lt;', '>' => '&gt;');
+    $matches=null;
     preg_match('/(&amp;)+?/', $str,$matches);
-    if(count($matches)!=0) array_shift($key);
+    if(count($matches)!=0) 
+    {
+        array_shift($key);
+    }
     return str_replace(array_keys($key), array_values($key), $str);
 }
 
@@ -3052,9 +3518,13 @@ function cn_dsi_check()
         list($dsi_inline) = GET('__signature_dsi_inline', 'GETPOST');
 
         if ($dsi_inline)
+        {
             list($dsi, $key) = explode('.', $dsi_inline, 2);
+        }
         else
+        {
             die('CSRF attempt! No data');
+        }
 
         // cn_url_modify
         unset($_GET['__signature_dsi_inline']);
@@ -3109,8 +3579,12 @@ function cn_widget()
         {
             $widgets = $widgets[$widget];
             foreach ($widgets as $fn)
+            {
                 if (function_exists($fn))
+                {
                     $wret = call_user_func_array($fn, $args);
+                }
+            }
         }
     }
 
@@ -3123,50 +3597,78 @@ function cn_rewrite()
     global $PHP_SELF;
 
     if (!getoption('rw_engine'))
+    {
         return NULL;
-
+    }
+    
     $args     = func_get_args();
     $area     = array_shift($args);
     $rss_area = FALSE;
     $postfix  = array();
-
+    $prefix   = '';
+    
     if (preg_match('/\/rss\.php/i', $PHP_SELF))
+    {
         $rss_area = TRUE;
+    }
 
     // Check prefix
-    $plist = explode('/', $PHP_SELF); $playo = explode('/', getoption('rw_layout'));
-    $plvar = $plist[count($plist)-1]; $pyvar = $playo[count($playo)-1];
+    $to_plist = preg_replace('/(\/|\\\\)/', '|', $PHP_SELF);
+    $plist    = explode('|', $to_plist);
 
-    // It's correct (main) php-self
+    // Check manual layout
+    $playo = explode(DIRECTORY_SEPARATOR, getoption('rw_layout'));
+    $plvar = $plist[ count($plist) - 1 ];
+    $pyvar = $playo[ count($playo) - 1 ];
+
+    // If manual layout and current PHP_SELF is EQU, then use given prefix from config ["rw_prefix"]
     if (!$PHP_SELF || $plvar == $pyvar || $rss_area)
     {
         $prefix = dirname(getoption('rw_prefix').'/.html');
     }
+    // Else, use self prefix (aka PHP_SELF)
     else
     {
         $prefix = array();
 
-        foreach ($plist as $_id) if ($_id)
+        foreach ($plist as $_id) 
         {
-            if (preg_match('/^(.*)\./', $_id, $c)) $prefix[] = $c[1];
-            elseif ($_id) $prefix[] = $_id;
+            if ($_id)
+            {
+                if (preg_match('/^(.*)\./', $_id, $c)) 
+                {
+                    $prefix[] = $c[1];
+                }
+                elseif ($_id) 
+                {
+                    $prefix[] = $_id;
+                }    
+            }
         }
 
         $prefix = '/' . join('/', $prefix);
     }
 
     // Disable twice slashes
-    if ($prefix == '/') $prefix = '';
-
-    $param  =isset($args[0])? $args[0]:'';
-    $param2 =isset($args[1])? $args[1]:false;
+    if ($prefix == '/' || $prefix == '\\')
+    {
+        $prefix = '';
+    }
+        
+    $param  = isset($args[0])? $args[0]:'';
+    $param2 = isset($args[1])? $args[1]:false;
     $param3 = array();
         
     if (is_array($param2))
+    {
         $param3 = $param2;
-    elseif(isset($args[2])&&is_array($args[2]))
+        $param2 = false;
+    }
+    elseif (isset($args[2])&&is_array($args[2]))
+    {
         $param3 =  $args[2];
-
+    }
+    
     // Make postfix from GET-parameter
     foreach ($param3 as $id => $pfx)
     {
@@ -3185,7 +3687,7 @@ function cn_rewrite()
 
     // After PageAlias
     $postfix = getoption('rw_use_shorten') ?  $postfix : '.html' . $postfix;
-
+    
     // ----
     if ($area == 'full_story')
     {
@@ -3198,24 +3700,29 @@ function cn_rewrite()
     elseif ($area == 'comments')
     {
         if ($param2)
+        {
             return $prefix . '/comments-' . $param . '-'.$param2 . $postfix;
+        }
         else
+        {
             return $prefix . '/comments-' . $param . $postfix;
+        }
     }
     elseif ($area == 'list')
     {
         if ($param2)
         {
             if ($param)
+            {
                 return $prefix . '/archive-' . $param2 . '-'.$param . $postfix;
+            }
             else
+            {
                 return $prefix . '/archive-' . $param2 . $postfix;
+            }
         }
 
-        if ($param)
-            return $prefix . '/list-' . $param . $postfix;
-        else
-            return PHP_SELF . $postfix;
+        return $prefix . '/list-' . $param . $postfix;
     }
     elseif ($area == 'archive')
     {
@@ -3228,9 +3735,13 @@ function cn_rewrite()
     elseif ($area == 'tag')
     {
         if ($param2)
+        {
             return $prefix . '/tag-' . urlencode($param) . '/'.$param2 . $postfix;
+        }
         else
+        {
             return $prefix . '/tag-' . urlencode($param) . $postfix;
+        }
     }
 
     return NULL;
@@ -3247,12 +3758,15 @@ function cn_rewrite_load()
         $layout = getoption('rw_layout');
 
         // Make compatible
-        if ($cn_rewrite_url[0] !== '/') $cn_rewrite_url = "/$cn_rewrite_url";
+        if ($cn_rewrite_url[0] !== '/') 
+        {
+            $cn_rewrite_url = "/$cn_rewrite_url";
+        }
 
         // Try get target php file
         $request_uri = $_SERVER['REQUEST_URI'];
-        $basedir = dirname(getoption('rw_htaccess'));
-
+        $basedir = dirname(getoption('rw_htaccess')).DIRECTORY_SEPARATOR;
+        
         // Rule matched, test pathes
         if (preg_match('/^(\/[^\?]+)/', $request_uri, $c))
         {
@@ -3262,17 +3776,20 @@ function cn_rewrite_load()
             for ($i = count($tf); $i > 0; $i--)
             {
                 $sp = array_slice($tf, 0, $i);
-                $ch = $basedir . join('/', $sp) . '.php';
+                $ch = $basedir . join(DIRECTORY_SEPARATOR, $sp) . '.php';
 
                 // PHP-File is Founded!
-                if (file_exists($ch)) $layout = $ch;
+                if (file_exists($ch)) 
+                {
+                    $layout = $ch;
+                }
             }
         }
 
         // Decode request URI
-        if (preg_match('/\?/', $_SERVER['REQUEST_URI']))
+        if (preg_match('/\?/', $request_uri))
         {
-            $RI = preg_replace('/^.*\?/', '', $_SERVER['REQUEST_URI']);
+            $RI = preg_replace('/^.*\?/', '', $request_uri);
             $AR = explode('&', $RI);
             foreach ($AR as $v)
             {
@@ -3292,12 +3809,12 @@ function cn_rewrite_load()
         elseif (preg_match('/\/rss-([0-9]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['number'] = $c[1];
-            $layout = SERVDIR.'/rss.php';
+            $layout = SERVDIR.'rss.php';
         }
         elseif (preg_match('/\/print\-([0-9a-z_\-\.]+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
             $_GET['id'] = $c[1];
-            $layout = SERVDIR.'/print.php';
+            $layout = SERVDIR.'print.php';
         }
         elseif (preg_match('/\/comments\-([0-9a-z_\-\.]+)-(\d+)'.$post_fix.'/i', $cn_rewrite_url, $c))
         {
@@ -3337,8 +3854,8 @@ function cn_rewrite_load()
             die("404 Not Found");
         }
 
-        define('CN_REWRITE', $layout);
-        define('PHP_SELF',   str_replace($basedir, '', $layout));
+        define('CN_REWRITE', $layout);                    
+        define('PHP_SELF',  pathinfo(str_replace($basedir, '', $layout),PATHINFO_BASENAME));
     }
     else
     {
@@ -3347,7 +3864,10 @@ function cn_rewrite_load()
     }
 
     // const PHPSELF = SCRIPT_NAME ($PHP_SELF user may replace)
-    if (!isset($PHP_SELF) && empty($PHP_SELF)) $PHP_SELF = PHP_SELF;
+    if (!isset($PHP_SELF) && empty($PHP_SELF)) 
+    {
+        $PHP_SELF = PHP_SELF;
+    }
 }
 
 // Since 2.0: Add BreadCrumb
@@ -3397,8 +3917,14 @@ function cn_snippet_messages($area = 'new')
         $messages = cn_get_message($area[$i], 's');
 
         $type = 'notify';
-        if ($area[$i] == 'e') $type = 'error';
-        elseif ($area[$i] == 'w') $type = 'warnings';
+        if ($area[$i] == 'e') 
+        {
+            $type = 'error';
+        }
+        elseif ($area[$i] == 'w') 
+        {
+            $type = 'warnings';
+        }
 
         if ($messages)
         {
@@ -3415,7 +3941,10 @@ function cn_snippet_messages($area = 'new')
         }
     }
 
-    if ($result) echo '<div class="cn_notify_overall">'.$result.'</div>';
+    if ($result) 
+    {
+        echo '<div class="cn_notify_overall">'.$result.'</div>';
+    }
 }
 
 // Since 2.0: Write default input=hidden fields
@@ -3437,27 +3966,53 @@ function cn_snippet_get_hidden($ADD = array())
     $hid = '';
     $GET = $_GET + $ADD;
     foreach ($GET as $k => $v)
+    {
         if ($v !== '')
+        {
             $hid .= '<input type="hidden" name="'.cn_htmlspecialchars($k).'" value="'.cn_htmlspecialchars($v).'" />';
-
+        }
+    }
+    
     return $hid;
 }
 
 // Since 2.0: Create snippet for open external window
 function cn_snippet_open_win($url, $params = array(), $title = 'CN Window' )
 {
-    if (empty($params['w'])) $params['w'] = 550;
-    if (empty($params['h'])) $params['h'] = 500;
-    if (empty($params['t'])) $params['t'] = 100;
-    if (empty($params['l'])) $params['l'] = 100;
-    if (empty($params['sb'])) $params['sb'] = 1;
-    if (empty($params['rs'])) $params['rs'] = 1;
+    if (empty($params['w'])) 
+    {
+        $params['w'] = 550;
+    }        
+    if (empty($params['h'])) 
+    {
+        $params['h'] = 500;
+    }
+    if (empty($params['t'])) 
+    {
+        $params['t'] = 100;
+    }
+    if (empty($params['l'])) 
+    {
+        $params['l'] = 100;
+    }
+    if (empty($params['sb'])) 
+    {
+        $params['sb'] = 1;
+    }
+    if (empty($params['rs'])) 
+    {
+        $params['rs'] = 1;
+    }
 
     $echo = '';
     if ($params['l'] === 'auto')
+    {
         $echo .= 'var lp=(window.innerWidth - '.$params['w'].') / 2; ';
+    }
     else
+    {
         $echo .= 'var lp='.$params['l'].'; ';
+    }
 
     return $echo . "window.open('$url', '$title', 'scrollbars={$params['sb']},resizable={$params['rs']},width={$params['w']},height={$params['h']},left='+lp+',top={$params['t']}'); return false;";
 }
@@ -3469,9 +4024,13 @@ function cn_snippet_bc($sep = '&gt;')
     echo '<div class="cn_breadcrumbs">';
 
     $ls = array();
-    if (is_array($bc)) foreach ($bc as $item)
-        $ls[] = '<span class="bcitem"><a href="'.$item['url'].'">'.cn_htmlspecialchars($item['name']).'</a></span>';
-
+    if (is_array($bc)) 
+    {
+        foreach ($bc as $item)
+        {
+           $ls[] = '<span class="bcitem"><a href="'.$item['url'].'">'.cn_htmlspecialchars($item['name']).'</a></span>';
+        }
+    }
     echo join(' <span class="bcsep">'.$sep.'</span> ', $ls);
     echo '</div>';
 }
@@ -3520,7 +4079,10 @@ function cn_snippet_ckeditor($ids = '')
     echo "CKEDITOR.config.allowedContent = true;";
 
     $ids = spsep($ids);
-    foreach ($ids as $id) echo "CKEDITOR.replace( '".trim($id)."', ".hook('settings/CKEDITOR_SetsName', 'settings')." );"."\n";
+    foreach ($ids as $id) 
+    {
+        echo "CKEDITOR.replace( '".trim($id)."', ".hook('settings/CKEDITOR_SetsName', 'settings')." );"."\n";
+    }
 
     echo hook('settings/CKEDITOR_Settings');
 
@@ -3539,24 +4101,26 @@ function hlp_check_cat($c, $cat)
 function hlp_check_tag($t, $tag)
 {
     $tags = spsep($t);
-    foreach ($tags as $i => $v) $tags[$i] = strtolower(trim($v));
+    foreach ($tags as $i => $v) 
+    {
+        $tags[$i] = strtolower(trim($v));
+    }
     return in_array($tag, $tags);
 }
 
 // Since 2.0: [helper]
 function hlp_req_cached_nloc($id)
-{
+{      
     global $_CN_cache_block_id;
     global $_CN_cache_block_dt;
-
+    
     $nloc = db_get_nloc($id);
     if (!isset($_CN_cache_block_id["nloc-$nloc"]))
     {
         $_CN_cache_block_id["nloc-$nloc"] = TRUE;
-        $_CN_cache_block_dt["nloc"] = db_news_load($nloc);
-    }
-
-    return $_CN_cache_block_dt["nloc"];
+        $_CN_cache_block_dt[$nloc]=db_news_load($nloc);
+    }    
+    return $_CN_cache_block_dt[$nloc];
 }
 
 // Since 2.0: Clear cache blocks
@@ -3567,7 +4131,9 @@ function cn_cache_block_clear($id)
     foreach ($_CN_cache_block_id as $ccid => $_t)
     {
         if (substr($ccid, 0, strlen($id)) === $id)
+        {
             unset($_CN_cache_block_id[$ccid]);
+        }
     }
 }
 
@@ -3576,8 +4142,14 @@ function cn_id_alias($id)
 {
     if ($id)
     {
-        if ($_id = bt_get_id($id, 'nid_ts')) $id = $_id;
-        elseif ($_id = bt_get_id($id, 'pg_ts')) $id = $_id;
+        if ($_id = bt_get_id($id, 'nid_ts')) 
+        {
+            $id = $_id;
+        }
+        elseif ($_id = bt_get_id($id, 'pg_ts')) 
+        {
+            $id = $_id;
+        }
 
         $_GET['id'] = $id;
     }
@@ -3588,258 +4160,138 @@ function cn_id_alias($id)
 // Since 2.0: Transform TS to alias/id
 function cn_put_alias($id)
 {
-    if ($_id = bt_get_id($id, 'ts_pg')) $id = $_id;
-    elseif ($_id = bt_get_id($id, 'nts_id')) $id = $_id;
+    if ($_id = bt_get_id($id, 'ts_pg')) 
+    {
+        $id = $_id;
+    }
+    elseif ($_id = bt_get_id($id, 'nts_id')) 
+    {
+        $id = $_id;
+    }
     return $id;
 }
 
 // Since 2.0: Basic function for list news
 function cn_get_news($opts)
-{
+{    
     $FlatDB = new FlatDB();
+
+    // Source must be:
+    // -----------------
+    // null -- active news only
+    // 'draft'
+    // 'archive'
+    // 'A2' -- active news and archives
+    // -----------------
 
     $source     = isset($opts['source']) ? $opts['source'] : '';
     $archive_id = isset($opts['archive_id']) ? intval($opts['archive_id']) : 0;
 
-    // SORT
+    // Sorting
     $sort       = isset($opts['sort']) ? $opts['sort'] : '';
     $dir        = isset($opts['dir']) ? strtoupper($opts['dir']) : '';
 
+    // Pagination
     $st         = isset($opts['start']) ? intval($opts['start']) : 0;
     $per_page   = isset($opts['per_page']) ? intval($opts['per_page']) : 10;
 
-    // Will be DEPRECATED
-    $nocat      = isset($opts['nocat']) ? $opts['nocat'] : false;
-
-    // FILTERS
+    // Filters
     $page_alias = isset($opts['page_alias']) ? $opts['page_alias'] : '';
     $cfilter    = isset($opts['cfilter']) ? $opts['cfilter'] : array();
     $ufilter    = isset($opts['ufilter']) ? $opts['ufilter'] : array();
     $tag        = isset($opts['tag']) ? trim(strtolower($opts['tag'])) : '';
-    $only_active= isset($opts['only_active']) ? $opts['only_active']:false;
-    
-    $by_date    = isset($opts['by_date']) ? $opts['by_date'] : '';
+    $only_active= isset($opts['only_active']) ? $opts['only_active'] : false;
 
-    // sys
+    // System
+    $nocat      = isset($opts['nocat']) ? $opts['nocat'] : false;
+    $by_date    = isset($opts['by_date']) ? $opts['by_date'] : '';
     $nlpros     = isset($opts['nlpros']) ? intval($opts['nlpros']) : 0;
 
-    // ---
-    $qtree      = array();
-    $entries    = array();
-    $ls         = array();
-    $ppsort     = FALSE;
-    $nc         = -1;
-    $ed         = $st + $per_page;
-    $tc_time    = ctime();
-    $cpostponed = 0;
-    $date_out   = spsep($by_date, '-');
+    /* ============================================================================================================== */
 
-    $overall    = 0;
-    
-    // If search by page alias success, not check categories
-    if (empty($page_alias))
-    {
-        $FlatDB->loadall();        
-        $FlatDB->find_category($cfilter);        
-        $FlatDB->weed_user($ufilter);        
-        $FlatDB->weed_tags($tag);        
-    
-        $count_arhives=0;
-        if($only_active) //detect count arhived news for correct calculate news pagination
-        {
-            $arhs=db_get_archives();
-            foreach ($arhs as $a)
-            {
-                $count_arhives+=$a['c'];
-            }
-        }
-        
-        $overall = count($FlatDB->stor)-$count_arhives;        
-    }
+    // Prepare vars
+    // ------------------
 
-    // Quick search by page alias
+    if ($only_active) { $source = ''; }
+
+    $overall  = 0;
+    $ufilter  = $FlatDB->load_users_id($ufilter);
+    $date_out = spsep($by_date, '-');
+
+    // Match news by page-alias
+    // -------------------
     if ($page_alias)
     {
         if ($_id = bt_get_id($page_alias, 'pg_ts'))
-            $ls = array($_id => $_id);
+        {
+            $FlatDB->list = array($_id => array());
+        }
     }
+    // Preloading indexes
+    // ------------------
     else
     {
-        // Quick-Get tree structure
-        $dirs = scan_dir(SERVDIR.'/cdata/news', '^[\d\-]+\.php$');
-        foreach ($dirs as $tc) if (preg_match('/^([\d\-]+)\.php$/i', $tc, $c)) $qtree[$c[1]] = 0;
-
-        // Empty sort is sort by date
-        if ($sort == 'date')
-        {
-            $sort = '';
-            if ($dir == 'A') $dir = 'R';
+        if ($source === '') {
+            $FlatDB->load_by();
+        }
+        elseif ($source === 'archive') {
+            $FlatDB->load_by("archive-$archive_id.txt");
+        }
+        elseif ($source === 'draft') {
+            $FlatDB->load_by('idraft.txt');
+        }
+        elseif ($source === 'A2') {
+            $FlatDB->load_overall();
+        }
+        else {
+            die("CN Internal error: source not recognized\n");
         }
 
-        // Fetch from archives
-        if ($archive_id)
-        {
-            $source_id = 'archive';
-            $source = "archive-$archive_id";
-        }
-        else
-        {
-            $source_id = $source;
-        }
+        // Expand required data
+        $FlatDB->load_ext_by(array
+        (
+            'tg'     => $tag, // title or sort by tags
+            'title'  => (strtolower($sort) === 'title'), // sort by title
+            'author' => ($sort === 'author'), // sort by author name
+        ));
 
-        // -----
-        // Optimize 'date' function, select by date range
-        $range_fy = $range_ty = $range_fm = $range_tm = $range_fd = $range_td = 0;
-        $do       = count($date_out);
+        // Filtering data
+        // ----------------
 
-        if(!empty($date_out))
-        {
-            // Range for Year
-            if ($date_out[0])
-            {
-                $range_fy = strtotime($date_out[0].'-01-01 00:00:00');
-                $range_ty = strtotime($date_out[0].'-12-31 23:59:59');
-            }
+        // $cfilter, $ufilter - intersect (one match) filter by category and user_id
+        // $nocat   = if has, and $cfilter is empty, stay news withot category only
+        // $date_out = '[Y]-[m]-[d]' if present, stay only this date (-,Y,Y-m,Y-m-d)
+        // $nlpros  = if present, show prospected (postponed) news
 
-            // Range for Month
-            if ($date_out[0] && $date_out[1])
-            {
-                $dy = $ty = $date_out[0];
-                $dm = $tm = $date_out[1];
+        $FlatDB->filters($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros);
+        $FlatDB->sorting($sort, $dir);
 
-                // Don't overhead month
-                if ($date_out[1] == 12)
-                {
-                    $ty++;
-                    $tm = 1;
-                }
-                else $tm++;
+        // Pagination
+        // ----------
+        $overall = count($FlatDB->list);
+        $FlatDB->slicing($st, $per_page);
+    }
 
-                $range_fm = strtotime($dy.'-'.$dm.'-01 00:00:00');
-                $range_tm = strtotime($ty.'-'.$tm.'-01 00:00:00');
-            }
+    // Get news entries
+    $entries = $FlatDB->load_entries();
 
-            // Range for Day
-            if ($date_out[0] && $date_out[1] && $date_out[2])
-            {
-                $range_fd = strtotime($date_out[0].'-'.$date_out[1].'-'.$date_out[2].' 00:00:00');
-                $range_td = strtotime($date_out[0].'-'.$date_out[1].'-'.$date_out[2].' 23:59:59');
-            }
-        }
-        // Fetch all indexes?
-        if ($sort) $ppsort = TRUE;
-        if ($dir == 'R') $ppsort = TRUE;
+    // Get news structure
+    // -------------------------
 
-        // Archives list
-        $archive_list = db_get_archives();
-
-        // Get news listing [and for archive]
-        if (in_array($source_id, array('', 'draft', 'archive', 'A2')))
-        {
-            do
-            {                
-                $wo = db_index_bind($source);
-                while (NULL !== ($it = db_index_next($wo)))
-                {
-                    $id   = $it['id'];
-                    $uid  = $it['uid'];
-                    $user = array();
-
-                    // Get user name, if needed
-                    if ($sort == 'author' || $ufilter)
-                        $user = db_user_by($uid);
-
-                    // Count prospected news
-                    if ($id > $tc_time) $cpostponed++;
-
-                    // skip postponed or active
-                    if (!$nlpros && $id > $tc_time) continue;
-
-                    // Not load other dates [for exact date]
-                    if ($do)
-                    {
-                        if ($date_out[0] && ($id < $range_fy || $id > $range_ty)) continue;
-                        if ($date_out[1] && ($id < $range_fm || $id > $range_tm)) continue;
-                        if ($date_out[2] && ($id < $range_fd || $id > $range_td)) continue;
-                    }
-
-                    // if nocat, show news without category
-                    if ($nocat && $it['c'] && empty($cfilter))
-                        continue;
-
-                    // category test
-                    if ($cfilter && !hlp_check_cat($it['c'], $cfilter))
-                        continue;
-
-                    // user test
-                    if ($ufilter && !in_array($user['name'], $ufilter))
-                        continue;
-
-                    // by tag (reduces productivity)
-                    if ($tag)
-                    {
-                        $dt = hlp_req_cached_nloc($id);
-                        if (!hlp_check_tag($dt[$id]['tg'], $tag)) continue;
-                    }
-
-                    // Turn on $ppsort (may reduces productivity)
-                    if (!$ppsort)
-                    {
-                        $nc++;
-                        if ($nc < $st) continue;
-                        if ($per_page && $nc >= $ed)
-                            break 2;
-                    }
-
-                    // Sort by...
-                    if ($sort == 'comments') $ls[$id] = $it['co'];
-                    elseif ($sort == 'author') $ls[$id] = $user['name'];
-                    else $ls[$id] = $id;
-                }
-
-                // Release bind
-                db_index_unbind($wo);
-
-                // Require more from next archive
-                if ($source_id == 'A2' && count($archive_list))
-                {
-                    $aitem = array_shift($archive_list);
-                    $source = 'archive-'.$aitem['id'];
-                }
-                else break;
-            }
-            while(TRUE);
-        }
-
-        // ---
-        // R-reverse direction
-        if ($dir == 'R') $ls = array_reverse($ls, TRUE);
-
-        // Sorting, if selected
-        if ($ppsort)
-        {
-            if ($dir == 'A') asort($ls);
-            elseif ($dir == 'D') arsort($ls);
-
-            if ($per_page) $ls = array_slice($ls, $st, $per_page, TRUE);
-            elseif ($st) $ls = array_slice($ls, $st, NULL, TRUE);
+    $qtree   = array();
+    $dirs    = scan_dir(cn_path_construct(SERVDIR, 'cdata', 'news'), '^[\d\-]+\.php$');
+    foreach ($dirs as $tc) {
+        if (preg_match('/^([\d\-]+)\.php$/i', $tc, $c)) {
+            $qtree[$c[1]] = 0;
         }
     }
 
-    // --
-    // Load entries
-
-    cn_cache_block_clear('nloc-');
-    foreach ($ls as $id => $_t)
-    {
-        $block = hlp_req_cached_nloc($id);
-        $entries[$id] = $block[$id];
-    }
-    
     // meta-info
-    $rev['qtree'] = $qtree;
-    $rev['cpostponed'] = $cpostponed;
-    $rev['overall'] = $overall;
+    $rev = array(
+        'qtree'       => $qtree,
+        'overall'     => $overall,
+        'cpostponed'  => $FlatDB->_item_postponed
+    );
 
     return array($entries, $rev);
 }
@@ -3880,7 +4332,10 @@ function cn_snippet_paginate($st, $per_page = 100, $showed = NULL)
 // Since 2.0: Highlight words
 function cn_snippet_search_hl($text, $qhl)
 {
-    if (!getoption('search_hl')) return $text;
+    if (!getoption('search_hl')) 
+    {
+        return $text;
+    }
 
     // ---
     if ($qhl)
@@ -3889,7 +4344,10 @@ function cn_snippet_search_hl($text, $qhl)
         $whl = array();
         $ohl = array();
 
-        foreach ($mhl as $qhl) $whl[$qhl] = strlen($qhl); asort($whl);
+        foreach ($mhl as $qhl) 
+        {
+            $whl[$qhl] = strlen($qhl); asort($whl);
+        }
         foreach ($whl as $wm => $_t1)
         {
             unset($whl[$wm]);
@@ -3904,13 +4362,33 @@ function cn_snippet_search_hl($text, $qhl)
                 }
             }
 
-            if ($cons) continue;
+            if ($cons)
+            {
+                continue;
+            }
             $ohl[] = $wm;
         }
 
         // Replace words
-        foreach ($ohl as $wm) $text = str_replace($wm, '<span class="cn_search_hl">'.$wm.'</span>', $text);
+        foreach ($ohl as $wm) 
+        {
+            $text = str_replace($wm, '<span class="cn_search_hl">'.$wm.'</span>', $text);
+        }
     }
 
     return $text;
+}
+
+// Since 2.0.3
+function cn_user_email_as_site($user_email, $username)
+{
+    if (preg_match('/^www\./i', $user_email)) {
+        return '<a target="_blank" href="http://'.cn_htmlspecialchars($user_email).'">'.$username.'</a>';
+    }
+    elseif (preg_match('/^(https?|ftps?):\/\//i', $user_email)) {
+        return '<a target="_blank" href="'.cn_htmlspecialchars($user_email).'">'.$username.'</a>';
+    }
+    else {
+        return '<a href="mailto:'.cn_htmlspecialchars($user_email).'">'.$username.'</a>';
+    }
 }

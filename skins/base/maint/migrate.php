@@ -32,29 +32,29 @@ cn_snippet_messages();
             <td>
                 <select name="codepage">
                     <option value="">UTF-8</option>
-                    <option <?php if ($codepage == 'cp1251') echo 'selected'; ?> value="cp1251">Windows-1251</option>
-                    <option <?php if ($codepage == 'iso-8859‑1') echo 'selected'; ?> value="iso-8859‑1">ISO 8859‑1</option>
-                    <option <?php if ($codepage == 'cp1250') echo 'selected'; ?> value="cp1250">Windows-1250</option>
-                    <option <?php if ($codepage == 'cp1252') echo 'selected'; ?> value="cp1252">Windows-1252</option>
-                    <option <?php if ($codepage == 'cp1255') echo 'selected'; ?> value="cp1255">Windows-1255</option>
-                    <option <?php if ($codepage == 'cp1256') echo 'selected'; ?> value="cp1256">Windows-1256</option>
-                    <option <?php if ($codepage == 'iso-8859‑2') echo 'selected'; ?> value="iso-8859‑2">ISO 8859‑2</option>
-                    <option <?php if ($codepage == 'iso-8859‑3') echo 'selected'; ?> value="iso-8859‑3">ISO 8859‑3</option>
-                    <option <?php if ($codepage == 'iso-8859‑4') echo 'selected'; ?> value="iso-8859‑4">ISO 8859‑4</option>
-                    <option <?php if ($codepage == 'iso-8859‑5') echo 'selected'; ?> value="iso-8859‑5">ISO 8859‑5</option>
-                    <option <?php if ($codepage == 'iso-8859‑6') echo 'selected'; ?> value="iso-8859‑6">ISO 8859‑6</option>
-                    <option <?php if ($codepage == 'iso-8859‑7') echo 'selected'; ?> value="iso-8859‑7">ISO 8859‑7</option>
-                    <option <?php if ($codepage == 'iso-8859‑8') echo 'selected'; ?> value="iso-8859‑8">ISO 8859‑8</option>
-                    <option <?php if ($codepage == 'iso-8859‑9') echo 'selected'; ?> value="iso-8859‑9">ISO 8859‑9</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑10">ISO 8859‑10</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑11">ISO 8859‑11</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑12">ISO 8859‑12</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑13">ISO 8859‑13</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑14">ISO 8859‑14</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑15">ISO 8859‑15</option>
-                    <option <?php if ($codepage == 'iso-8859‑10') echo 'selected'; ?> value="iso-8859‑16">ISO 8859‑16</option>
-                    <option <?php if ($codepage == 'koi8-r') echo 'selected'; ?> value="koi8-r">KOI8-R</option>
-                    <option <?php if ($codepage == 'koi8-u') echo 'selected'; ?> value="koi8-u">KOI8-U</option>
+                    <option <?php if ($codepage == 'cp1251') { echo 'selected'; } ?> value="cp1251">Windows-1251</option>
+                    <option <?php if ($codepage == 'iso-8859‑1') { echo 'selected'; } ?> value="iso-8859‑1">ISO 8859‑1</option>
+                    <option <?php if ($codepage == 'cp1250') { echo 'selected'; } ?> value="cp1250">Windows-1250</option>
+                    <option <?php if ($codepage == 'cp1252') { echo 'selected'; } ?> value="cp1252">Windows-1252</option>
+                    <option <?php if ($codepage == 'cp1255') { echo 'selected'; } ?> value="cp1255">Windows-1255</option>
+                    <option <?php if ($codepage == 'cp1256') { echo 'selected'; } ?> value="cp1256">Windows-1256</option>
+                    <option <?php if ($codepage == 'iso-8859‑2') { echo 'selected'; } ?> value="iso-8859‑2">ISO 8859‑2</option>
+                    <option <?php if ($codepage == 'iso-8859‑3') { echo 'selected'; } ?> value="iso-8859‑3">ISO 8859‑3</option>
+                    <option <?php if ($codepage == 'iso-8859‑4') { echo 'selected'; } ?> value="iso-8859‑4">ISO 8859‑4</option>
+                    <option <?php if ($codepage == 'iso-8859‑5') { echo 'selected'; } ?> value="iso-8859‑5">ISO 8859‑5</option>
+                    <option <?php if ($codepage == 'iso-8859‑6') { echo 'selected'; } ?> value="iso-8859‑6">ISO 8859‑6</option>
+                    <option <?php if ($codepage == 'iso-8859‑7') { echo 'selected'; } ?> value="iso-8859‑7">ISO 8859‑7</option>
+                    <option <?php if ($codepage == 'iso-8859‑8') { echo 'selected'; } ?> value="iso-8859‑8">ISO 8859‑8</option>
+                    <option <?php if ($codepage == 'iso-8859‑9') { echo 'selected'; } ?> value="iso-8859‑9">ISO 8859‑9</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑10">ISO 8859‑10</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑11">ISO 8859‑11</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑12">ISO 8859‑12</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑13">ISO 8859‑13</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑14">ISO 8859‑14</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑15">ISO 8859‑15</option>
+                    <option <?php if ($codepage == 'iso-8859‑10') { echo 'selected'; } ?> value="iso-8859‑16">ISO 8859‑16</option>
+                    <option <?php if ($codepage == 'koi8-r') { echo 'selected'; } ?> value="koi8-r">KOI8-R</option>
+                    <option <?php if ($codepage == 'koi8-u') { echo 'selected'; } ?> value="koi8-u">KOI8-U</option>
                 </select>
 
                 Old ID <input type="text" name="sample_id" value="<?php echo cn_htmlspecialchars($sample_id); ?>" />
@@ -64,7 +64,13 @@ cn_snippet_messages();
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[users]" value="Y" /></td><td>Convert users (<b>first</b>)</td></tr>
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[news]" value="Y" /></td><td>Convert all news, comments, more fields</td></tr>
         <tr><td style="text-align: right;"><input type="checkbox" name="conv[archives]" value="Y" /></td><td>Convert archives</td></tr>
-        <tr><td style="text-align: right;"><input type="checkbox" name="conv[sc]" value="Y" /></td><td>Convert sysconf (configs, category, ipban, templates, replace words)*</td></tr>
+        <tr>
+            <td style="text-align: right;"><input type="checkbox" name="conv[sc]" value="Y" /><br/>&nbsp;</td>
+            <td>
+                Convert sysconf (configs, category, ipban, templates, replace words)*<br/>
+                <input type="checkbox" name="conv[ovconf]" value="Y" />&nbsp;Overwrite current system settings
+            </td>
+        </tr>      
         <tr><td colspan="2"><span style="color: red;">*Warning: The migration of templates from versions 1.4 and 1.5 will make it impossible to work with comments.<br/> You need to make a backup copy of the configuration.</span></td></tr>
 
         <tr>

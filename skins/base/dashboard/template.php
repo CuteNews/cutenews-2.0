@@ -40,7 +40,7 @@ cn_snippet_bc();
 
         <?php cn_form_open('mod, opt, template, sub'); ?>
         <textarea id="template_text" style="width: 100%; height: 480px; font: 12px/1.2em Monospace;" name="save_template_text"><?php echo cn_htmlspecialchars($template_text); ?></textarea>
-        <?php if (getoption('ckeditor2template')) cn_snippet_ckeditor('template_text'); ?>
+        <?php if (getoption('ckeditor2template')) { cn_snippet_ckeditor('template_text'); }?>
 
     <?php } ?>
 
