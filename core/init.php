@@ -6,7 +6,8 @@ if (substr(PHP_VERSION, 0, 5) < '4.1.0')
     die('PHP Version is '.PHP_VERSION.', need great than PHP &gt;= 4.1.0 to start cutenews');
 }
 
-define('DEV_DEBUG', true); // for visual detect errors
+define('DEV_DEBUG', false); // for visual detect errors
+
 if (DEV_DEBUG)
 {
     ini_set('display_errors', '1');
@@ -18,7 +19,7 @@ else
 }
 
 //date timezone set
-if(empty(ini_get('date.timezone')))
+if (empty(ini_get('date.timezone')))
 {
     date_default_timezone_set('EST5EDT');
 }

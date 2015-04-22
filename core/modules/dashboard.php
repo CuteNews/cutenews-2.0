@@ -1297,7 +1297,7 @@ function dashboard_intwiz()
 {
     $sub = REQ('sub');
 
-    $categories = cn_get_categories();
+    $categories = cn_get_categories(false);
 
     $rss                    = getoption('#rss');
     $rss_encoding           =isset($rss['encoding'])? $rss['encoding']:'UTF-8';

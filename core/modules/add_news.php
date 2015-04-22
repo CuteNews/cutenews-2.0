@@ -11,7 +11,7 @@ function add_news_invoke()
     list($article_type, $preview) = GET('postpone_draft, preview', 'GETPOST');    
     list($from_date_hour, $from_date_minutes, $from_date_seconds, $from_date_month, $from_date_day, $from_date_year) = GET('from_date_hour, from_date_minutes, from_date_seconds, from_date_month, from_date_day, from_date_year', 'GETPOST');
     list($title, $page, $category, $short_story, $full_story, $if_use_html, $vConcat, $vTags, $faddm) = GET('title, page, category, short_story, full_story, if_use_html, concat, tags, faddm', 'GETPOST');
-    $categories = cn_get_categories();
+    $categories = cn_get_categories(false);
     list($morefields) = cn_get_more_fields($faddm);
     
     $is_active_html =test('Csr');

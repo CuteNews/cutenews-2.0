@@ -8,7 +8,7 @@ list($category_filters, $user_filters, $cat_filter) = _GL('category_filters, use
 $i          = 0;
 $page       = intval($page);
 $archive_id = intval(REQ('archive_id','GPG'));
-$category   = cn_get_categories();
+$category   = cn_get_categories(false);
 
     // MESSAGES BLOCK
     cn_snippet_messages();

@@ -503,6 +503,9 @@ function edit_news_action_edit()
                     {
                         unset($ida[$ID]);
                     }
+
+                    // Fill probably unused
+                    $storent['tg'] = isset($storent['tg']) ? $storent['tg'] : '';
                     
                     // 2) add new index
                     $idd[$c_time] = db_index_create($entry);
@@ -532,22 +535,24 @@ function edit_news_action_edit()
         }
     }
 
-    if(empty($entry['pg'])&&isset($entry['t'])&& getoption('auto_news_alias'))
+    if (empty($entry['pg'])&&isset($entry['t'])&& getoption('auto_news_alias'))
     {
-        $entry['pg']=  strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($entry['t'])));
-    }        
+        $entry['pg'] = strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($entry['t'])));
+    }
+
     // Assign template vars
     $category      = spsep($entry['c']);
-    $categories    = cn_get_categories();    
-    $title         =isset($entry['t'])? $entry['t']:'';
-    $short_story   =isset($entry['s'])? $entry['s']:'';
-    $page          =isset($entry['pg'])? $entry['pg']:'';
-    $full_story    =isset($entry['f'])? $entry['f']:'';
-    $is_draft      =isset($entry['st'])? $entry['st'] == 'd':false;
-    $vConcat       =isset($entry['cc'])? $entry['cc']:'';
-    $vTags         =isset($entry['tg'])? $entry['tg']:'';
-    $if_use_html   =  isset($entry['ht'])? $entry['ht']:false;
-    $is_active_html =test('Csr');
+    $categories    = cn_get_categories(false);
+    $title         = isset($entry['t'])? $entry['t']:'';
+    $short_story   = isset($entry['s'])? $entry['s']:'';
+    $page          = isset($entry['pg'])? $entry['pg']:'';
+    $full_story    = isset($entry['f'])? $entry['f']:'';
+    $is_draft      = isset($entry['st'])? $entry['st'] == 'd' : false;
+    $vConcat       = isset($entry['cc'])? $entry['cc']:'';
+    $vTags         = isset($entry['tg'])? $entry['tg']:'';
+    $if_use_html   = isset($entry['ht'])? $entry['ht']:false;
+    $is_active_html = test('Csr');
+
     cn_assign
     (
         'categories, vCategory, vTitle, vPage, vShort, vFull, vUseHtml, preview_html, preview_html_full, gstamp, is_draft, vConcat, vTags, morefields, archive_id, is_active_html',
@@ -675,7 +680,7 @@ function edit_news_action_massaction()
     // Mass change category
     elseif ($subaction == 'mass_move_to_cat')
     {
-        cn_assign('catlist', cn_get_categories());
+        cn_assign('catlist', cn_get_categories(false));
 
         $news_ids = GET('selected_news');
 

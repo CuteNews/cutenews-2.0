@@ -303,9 +303,14 @@ function cn_modify_category($e)
 {
     $ns = array();
     $cs = cn_helper_category($e);
-    foreach ($cs as $cat)
-        if ($cat['name'])
-            $ns[] = $cat['name'];
+
+    if (is_array($cs)) {
+        foreach ($cs as $cat) {
+            if ($cat['name']) {
+                $ns[] = $cat['name'];
+            }
+        }
+    }
 
     return cn_htmlspecialchars(join(', ', $ns));
 }

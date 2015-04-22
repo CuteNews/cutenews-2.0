@@ -1503,7 +1503,7 @@ function fcutenewslic()
 // ===================== ACL SECTION =====================
 
 // Since 2.0: Get cached categories with acl test
-function cn_get_categories($is_frontend = FALSE)
+function cn_get_categories($is_frontend = TRUE)
 {
     if ($cc = mcache_get('#categories'))
     {
