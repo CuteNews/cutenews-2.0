@@ -284,6 +284,7 @@ function edit_news_action_list()
 // ---------------------------------------------------------------------------------------------------------------------
 function edit_news_action_edit()
 {
+    $flatdb         = new FlatDB();
     $preview_html   = $preview_html_full = '';
     $ID             = $gstamp = intval(REQ('id', 'GETPOST'));
 
@@ -329,6 +330,8 @@ function edit_news_action_edit()
     // do save news?
     if (request_type('POST'))
     {
+        $flatdb->cache_clean();
+
         // check exists news
         if (isset($news[$ID]))
         {
@@ -667,6 +670,7 @@ function edit_news_action_massaction()
                     db_archive_meta_update($archive_id, $min, $max, $cnt);
                 }
 
+                $FlatDB->cache_clean();
                 cn_throw_message('News deleted');
             }
             else
@@ -674,8 +678,6 @@ function edit_news_action_massaction()
                 cn_throw_message("No one entry deleted", 'e');
             }
         }
-
-
     }
     // Mass change category
     elseif ($subaction == 'mass_move_to_cat')
@@ -726,9 +728,9 @@ function edit_news_action_massaction()
 
                 // Save updated block
                 db_index_save($idx, $source);
-
                 cn_throw_message('Successful processed');
 
+                $FlatDB->cache_clean();
             }
             else
             {
@@ -775,6 +777,7 @@ function edit_news_action_massaction()
             db_index_save($ida);            db_index_update_overall();
             db_index_save($idd, 'draft');   db_index_update_overall('draft');
 
+            $FlatDB->cache_clean();
             cn_throw_message('News was approved');
         }
     }
@@ -797,7 +800,6 @@ function edit_news_action_massaction()
 
             cn_throw_message('News was switched to HTML');
         }
-
     }
     else
     {
@@ -852,4 +854,6 @@ function edit_news_delete()
     db_index_update_overall($source);
 
     cn_relocation(cn_url_modify(array('reset'), 'mod=editnews', "source=$source"));
+
+    $FlatDB->cache_clean();
 }

@@ -179,7 +179,7 @@ function maintenance_sysconf()
 
     $saved = FALSE;
 
-    $epath = spsep($path, DIRECTORY_SEPARATOR);
+    $epath = spsep($path, '/');
     foreach ($epath as $id => $vp) 
     {
         if (!trim($vp)) 
@@ -193,7 +193,8 @@ function maintenance_sysconf()
     if (count($epath) > 0)
     {
         $epath[0] = $epath[0][0] === '#' ? $epath[0] : '#'.$epath[0];
-        $path = join(DIRECTORY_SEPARATOR, $epath);
+
+        $path = implode('/', $epath);
     }
     else 
     {

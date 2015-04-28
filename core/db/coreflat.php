@@ -1317,7 +1317,17 @@ class FlatDB
     // Since 2.0.3: Get active and archive news
     function load_overall()
     {
-        $this->load_by(); // First, load all active news
+        $cache_file = SERVDIR . path_construct('cdata', 'news', 'cache_A2.txt');
+
+        // Load data from cache (if exists)
+        if (file_exists($cache_file))
+        {
+            $this->list = unserialize(file_get_contents($cache_file));
+            return true;
+        }
+
+        // First, load all active news
+        $this->load_by();
 
         // Scan archives
         if (file_exists($archives = SERVDIR . path_construct('cdata', 'news', 'archive.txt')))
@@ -1329,6 +1339,9 @@ class FlatDB
                 $this->load_by('archive-'.$item[0].'.txt');
             }
         }
+
+        // Save cache file
+        file_put_contents($cache_file, serialize($this->list));
 
         return true;
     }
@@ -1571,4 +1584,38 @@ class FlatDB
         return null;
     }
 
+    // Since 2.0.4: Check cache file exists
+    function cache_not_exists($md5)
+    {
+        $cache_file = SERVDIR . path_construct('cdata', 'news', 'cache_A2_'.$md5.'.txt');
+
+        if (file_exists($cache_file)) {
+            $this->list = unserialize(file_get_contents($cache_file));
+            return false;
+        }
+
+        return true;
+    }
+
+    // Since 2.0.4: Save cache file
+    function cache_save($md5)
+    {
+        $cache_file = SERVDIR . path_construct('cdata', 'news', 'cache_A2_'.$md5.'.txt');
+        file_put_contents($cache_file, serialize($this->list));
+    }
+
+    // Since 2.0.4: Clean cache
+    function cache_clean()
+    {
+        $cache_dir = SERVDIR . path_construct('cdata', 'news');
+        $dat = scan_dir($cache_dir);
+
+        foreach ($dat as $name)
+        {
+            if (preg_match('/^cache_A2/', $name)) {
+                $fp = $cache_dir . DIRECTORY_SEPARATOR . $name;
+                unlink($fp);
+            }
+        }
+    }
 }

@@ -185,6 +185,8 @@ function add_news_invoke()
                     );
                 }
 
+                $FlatDB->cache_clean();
+
                 // view in editor
                 cn_relocation(PHP_SELF.'?mod=editnews&action=editnews&id='.$c_time.'&m=added');
             }

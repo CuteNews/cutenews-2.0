@@ -19,7 +19,7 @@ else
 }
 
 //date timezone set
-if (empty(ini_get('date.timezone')))
+$ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz))
 {
     date_default_timezone_set('EST5EDT');
 }

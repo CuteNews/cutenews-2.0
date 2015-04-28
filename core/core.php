@@ -4247,24 +4247,33 @@ function cn_get_news($opts)
             die("CN Internal error: source not recognized\n");
         }
 
-        // Expand required data
-        $FlatDB->load_ext_by(array
-        (
-            'tg'     => $tag, // title or sort by tags
-            'title'  => (strtolower($sort) === 'title'), // sort by title
-            'author' => ($sort === 'author'), // sort by author name
-        ));
+        // Cache Key
+        $cache_id = md5(json_encode(array($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros, $sort, $dir)));
 
-        // Filtering data
-        // ----------------
+        if ($FlatDB->cache_not_exists($cache_id)) {
 
-        // $cfilter, $ufilter - intersect (one match) filter by category and user_id
-        // $nocat   = if has, and $cfilter is empty, stay news withot category only
-        // $date_out = '[Y]-[m]-[d]' if present, stay only this date (-,Y,Y-m,Y-m-d)
-        // $nlpros  = if present, show prospected (postponed) news
+            // Expand required data
+            $FlatDB->load_ext_by(array
+            (
+                'tg'     => $tag, // title or sort by tags
+                'title'  => (strtolower($sort) === 'title'), // sort by title
+                'author' => ($sort === 'author'), // sort by author name
+            ));
 
-        $FlatDB->filters($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros);
-        $FlatDB->sorting($sort, $dir);
+            // Filtering data
+            // ----------------
+
+            // $cfilter, $ufilter - intersect (one match) filter by category and user_id
+            // $nocat   = if has, and $cfilter is empty, stay news withot category only
+            // $date_out = '[Y]-[m]-[d]' if present, stay only this date (-,Y,Y-m,Y-m-d)
+            // $nlpros  = if present, show prospected (postponed) news
+
+            $FlatDB->filters($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros);
+            $FlatDB->sorting($sort, $dir);
+        }
+
+        // Save cache for overall items
+        $FlatDB->cache_save($cache_id);
 
         // Pagination
         // ----------
