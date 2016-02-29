@@ -120,6 +120,8 @@ if ($dosearch)
                 $item = $ent[$id];
 
                 $MB = function_exists('mb_strtolower');
+
+                $Ts = $MB ? mb_strtolower($item['t'], 'UTF-8') : strtolower($item['t']);
                 $Fs = $MB ? mb_strtolower($item['f'], 'UTF-8') : strtolower($item['f']);
                 $Ss = $MB ? mb_strtolower($item['s'], 'UTF-8') : strtolower($item['s']);
 
@@ -131,7 +133,7 @@ if ($dosearch)
                     continue;
 
                 // Query string not found
-                if (!preg_match('/'.join('.*?', $_query).'/uis', $Fs . $Ss))
+                if (!preg_match('/'.join('.*?', $_query).'/uis', $Fs . $Ss . $Ts))
                     continue;
 
                 $st++;

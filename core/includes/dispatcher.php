@@ -40,14 +40,14 @@ if ((!isset($count_cute_news_includes) or !$count_cute_news_includes) and $templ
     /// Removing the "Powered By..." line is NOT allowed by the CuteNews License, only registered users are alowed to do so.
     if (!file_exists(SERVDIR."/cdata/reg.php"))
     {
-        echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPlBvd2VyZWQgYnkgPGEgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGl0bGU9IkN1dGVOZXdzIC0gUEhQIE5ld3MgTWFuYWdlbWVudCBTeXN0ZW0iPkN1dGVOZXdzPC9hPjwvZGl2Pg==');
+        echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4IWltcG9ydGFudDt3aWR0aDoxMDAlIWltcG9ydGFudDt0ZXh0LWFsaWduOmNlbnRlciFpbXBvcnRhbnQ7Zm9udDo5cHggVmVyZGFuYSFpbXBvcnRhbnQ7ZGlzcGxheTpibG9jayFpbXBvcnRhbnQ7dGV4dC1pbmRlbnQ6IDBweCFpbXBvcnRhbnQ7dmlzaWJpbGl0eTogdmlzaWJsZSFpbXBvcnRhbnQ7Y29sb3I6IzAwMDAwMCFpbXBvcnRhbnQ7Ij5Qb3dlcmVkIGJ5IDxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbS8iIHRpdGxlPSJDdXRlTmV3cyAtIFBIUCBOZXdzIE1hbmFnZW1lbnQgU3lzdGVtIiBzdHlsZT0iZm9udDo5cHggVmVyZGFuYSFpbXBvcnRhbnQ7ZGlzcGxheTppbmxpbmUhaW1wb3J0YW50O3Zpc2liaWxpdHk6dmlzaWJsZSFpbXBvcnRhbnQ7Y29sb3I6IzAwMzM2NiFpbXBvcnRhbnQ7dGV4dC1pbmRlbnQ6IDBweCFpbXBvcnRhbnQ7Ij5DdXRlTmV3czwvYT48L2Rpdj4=');
     }
     else
     {
         include(SERVDIR."/cdata/reg.php");
         if ( !preg_match('/\\A(\\w{6})-\\w{6}-\\w{6}\\z/', $reg_site_key, $mmbrid))
         {
-            echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPkNvbnRlbnQgTWFuYWdlbWVudCBQb3dlcmVkIGJ5IDxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbS8iIHRpdGxlPSJDdXRlTmV3cyAtIFBIUCBOZXdzIE1hbmFnZW1lbnQgU3lzdGVtIj5DdXRlTmV3czwvYT48L2Rpdj4=');
+            echo base64_decode('PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4IWltcG9ydGFudDt3aWR0aDoxMDAlIWltcG9ydGFudDt0ZXh0LWFsaWduOmNlbnRlciFpbXBvcnRhbnQ7Zm9udDo5cHggVmVyZGFuYSFpbXBvcnRhbnQ7ZGlzcGxheTpibG9jayFpbXBvcnRhbnQ7dGV4dC1pbmRlbnQ6IDBweCFpbXBvcnRhbnQ7dmlzaWJpbGl0eTogdmlzaWJsZSFpbXBvcnRhbnQ7Y29sb3I6IzAwMDAwMCFpbXBvcnRhbnQ7Ij5Db250ZW50IE1hbmFnZW1lbnQgUG93ZXJlZCBieSA8YSBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vIiB0aXRsZT0iQ3V0ZU5ld3MgLSBQSFAgTmV3cyBNYW5hZ2VtZW50IFN5c3RlbSIgc3R5bGU9ImZvbnQ6OXB4IFZlcmRhbmEhaW1wb3J0YW50O2Rpc3BsYXk6aW5saW5lIWltcG9ydGFudDt2aXNpYmlsaXR5OnZpc2libGUhaW1wb3J0YW50O2NvbG9yOiMwMDMzNjYhaW1wb3J0YW50O3RleHQtaW5kZW50OjBweCFpbXBvcnRhbnQ7Ij5DdXRlTmV3czwvYT48L2Rpdj4=');
         }
     }
 }

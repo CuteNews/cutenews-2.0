@@ -987,7 +987,7 @@ function cn_front_msg_show($area, $css = 'fe_css')
 function cn_db_init()
 {
     // basic CN db
-    include SERVDIR.'/core/db/coreflat.php';
+    require_once SERVDIR.'/core/db/coreflat.php';
 }
 
 // Since 2.0: Language codes initialize

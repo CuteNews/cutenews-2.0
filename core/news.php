@@ -618,20 +618,20 @@ function cn_modify_bb_print($e, $t, $bb)
 // make comment link
 function cn_modify_bb_full_link($e, $t, $bb)
 {
+
     $action     = REQ('action', 'GPG');
     list($opts, $anchor) = cn_helper_bb_decode($bb);
-
     if ($e['f'] == '' and $action !== 'showheadlines')
     {
         return '<!-- no full story-->';
     }
-    
+
     $id = intval($e['id']);
     $id = cn_put_alias($id);
 
     if (getoption('full_popup'))
     {
-        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/print.php?id='.$id.$anchor.'&popup=news\', \'Comment news\', \''.getoption('full_popup_string').'\'); return false;">'.$t.'</a>';
+        return '<a href="#" onclick="window.open(\''.getoption('http_script_dir').'/popup.php?id='.$id.$anchor.'&popup=news\', \'Comment news\', \''.getoption('full_popup_string').'\'); return false;">'.$t.'</a>';
     }
     else
     {

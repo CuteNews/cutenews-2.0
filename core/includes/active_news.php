@@ -56,7 +56,7 @@ $_bc_PHP_SELF = $PHP_SELF;
 // Reverse news (by user, or site option)
 if ($reverse || getoption('reverse_active'))
 {
-    $sortby = '';
+    $sortby = 'ASC';
     $dir = 'R';
 }
 

@@ -109,3 +109,19 @@ CKEDITOR.stylesSet.add( 'default', [
 	{ name: 'Square Bulleted List',	element: 'ul',		styles: { 'list-style-type': 'square' } }
 ]);
 
+// CKEDITOR fix: replace <br/> and &nbsp; with <p></p> tags
+(function() {
+    /**
+     * Check for a paste event and replace <p>&nbsp;</p> with blank
+     */
+
+    CKEDITOR.on('instanceReady', function(e) {
+        e.editor.on('paste', function(ev) {
+            ev.data.dataValue = ev.data.dataValue.replace(/<p[^>]*><br\s*\/?><\/p>/ig,'');
+            ev.data.dataValue = ev.data.dataValue.replace(/<p[^>]*>&nbsp;<\/p>/ig,'');
+        }, null, null, 9);
+    });
+
+    CKEDITOR.plugins.add('ckeditor_paragraph_paste_fix', {
+    });
+})();
