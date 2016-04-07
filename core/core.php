@@ -4077,6 +4077,7 @@ function cn_snippet_ckeditor($ids = '')
     echo 'CKEDITOR.config.smiley_images = [ '.hook('settings/CKEDITOR_emoticons', $CKSmiles).' ];'."\n";
     echo 'CKEDITOR.config.smiley_descriptions = [];'."\n";
     echo "CKEDITOR.config.allowedContent = true;";
+    echo 'CKEDITOR.config.enterMode = CKEDITOR.ENTER_BR;';
 
     $ids = spsep($ids);
     foreach ($ids as $id) 
