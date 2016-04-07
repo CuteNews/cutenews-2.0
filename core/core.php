@@ -4248,9 +4248,10 @@ function cn_get_news($opts)
         }
 
         // Cache Key
-        $cache_id = md5(json_encode(array($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros, $sort, $dir)));
+        $cache_id  = md5(json_encode(array($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros, $sort, $dir)));
+        $cache_dis = (defined('CACHE_DISABLE') && CACHE_DISABLE) ? 1 : 0;
 
-        if ($FlatDB->cache_not_exists($cache_id)) {
+        if ($cache_dis || $FlatDB->cache_not_exists($cache_id)) {
 
             // Expand required data
             $FlatDB->load_ext_by(array

@@ -1284,7 +1284,7 @@ class FlatDB
         $item = explode(':', $s);
 
         $news['id']        = base_convert($item[0], 36, 10);
-        $news['category']  = intval($item[1]);
+        $news['category']  = $item[1] ? explode(',',$item[1]) : array();
         $news['user_id']   = base_convert($item[2], 36, 10);
         $news['comments']  = intval($item[3]);
 
@@ -1318,9 +1318,10 @@ class FlatDB
     function load_overall()
     {
         $cache_file = SERVDIR . path_construct('cdata', 'news', 'cache_A2.txt');
+        $cache_en = (defined('CACHE_DISABLE') && CACHE_DISABLE) ? 0 : 1;
 
         // Load data from cache (if exists)
-        if (file_exists($cache_file))
+        if ($cache_en && file_exists($cache_file))
         {
             $this->list = unserialize(file_get_contents($cache_file));
             return true;
@@ -1420,7 +1421,7 @@ class FlatDB
                 continue;
             }
             // Category ids is present, if cat_id is NOT intersect with template - remove from listing
-            elseif ($cat && !array_intersect(array($item['category']), $cat))
+            elseif ($cat && !array_intersect($item['category'], $cat))
             {
                 unset($this->list[$id]);
                 continue;
