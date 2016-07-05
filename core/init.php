@@ -28,8 +28,8 @@ $ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz))
 // definitions
 
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.0.3');
-define('VERSION_ID',    203);
+define('VERSION',       '2.0.4');
+define('VERSION_ID',    204);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
 define('MODULE_DIR',    SERVDIR . '/core/modules');
@@ -41,6 +41,7 @@ define('DS',            DIRECTORY_SEPARATOR);
 require_once SERVDIR . '/core/core.php';
 require_once SERVDIR . '/core/security.php';
 require_once SERVDIR . '/core/news.php';
+require_once SERVDIR . '/core/downloader.php';
 require_once SERVDIR . '/core/captcha/captcha.php';
 
 // magic quotes = ON, filtering it

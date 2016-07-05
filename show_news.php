@@ -40,6 +40,7 @@ hook('show_news/social_init');
 
 // Decoding requested categories
 list ($requested_cats, $is_in_category) = cn_get_requested_cats($category, $ucat, $nocategory);
+
 // Allowed modules
 $allow_add_comment  = false;
 $allow_full_story   = false;
@@ -61,6 +62,7 @@ if ($id[0] === '.')
 
 $show_detail = true;
 if (isset($_GET['id']) && $_GET['id']!='' && $category!='') {
+
     $id1 = cn_id_alias($id);
     $ent = db_news_load(db_get_nloc($id1));
 
@@ -89,7 +91,6 @@ if ($is_in_category && empty($CN_HALT))
         }
         elseif ($subaction == "showfull")
         {
-
             $allow_full_story   = true;
         }
 

@@ -547,45 +547,69 @@ function dashboard_personal()
         }
 
         // Update additional fields for personal data
-        $o_more = base64_encode(serialize($member['more']));
-        $n_more = base64_encode(serialize($more));
+        $o_more  = base64_encode(serialize($member['more']));
+        $n_more  = base64_encode(serialize($more));
+        $correct = false;
 
         if ($o_more !== $n_more)
         {
             $any_changes = TRUE;
             db_user_update($member['name'], "more=".$n_more);
         }
+
         // Set an avatar
-        if(!empty($avatar_file)&&$avatar_file['error']==0)
+        if (!empty($avatar_file) && $avatar_file['error'] == 0)
         {
-            $uploads_dir=getoption('uploads_dir');                        
-            if($uploads_dir)
-            {                
-                $file_name='avatar_'.$member['name'].'_'.$avatar_file['name'];                              
-                if(isset($member['avatar'])&&$member['avatar']!=$file_name)
-                {
-                    // remove old avatar
-                    unlink($uploads_dir.$member['avatar']);
+            $uploads_dir = getoption('uploads_dir');
+            $avatar_tmp  = $avatar_file['tmp_name'];
+
+            if ($uploads_dir)
+            {
+                $imgsize = getimagesize($avatar_tmp);
+                if (!empty($imgsize[0]) && !empty($imgsize[1])) {
+
+                    if (preg_match('/(jpg|jpeg|gif|png)/i', $imgsize['mime'])) {
+
+                        // remove old avatar
+                        $file_name = 'avatar_' . $member['name'] . '_' . $avatar_file['name'];
+                        if (isset($member['avatar']) && $member['avatar'] != $file_name) {
+                            unlink($uploads_dir . $member['avatar']);
+                        }
+
+                        if (move_uploaded_file($avatar_file['tmp_name'], $uploads_dir . $file_name)) {
+
+                            $correct = true;
+                            $any_changes = true;
+                            db_user_update($member['name'], "avatar=" . $file_name);
+                        }
+                        else {
+                            cn_throw_message("Error: not uploaded", "e");
+                        }
+                    }
                 }
-                move_uploaded_file($avatar_file['tmp_name'], $uploads_dir.$file_name);                
-                db_user_update($member['name'], "avatar=".$file_name);
-                $any_changes = TRUE;
-            }            
+            }
         }
-        // Has changes?
-        if ($any_changes)
-        {
-            db_user_update($member['name'], "nick=$editnickname", "e-hide=$edithidemail");
 
-            // Update & Get member from DB
-            mcache_set('#member', NULL);
-            $member = member_get();
+        // Is correct?
+        if (!$correct) {
+            cn_throw_message("Error: avatar is not correct", "e");
+        } else {
 
-            cn_throw_message("User info updated! $clause");
-        }
-        else
-        {
-            cn_throw_message("No changes", 'w');
+            // Has changes?
+            if ($any_changes)
+            {
+                db_user_update($member['name'], "nick=$editnickname", "e-hide=$edithidemail");
+
+                // Update & Get member from DB
+                mcache_set('#member', NULL);
+                $member = member_get();
+
+                cn_throw_message("User info updated! $clause");
+            }
+            else
+            {
+                cn_throw_message("No changes", 'w');
+            }
         }
     }
 

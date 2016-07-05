@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Migrate from {version_from} to {version_to}</title>
+    <style>
+        html { margin: 0;  padding: 0; }
+        body { font-family: Arial; font-size: 14px; margin: 0; padding: 20px; }
+        h1 { padding: 0; margin: 0 0 16px 0 }
+        .notify { padding: 12px; background: #eee; margin: 8px 0; font-family: Monospace; line-height: 1.4em; }
+        .notify span { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Migration from Cutenews {version_from} to {version_to}</h1>
+    <p><strong>Note</strong>: after all migrations, delete /migration/ directory!</p>
+
+    {content}
+
+    <form action="{script}" method="get">
+        <input type="hidden" name="proceed" value="1" />
+        <button>START</button> Press button to proceed migration.
+    </form>
+
+</body>
+</html>

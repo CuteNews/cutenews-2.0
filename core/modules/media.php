@@ -14,40 +14,30 @@ function resize_image($source, $nw, $nh, $is_thumb=true)
     $path_parts = pathinfo($source);
     list($w, $h, $mime) = getimagesize($source);
 
-    if ($w == 0 || $h == 0)
-    {
+    if ($w == 0 || $h == 0) {
+
         $result['msg'] = 'Illegal image ['.$path_parts['basename'].']';
         $result['status'] = FALSE;
         return $result;
     }
     
     // Check file type
-    if ($mime == IMAGETYPE_JPEG) 
-    {
+    if ($mime == IMAGETYPE_JPEG) {
         $di = imagecreatefromjpeg($source);    
-    }
-    elseif ($mime == IMAGETYPE_PNG) 
-    {
+    } elseif ($mime == IMAGETYPE_PNG) {
         $di = imagecreatefrompng($source);
-    }
-    elseif ($mime == IMAGETYPE_GIF) 
-    {
+    } elseif ($mime == IMAGETYPE_GIF) {
         $di = imagecreatefromgif($source);
-    }
-    else
-    {
+    } else {
         $result['status'] = FALSE;
         $result['msg']    = 'Unrecognized image type for '.$path_parts['basename'];
         return $result;
     }
     
     // Autosize
-    if ($nw == 0)
-    {
+    if ($nw == 0) {
         $nw = $w * ($nh / $h);
-    }
-    elseif ($nh == 0)
-    {
+    } elseif ($nh == 0) {
         $nh = $h * ($nw / $w);
     }
 
@@ -58,18 +48,18 @@ function resize_image($source, $nw, $nh, $is_thumb=true)
     $sf = max(array($nw / $w, $nh / $h));
 
     imagecopyresampled($dt, $di, ($nw - $w * $sf) / 2, ($nh - $h * $sf) / 2, 0, 0, $w * $sf, $h * $sf, $w, $h);       
-    $new_thumb_file_name=$path_parts['dirname'].DIRECTORY_SEPARATOR.'.thumb.'.$path_parts['basename']; 
+    $new_thumb_file_name = $path_parts['dirname'] . DIRECTORY_SEPARATOR . '.thumb.' . $path_parts['basename'];
     $result['msg'] = 'Thumbnail created for ['.$path_parts['basename'].']';
     
-    if(!$is_thumb)
-    {
-        $new_thumb_file_name=$path_parts['dirname'].DIRECTORY_SEPARATOR.'resized_'.$path_parts['basename']; 
+    if (!$is_thumb) {
+
+        $new_thumb_file_name = $path_parts['dirname'] . DIRECTORY_SEPARATOR . 'resized_' . $path_parts['basename'];
         $result['msg'] = 'Image ['.$path_parts['basename'].'] successfully resized';
     }
+
     imagejpeg($dt, $new_thumb_file_name);
     imagedestroy($di); imagedestroy($dt);
-    
-    
+
     return $result;
 }
 
@@ -85,7 +75,7 @@ function get_sizes_form($title,$action='thumb')
 function do_resize_image($root_dir, $is_thumb=true)
 {
     $act='thumb';
-    if(!$is_thumb)
+    if (!$is_thumb)
     {
         $act='resize';
     }
@@ -95,23 +85,22 @@ function do_resize_image($root_dir, $is_thumb=true)
     $wt = intval(REQ($act.'_size_w', 'POST'));
     $ht = intval(REQ($act.'_size_h', 'POST'));
 
-    if ($wt == 0 && $ht == 0)
-    {
+    if ($wt == 0 && $ht == 0) {
+
         cn_throw_message('Enter correct width or height', 'e');
-    }
-    else
-    {
-        foreach ($rms as $vp)
-        {                        
+
+    } else {
+
+        foreach ($rms as $vp) {
+
             $fn = $root_dir . $vp;
-            if(is_dir($fn))
-            {
+            if (is_dir($fn)) {
                 continue;
             }
             
-            if(!preg_match('/\.thumb\./', $fn)) // ignore already exists thumbnails
+            if (!preg_match('/\.thumb\./', $fn)) // ignore already exists thumbnails
             {
-                $resize_result=  resize_image($fn, $wt, $ht, $is_thumb);
+                $resize_result = resize_image($fn, $wt, $ht, $is_thumb);
                 if($resize_result['status'])
                 {
                     cn_throw_message($resize_result['msg']);
@@ -128,10 +117,10 @@ function do_resize_image($root_dir, $is_thumb=true)
 
 function preparation_path($path)
 {
-    if (substr($path, -1, 1) == DIRECTORY_SEPARATOR)
-    {
+    if (substr($path, -1, 1) == DIRECTORY_SEPARATOR) {
         return substr($path, 0, -1);
-    }    
+    }
+
     return $path;
 }
 
@@ -144,8 +133,7 @@ function media_invoke()
     
     // Change default uploads dir
     $udir = cn_path_construct(SERVDIR,'uploads');
-    if (getoption('uploads_dir'))
-    {
+    if (getoption('uploads_dir')) {
         $udir = preparation_path(getoption('uploads_dir'));
     }
 
@@ -163,14 +151,13 @@ function media_invoke()
 
     // Get path struct
     $pathes = spsep($path, DIRECTORY_SEPARATOR);
-    if (isset($pathes[0]) && $pathes[0] === '')
-    {
+    if (isset($pathes[0]) && $pathes[0] === '') {
         unset($pathes[0]);
     }
 
     // Do upload files
-    if (request_type('POST'))
-    {
+    if (request_type('POST')) {
+
         cn_dsi_check();
 
         // Allowed Exts.
@@ -180,13 +167,15 @@ function media_invoke()
         $thumbnail_with_upload = getoption('thumbnail_with_upload');
 
         // UPLOAD FILES
-        if (REQ('upload','POST'))
+        if (REQ('upload', 'POST'))
         {
             list($overwrite) = GET('overwrite');
             
             $is_uploaded = FALSE;
-            
+
+            // ----------------------
             // Try for fopen url upload
+            // ----------------------
             if ($upload_from_inet = REQ('upload_from_inet'))
             {
                 if (ini_get('allow_url_fopen'))
@@ -200,7 +189,7 @@ function media_invoke()
 
                     // resolve filename
                     $c_file = $dfile . $url_name;
-                    
+
                     // Overwrite [if can], or add file
                     if (($overwrite && file_exists($c_file)) || !file_exists($c_file))
                     {
@@ -234,8 +223,11 @@ function media_invoke()
                         }
 
                         // check image
-                        list($w, $h) = getimagesize($c_file);
-                        if ($w && $h)
+                        $isize = getimagesize($c_file);
+                        $w = isset($isize[0]) ? $isize[0] : 0;
+                        $h = isset($isize[1]) ? $isize[1] : 0;
+
+                        if ($w && $h && preg_match('/(jpg|jpeg|gif|png|bmp|icon|tiff)/i', $isize['mime']))
                         {
                             cn_throw_message('File uploaded');
 
@@ -267,20 +259,22 @@ function media_invoke()
                 }
             }
 
+            // ----------------------
             // Upload from local
+            // ----------------------
+
             foreach ($_FILES['upload_file']['name'] as $id => $name) 
             {                
                 if ($name)
                 {
                     $ext = NULL;
-                    if (preg_match('/\.(\w+)$/i', $name, $c))
-                    {
+                    if (preg_match('/\.(\w+)$/i', $name, $c)) {
                         $ext = strtolower($c[1]);
                     }
                     
                     // Check allowed ext
-                    if ($ext && in_array($ext, $AE))
-                    {
+                    if ($ext && in_array($ext, $AE)) {
+
                         // encode url
                         $name = str_replace('%2F', '/', urlencode($name));
 
@@ -292,36 +286,44 @@ function media_invoke()
                         // check file for exist
                         if (file_exists($c_file = $dfile . $name))
                         {
-                            if ($overwrite)
-                            {
+                            if ($overwrite) {
                                 cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] overwritten', 'w');
-                            }
-                            else
-                            {
+                            } else {
                                 cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] already exists', 'e');
                                 continue;
                             }
                         }
 
-                        // Upload file to server
-                        if (move_uploaded_file($_FILES['upload_file']['tmp_name'][$id], $c_file))
-                        {
-                            $just_uploaded[$name] = TRUE;
+                        // Check for valid image
+                        $tmpfile = $_FILES['upload_file']['tmp_name'][$id];
+                        $isize   = getimagesize($tmpfile);
 
-                            cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
-
-                            $max_width = getoption('max_thumbnail_width');
-                            list($w, $h) = getimagesize($c_file);
-
-                            if ($w > $max_width && $thumbnail_with_upload)
-                            {                                
-                                $resize_result = resize_image($c_file, $max_width, 0);
-                                cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
-                            }
+                        // Error in image size - is not image?
+                        if (empty($isize[0]) && empty($isize[1])) {
+                            cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] is not image!', 'e');
                         }
-                        else
-                        {
-                            cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded! Please, check upload_max_filesize in PHP settings.', 'e');
+                        else {
+
+                            // Upload file to server
+                            if (move_uploaded_file($_FILES['upload_file']['tmp_name'][$id], $c_file))
+                            {
+                                $just_uploaded[$name] = TRUE;
+
+                                cn_throw_message('File uploaded [<b>'.cn_htmlspecialchars($name).'</b>]');
+
+                                $max_width = getoption('max_thumbnail_width');
+                                list($w, $h) = getimagesize($c_file);
+
+                                if ($w > $max_width && $thumbnail_with_upload)
+                                {
+                                    $resize_result = resize_image($c_file, $max_width, 0);
+                                    cn_throw_message($resize_result['msg'], $resize_result['status']?'n':'w');
+                                }
+
+                            } else {
+
+                                cn_throw_message('File ['.cn_htmlspecialchars($c_file).'] not uploaded! Please, check upload_max_filesize in PHP settings.', 'e');
+                            }
                         }
                     }
                     else

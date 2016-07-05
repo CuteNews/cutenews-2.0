@@ -1,5 +1,0 @@
-A300N200: Neuer Artikel
-E330N200: Artikel editieren
-H411: Hilfe
-V230S300: Seite besuchen
-D216: Einstellungen

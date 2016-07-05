@@ -679,12 +679,14 @@ function _GL($v)
     $result = array();
     foreach ($vs as $vc)
     {
-        $el=explode(':', $vc, 2);
-        $vc=isset($el[0])?$el[0]:false;
-        $func = isset($el[1])?$el[1]:false;    
-        $var=false;        
-        if($vc) $var = isset($GLOBALS[trim($vc)])?$GLOBALS[trim($vc)]:false;
+        $el   = explode(':', $vc, 2);
+        $vc   = isset($el[0]) ? $el[0]:false;
+        $func = isset($el[1]) ? $el[1]:false;
+
+        $var = false;
+        if ($vc) $var = isset($GLOBALS[trim($vc)]) ? $GLOBALS[trim($vc)] : false;
         if ($func) $var = call_user_func($func, $var);
+
         $result[] = $var;
     }
 
@@ -1014,16 +1016,16 @@ function cn_lang_init()
 function cn_config_load()
 {
     global $_CN_access;
-    //checking permission for load config 
-    $conf_dir=cn_path_construct(SERVDIR,'cdata');
-    if(!is_dir($conf_dir)||!is_writable($conf_dir))
-    {
+
+    // Checking permission for load config
+    $conf_dir = cn_path_construct(SERVDIR, 'cdata');
+    if (!is_dir($conf_dir) || !is_writable($conf_dir)) {
         return false;
     }
                     
     $conf_path=cn_path_construct(SERVDIR,'cdata').'conf.php';    
     $cfg = cn_touch_get($conf_path);
-    if(!$cfg) 
+    if (!$cfg)
     {
         if(defined('SHOW_NEWS'))
         {
@@ -1033,7 +1035,7 @@ function cn_config_load()
         else
         {
             //echo 'Need convert data - run migration_update_data.php';
-            $cfg=  cn_touch_get($conf_path, true);
+            $cfg = cn_touch_get($conf_path, true);
             
         }
     }
@@ -4077,7 +4079,6 @@ function cn_snippet_ckeditor($ids = '')
     echo 'CKEDITOR.config.smiley_images = [ '.hook('settings/CKEDITOR_emoticons', $CKSmiles).' ];'."\n";
     echo 'CKEDITOR.config.smiley_descriptions = [];'."\n";
     echo "CKEDITOR.config.allowedContent = true;";
-    echo 'CKEDITOR.config.enterMode = CKEDITOR.ENTER_BR;';
 
     $ids = spsep($ids);
     foreach ($ids as $id) 
@@ -4249,7 +4250,7 @@ function cn_get_news($opts)
         }
 
         // Cache Key
-        $cache_id  = md5(json_encode(array($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros, $sort, $dir)));
+        $cache_id  = md5(json_encode(array($cfilter, $ufilter, $tag, $nocat, $date_out, $nlpros, $sort, $dir, $source, $archive_id)));
         $cache_dis = (defined('CACHE_DISABLE') && CACHE_DISABLE) ? 1 : 0;
 
         if ($cache_dis || $FlatDB->cache_not_exists($cache_id)) {

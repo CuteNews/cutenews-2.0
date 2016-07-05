@@ -1,6 +1,6 @@
 <?php
 
-    list($registered, $reg_site_key) = _GL('registered, reg_site_key');
+    list($registered, $reg_site_key, $version_holder) = _GL('registered, reg_site_key, version_holder');
 
 ?>
 <div style="margin: 0 32px 0 0;">
@@ -20,7 +20,7 @@
         </ol>
 
         <div><strong>Your version:</strong> Cutenews v<?php echo VERSION.' (Build ID - '.VERSION_ID.')'; ?></div>
-        <div><strong>License version:</strong> <script type="text/javascript" src="http://cutephp.com/cutenews/check_version.php?mybid=<?php echo VERSION_ID; ?>&amp;licenseid=<?php echo urlencode($reg_site_key); ?>"></script></div>
+        <div><strong>License version:</strong> <?=$version_holder;?></div>
         <br/>
         <div><strong>Important note:</strong> no formal official support is provided apart from the support forum found on this website and maintained by other users.</div>
     </div>
