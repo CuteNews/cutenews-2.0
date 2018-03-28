@@ -165,7 +165,7 @@ if ($total_comments && (test('Mda')||test('Mds')))
     // Some operations, e.g. remove comments
     if (test('Mda')||test('Mds'))
     {
-        echo '<div id="del_btn" class="cn_comment_submit" style="visibility:hidden;"><input type="submit" id="btn_delete" value="Delete comments"/></div>';        
+        echo '<div id="del_btn" class="cn_comment_submit" style="visibility:hidden;"><input class="btn btn-default btn-danger" type="submit" id="btn_delete" value="Delete comments"/></div>';
     }    
     echo '</form>';
     echo '<script type="text/javascript">function d(){var a=document.getElementById("del_btn"); var ck=document.getElementsByName("comm_delete[]"); var i=0; var en="visibility:hidden;"; var dl=document.getElementById("btn_delete"); var cheked=0; '
@@ -192,7 +192,7 @@ if (($member && test('Mac')) || !$member)
 {
     $comment_url = getoption('rw_engine') ? $_SERVER['REQUEST_URI'] : PHP_SELF;
 
-    echo '<form name="comment_frm" action="'.$comment_url.'" method="POST"/>';
+    echo '<form class="form-signin" role="form" name="comment_frm" action="'.$comment_url.'" method="POST"/>';
     echo '<input type="hidden" name="id" value="'.$id.'" />';
     echo '<input type="hidden" name="subaction" value="addcomment" />';
     echo '<input type="hidden" name="popup" value="'.cn_htmlspecialchars(REQ('popup')).'" />';

@@ -1,43 +1,61 @@
 <?php
 
-list($wlist, $word, $replace, $is_repl_opt) = _GL('wlist, word, replace, repopt');
-
-cn_snippet_bc();
+    list($wlist, $word, $replace, $is_repl_opt) = _GL('wlist, word, replace, repopt');
+    cn_snippet_bc();
 
 ?>
-<?php
-    if(!$is_repl_opt){
-?>
-<div style="color:#FF0000; font-size: 10px;">
-    For working word replacement need turn on option: Use word replace module.<br/>
-    For more information contact with site administrator.
-</div>
-<?php
-    }
-?>
-<form action="<?php echo PHP_SELF;?>" method="POST">
 
-    <?php cn_form_open('mod, opt'); ?>
-    <table class="std-table" width="100%">
-        <tr><th>Word</th> <th>Replace</th></tr>
+<section>
+	<div class="container">
+		<?php if (!$is_repl_opt){ ?>
 
-        <?php if (is_array($wlist) && $wlist) foreach ($wlist as $name => $var) { ?>
+			<p>
+				For working word replacement need turn on option: Use word replace module.<br/>
+				For more information contact with site administrator.
+			</p>
 
-            <tr <?php if ($word == $name) echo 'class="row_selected"'; ?>>
-                <td><a href="<?php echo cn_url_modify('word='.$name); ?>"><?php echo cn_htmlspecialchars($name); ?></a></td>
-                <td><?php echo cn_htmlspecialchars($var); ?></td>
-            </tr>
+		<?php } ?>
+		<form action="<?php echo PHP_SELF;?>" method="POST">
 
-        <?php } else { ?><tr><td colspan="2">Entries not found</td></tr><?php } ?>
+			<?php cn_form_open('mod, opt'); ?>
+			<table class="table table-bordered table-striped table-hover">
 
-    </table>
+				<tr>
+                    <th>Word</th>
+                    <th>Replace</th>
+                </tr>
 
-    <br/>
-    <table class="panel">
-        <tr><td align="right">Word</td> <td><input type="text" style="width: 350px;" name="word" value="<?php echo cn_htmlspecialchars($word); ?>"/></td></tr>
-        <tr><td align="right">Replace</td> <td><input type="text" style="width: 350px;" name="replace" value="<?php echo cn_htmlspecialchars($replace); ?>"/></td></tr>
-        <tr><td align="right"><input type="checkbox" name="delete" value="Y"/></td> <td>Delete word</td></tr>
-        <tr><td>&nbsp;</td> <td><input type="submit" name="submit" value="Submit"/></td></tr>
-    </table>
+				<?php if (is_array($wlist) && $wlist) foreach ($wlist as $name => $var) { ?>
 
-</form>
+					<tr <?php if ($word == $name) echo 'class="row_selected"'; ?>>
+						<td><a href="<?php echo cn_url_modify('word='.$name); ?>"><?php echo cn_htmlspecialchars($name); ?></a></td>
+						<td><?php echo cn_htmlspecialchars($var); ?></td>
+					</tr>
+
+				<?php } else { ?>
+
+                    <tr><td colspan="2"><?php echo i18n('Entries not found');?></td></tr>
+
+                <?php } ?>
+
+			</table>
+
+			<div class="form-group">
+				<label>Word</label>
+				<input class="form-control" type="text"  name="word" value="<?php echo cn_htmlspecialchars($word); ?>"/>
+			</div>
+
+			<div class="form-group">
+				<label>Replace</label>
+				<input class="form-control" type="text"  name="replace" value="<?php echo cn_htmlspecialchars($replace); ?>"/>
+			</div>
+
+			<div class="form-group">
+				<label><input type="checkbox" name="delete" value="Y"/> <?php echo i18n('Delete word');?></label>
+			</div>
+
+            <input class="btn btn-primary" type="submit" name="submit" value="Submit"/>
+
+		</form>
+	</div>
+</section>

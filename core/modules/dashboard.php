@@ -37,7 +37,7 @@ function dashboard_invoke()
     $opt = REQ('opt', 'GETPOST');
 
     // Top level (dashboard)
-    cn_bc_add('Dashboard', cn_url_modify(array('reset'), 'mod='.$mod));
+    cn_bc_add(i18n('Dashboard'), cn_url_modify(array('reset'), 'mod='.$mod));
 
     // Request module
     foreach ($dashboard as $id => $_t)
@@ -45,7 +45,7 @@ function dashboard_invoke()
         list($dl, $do, $acl_module) = explode(':', $id);
         if (test($acl_module) && $dl == $mod && $do == $opt && function_exists("dashboard_$opt"))
         {
-            cn_bc_add($_t, cn_url_modify(array('reset'), 'mod='.$mod, 'opt='.$opt));
+            cn_bc_add(i18n($_t), cn_url_modify(array('reset'), 'mod='.$mod, 'opt='.$opt));
             die(call_user_func("dashboard_$opt"));
         }
     }
@@ -55,15 +55,15 @@ function dashboard_invoke()
 
     $images = array
     (
-        'personal'  => 'user.gif',
-        'userman'   => 'users.gif',
-        'sysconf'   => 'options.gif',
+        'personal'  => 'user.png',
+        'userman'   => 'users.png',
+        'sysconf'   => 'options.png',
         'category'  => 'category.png',
         'templates' => 'template.png',
-        'backup'    => 'archives.gif',
+        'backup'    => 'archives.png',
         'archives'  => 'arch.png',
-        'media'     => 'images.gif',
-        'intwiz'    => 'wizard.gif',
+        'media'     => 'images.png',
+        'intwiz'    => 'wizard.png',
         'logs'      => 'list.png',
         'selfchk'   => 'check.png',
         'ipban'     => 'block.png',
@@ -104,14 +104,11 @@ function dashboard_invoke()
     $member = member_get();
 
     $meta_draft = db_index_meta_load('draft');
-    $drafts =isset($meta_draft['locs'])? intval(array_sum($meta_draft['locs'])):false;
+    $drafts = isset($meta_draft['locs'])? intval(array_sum($meta_draft['locs'])):false;
 
-    if ($drafts && test('Cvn'))
-    {
+    if ($drafts && test('Cvn')) {
         $greeting_message = i18n('News in draft: %1', '<a href="'.cn_url_modify('mod=editnews', 'source=draft').'"><b>'.$drafts.'</b></a>');
-    }
-    else
-    {
+    } else {
         $greeting_message = i18n('Have a nice day!');
     }
 
@@ -126,14 +123,14 @@ function dashboard_invoke()
 function dashboard_sysconf()
 {
     $lng   = $grps = $all_skins = array();
-    $skins = scan_dir(cn_path_construct(SERVDIR,'skins'));
+    $skins = scan_dir(cn_path_construct(SERVDIR,'libs/css/themes'));
     $langs = scan_dir(cn_path_construct(SERVDIR,'core','lang'), 'txt');
     $_grps = getoption('#grp');
 
     // fetch skins
     foreach ($skins as $skin)
     {
-        if (preg_match('/(.*)\.skin\.php/i', $skin, $c))
+        if (preg_match('/(.*)/i', $skin, $c))
         {
             $all_skins[$c[1]] = $c[1];
         }
@@ -593,6 +590,7 @@ function dashboard_personal()
         // Is correct?
         if (!$correct) {
             cn_throw_message("Error: avatar is not correct", "e");
+
         } else {
 
             // Has changes?
@@ -636,94 +634,93 @@ function dashboard_category()
     list($category_id, $mode) = GET('category_id, mode');
     list($category_name, $category_memo, $category_icon, $category_parent, $category_acl) = GET('category_name, category_memo, category_icon, category_parent, category_acl', "POST");
 
-    $is_edit=$category_id&&$mode=='e';
-    $is_add=$mode=='a';
-    $is_delete=$category_id&&$mode=='d';
-    $is_cancel=$category_id&&$mode=='c';    
+    $is_edit = $category_id && $mode=='e';
+    $is_add = $mode=='a';
+    $is_delete = $category_id && $mode=='d';
+    $is_cancel = $category_id && $mode=='c';
     
     $groups     = getoption('#grp');
     $categories = getoption('#category');
-    
-    $category_ids= array_keys($categories);
-    if(!empty($category_ids))
-    {
-        $max_id=0;
-        foreach ($category_ids as $id)
-        {
-            if($max_id<$id) $max_id=$id;
+
+    $category_ids = array_keys($categories);
+
+    // Get Max Category Id as set (if none '#' counter)
+    if (!isset($categories['#'])) {
+
+        if (!empty($category_ids)) {
+            $max_id = 0;
+            foreach ($category_ids as $id) {
+                if ($max_id < $id) $max_id = $id;
+            }
+            $categories['#'] = $max_id;
+        } else {
+            $categories['#'] = 0;
         }
-        $categories['#']=$max_id;
     }
-    else
-    {
-       $categories['#']=0; 
-    }
-    
+
     // Do Action
-    if (request_type('POST'))
-    {
+    if (request_type('POST')) {
+
         cn_dsi_check();
-        $cat_acl=!empty($category_acl)?join(',', $category_acl):'';
-        $is_duble=false;
-        $message=false;
+
+        $cat_acl = !empty($category_acl)?join(',', $category_acl):'';
+        $is_double = false;
+        $message = false;
         
-        if($category_name)
-        {
-            if($is_add)
-            {            
-                //Check category dubles
-                foreach ($categories as $c)
-                {                      
-                    $is_duble=$c['name']==$category_name&&$c['acl']==$cat_acl;
-                    if($is_duble) break;
+        if ($category_name) {
+
+            if ($is_add) {
+
+                // Check category dubles
+                foreach ($categories as $c) {
+                    $is_double = $c['name'] == $category_name && $c['acl'] == $cat_acl;
+                    if ($is_double) break;
                 }            
 
-                if(!$is_duble)
-                {
-                    $categories['#']=count($categories)!=0?$categories['#']+1:1;
+                if (!$is_double) {
+                    $categories['#'] = count($categories) != 0 ? $categories['#'] + 1 : 1;
                     $category_id = intval($categories['#']);             
-                    $message='Category added';
-                }
-                else
-                {
+                    $message = 'Category added';
+                } else {
                     cn_throw_message('This category already exist','e');
                 }            
             }
-            elseif($is_edit)
+            elseif ($is_edit)
             {
                 $message='Category edited';
             }
-            elseif($is_delete)
+            elseif ($is_delete)
             {
-                unset($categories[$category_id]);
-                $category_id=0;
-                $message='Category deleted';
+                unset($categories[ $category_id ]);
+                $category_id = 0;
+                $message = 'Category deleted';
             }
-            elseif($is_cancel)
+            elseif ($is_cancel)
             {
                 $category_id=0;
             }
             
-            if(!empty($category_id))
+            if (!empty($category_id))
             {
-                $categories[$category_id]['name'] = $category_name;
-                $categories[$category_id]['memo'] = $category_memo;
-                $categories[$category_id]['icon'] = $category_icon;
-                $categories[$category_id]['acl']  = $cat_acl;
-                $categories[$category_id]['parent']  = $category_parent;            
+                $categories[ $category_id ]['name'] = $category_name;
+                $categories[ $category_id ]['memo'] = $category_memo;
+                $categories[ $category_id ]['icon'] = $category_icon;
+                $categories[ $category_id ]['acl']  = $cat_acl;
+                $categories[ $category_id ]['parent']  = $category_parent;
 
                 cn_throw_message($message);
             }
-            $category_name = $category_icon = $category_memo = $category_acl= $category_parent = $category_id = '';
+
+            $category_name = $category_icon = $category_memo = $category_acl = $category_parent = $category_id = '';
             
-            if(!$is_cancel)
-            {
+            if (!$is_cancel) {
+
+                $last_id = $categories['#'];
                 list($categories) = cn_category_struct($categories);
+                $categories['#'] = $last_id;
                 setoption('#category', $categories); 
             }
-        }
-        elseif(!$is_delete)
-        {
+        } elseif (!$is_delete) {
             cn_throw_message('Empty category name', 'e');
         }              
     }
@@ -1208,15 +1205,15 @@ function dashboard_backup()
     {
         cn_dsi_check();
 
-        $name = trim(preg_replace('/[^a-z0_9_]/i', '', REQ('backup_name')));
+        $name = trim(preg_replace('/[^a-z0-9_]/i', '', REQ('backup_name')));
         $backup_sysonly = REQ('backup_sysonly');
 
-        if (!$name) 
-        {
+        if (!$name) {
+
             cn_throw_message('Enter correct backup name', 'e');
-        }
-        else
-        {
+
+        } else {
+
             // Do compress files
             $zip = new zipfile();
 
@@ -1234,11 +1231,11 @@ function dashboard_backup()
                 }
 
                 // Compress users
-                $news = scan_dir(cn_path_construct(SERVDIR,'cdata','users'));
-                foreach ($news as $file)
+                $users = scan_dir(cn_path_construct(SERVDIR,'cdata','users'));
+                foreach ($users as $file)
                 {
                     $data = join('', file(cn_path_construct(SERVDIR,'cdata','users').$file));
-                    $zip->create_file($data, 'news'.DIRECTORY_SEPARATOR.$file);
+                    $zip->create_file($data, 'users'.DIRECTORY_SEPARATOR.$file);
                 }
 
                 $files = array('conf.php', 'users.txt');
@@ -1272,10 +1269,10 @@ function dashboard_backup()
     {        
         cn_dsi_check();
 
-        if (file_exists($cf = cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'zip'))
-        {
+        if (file_exists($cf = cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'.zip')) {
+
             $zip = new zipfile();
-            $files = $zip->read_zip(cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'zip');
+            $files = $zip->read_zip(cn_path_construct(SERVDIR,'cdata','backup').$unpack_file.'.zip');
             unset($zip);
 
             // replace files from zip-archive
@@ -1792,14 +1789,13 @@ function dashboard_group()
     $gn = file(SKIN.'/defaults/groups_names.tpl');
     foreach ($gn as $G)
     {
-        if (($G = trim($G)) == '') 
-        {
+        if (($G = trim($G)) == '') {
             continue;
         }
+
         list($cc, $xgrp, $name_desc) = explode('|', $G, 3);
 
-        if (!isset($access_desc[$xgrp]))
-        {
+        if (!isset($access_desc[$xgrp])) {
             $access_desc[$xgrp] = array();
         }
         
@@ -1814,33 +1810,31 @@ function dashboard_group()
 
     $grp = array();
     $groups = getoption('#grp');
+
     list($group_name, $group_id, $group_grp, $ACL, $delete_group, $reset_group,$mode) = GET('group_name, group_id, group_grp, acl, delete_group, reset_group,mode');
-    $is_add_edit=false;
+
+    $is_add_edit = false;
     
     // -----------
-    if (request_type('POST'))
-    {
+    if (request_type('POST')) {
+
         cn_dsi_check();
 
-        if (!$group_name)
-        {
+        if (!$group_name) {
             cn_throw_message("Enter group name", 'e');
-        }
-        elseif($mode=='edit')
-        {
-            $is_edited=true;
+
+        } elseif ($mode=='edit') {
+
+            $is_edited = true;
             
             // Update exists or new group
-            if ($group_id > 1)
-            {
-                if(!empty($groups[$group_id]))
-                {
-                    $is_edited=  md5($groups[$group_id]['N'].$groups[$group_id]['G'].$groups[$group_id]['A'])!=md5($group_name.$group_grp.(!empty($ACL)?join(',', $ACL):''));
+            if ($group_id > 1) {
+                if (!empty($groups[$group_id])) {
+                    $is_edited = md5($groups[$group_id]['N'].$groups[$group_id]['G'].$groups[$group_id]['A'])!=md5($group_name.$group_grp.(!empty($ACL)?join(',', $ACL):''));
                 }
-                if($is_edited)
-                {
-                    $groups[$group_id] = array
-                    (
+
+                if($is_edited) {
+                    $groups[$group_id] = array(
                         '#' => $groups[$group_id]['#'],
                         'N' => $group_name,
                         'G' => $group_grp,
@@ -1849,56 +1843,50 @@ function dashboard_group()
                 }
             }
             
-            if ($group_id == 1)
-            {
+            if ($group_id == 1) {
                 cn_throw_message("Can't update admin group", 'e');
             }
-            elseif($is_edited)
-            {
-                // Save to config
+            elseif ($is_edited) {
                 setoption('#grp', $groups);                             
                 cn_throw_message("Group updated");                           
-            }
-            else
-            {
+            } else {
                 cn_throw_message("No data for update",'w');
             }
-        }
-        elseif($mode=='add')
-        {
-            $is_exists =FALSE;
+
+        } elseif ($mode=='add') {
+
+            $is_exists = FALSE;
+
             // Check group exists
-            foreach ($groups as $id => $dt)
-            {
-                if ($dt['N'] == $group_name)
-                {
+            foreach ($groups as $id => $dt) {
+                if ($dt['N'] == $group_name) {
                     $is_exists = TRUE;
                     break;
                 }
             }      
             
-            $group_id = max(array_keys($groups)) + 1;                       
+            $group_id = max(array_keys($groups)) + 1;
+
             // Update exists or new group
-            if ($group_id > 1&&!$is_exists)
-            {
-                $groups[$group_id] = array
-                (
+            if ($group_id > 1&&!$is_exists) {
+
+                $groups[$group_id] = array(
                     '#' => '',
                     'N' => $group_name,
                     'G' => $group_grp,
                     'A' => (!empty($ACL)?join(',', $ACL):''),
                 );                
-                // Save to config
+
                 setoption('#grp', $groups);                          
-                cn_throw_message("Group added");                
-            }
-            elseif($is_exists)
-            {
+                cn_throw_message("Group added");
+
+            } elseif($is_exists) {
+
                 cn_throw_message("Group with that name already exist",'e');
                 $group_id=0;
-            }
-            else
-            {
+
+            } else {
+
                 cn_throw_message("Group not added",'e');  
             }                       
         }
@@ -1906,17 +1894,16 @@ function dashboard_group()
         {
             $edit_system = FALSE;
             $edit_exists = FALSE;
-            $is_add_edit=TRUE;
+            $is_add_edit = TRUE;
+
             // Check group exists
-            foreach ($groups as $id => $dt)
-            {
-                if ($id == $group_id && $dt['#'])
-                {
+            foreach ($groups as $id => $dt) {
+
+                if ($id == $group_id && $dt['#']) {
                     $edit_system = TRUE;
                 }
 
-                if ($dt['N'] == $group_name)
-                {
+                if ($dt['N'] == $group_name) {
                     $edit_exists = TRUE;
                 }
             }
@@ -2110,101 +2097,126 @@ function dashboard_wreplace()
 // =====================================================================================================================
 // Since 2.0: Localization
 
-function dashboard_locale()
-{
-    list($lang_token, $lang, $create_phrase, $phraseid, $translate, $delete_phrase, $exid) = GET('lang_token, lang, create_phrase, phraseid, translate, delete_phrase, exid');
+function dashboard_locale() {
 
-    $tkn  = array();
-    $list = scan_dir(SERVDIR.'/core/lang/', '.*\.txt');
-    $updated = FALSE;
+    $langs      = array();
+    $lang       = isset($_REQUEST['lang']) ? preg_replace('/[^a-z0-9_\-]/i', '', $_REQUEST['lang']) : null;
+    $selected   = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : null;
+    $action     = isset($_REQUEST['action']) ? strtolower($_REQUEST['action']) : null;
+    $phrase     = isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : null;
+    $translate  = isset($_REQUEST['translate']) ? $_REQUEST['translate'] : null;
+    $delete     = isset($_REQUEST['delete']) ? $_REQUEST['delete'] : null;
 
-    // Load langs
-    foreach ($list as $id => $code)
-        if (preg_match('/^(.*)\.txt/i', $code, $c))
-            $list[$id] = $c[1];
-
-    // Load symbols
-    $lang_token = preg_replace('/[^a-z0-9_\-]/i', '', $lang_token);
-    if ($lang_token)
-    {
-        $_tkn = file($cfile = SERVDIR.'/core/lang/'.$lang_token.'.txt');
-        foreach ($_tkn as $data)
-        {
-            list($TKN, $DAT) = explode(': ', $data, 2);
-            $tkn[$TKN] = $DAT;
+    // Retrieve all localization files
+    if ($localeList = scan_dir(SERVDIR.'/core/lang/')) {
+        foreach ($localeList as $code) {
+            if (preg_match('/^(.*)\.txt/i', $code, $c)) {
+                $langs[] = $c[1];
+            }
         }
     }
 
-    // Do submit new data
-    if (request_type('POST') && REQ('modifica'))
-    {
+    // Don't allow empty lang
+    if (empty($lang) && $langs) {
+        $lang = current($langs);
+    }
+
+    // Load symbols from language file
+    if ($lang) {
+
+        $wordsCollection = array();
+        $words = file($lFile = SERVDIR.'/core/lang/'.$lang.'.txt');
+
+        foreach ($words as $item) {
+            list($word, $value) = explode(': ', $item, 2);
+            $wordsCollection[ $word ] = $value;
+        }
+    }
+
+    // Request save data
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
         cn_dsi_check();
+        $updateItems = false;
+        $relocate_after = false;
 
-        // Create new phrase
-        if ($create_phrase || !$exid || $exid && $exid !== $phraseid)
-        {
-            if ($phraseid && $translate)
-            {
-                $exid = $h = hi18n($phraseid);
-                if (!isset($tkn[$h]))
-                {
-                    $updated = TRUE;
-                    $tkn[$h] = str_replace("\n", '', $translate);
-                    cn_throw_message('Row added');
+        switch ($action) {
+
+            case 'edit':
+
+                if ($delete) {
+                    if (isset($wordsCollection[ $selected ])) {
+                        unset($wordsCollection[ $selected ]);
+                        $relocate_after = true;
+                    } else {
+                        cn_throw_message('Keyword not exists', 'e');
+                    }
+                } else {
+
+                    cn_throw_message('Keyword edited');
+                    $wordsCollection[ $selected ] = $translate;
                 }
-                else
-                {
-                    cn_throw_message('Row with same ID already exists', 'e');
+
+                $updateItems = true;
+                break;
+
+            case 'add':
+
+                if (($token = hi18n($phrase)) && $translate) {
+                    if (isset($wordsCollection[ $token ])) {
+                        cn_throw_message('Keyword already exists', 'e');
+                    } else {
+                        $wordsCollection[ $token ] = $translate;
+                        $updateItems = true;
+                        cn_throw_message('New keyword added');
+                    }
+                } else {
+                    cn_throw_message('Empty required fields', 'e');
                 }
-            }
-            else
-                cn_throw_message('Fill required fields', 'e');
-        }
-        // Do delete
-        elseif ($delete_phrase)
-        {
-            if (isset($tkn[$exid]))
-            {
-                $updated = TRUE;
-                unset($tkn[$exid]);
-                cn_throw_message('Row deleted');
-            }
-            else
-            {
-                cn_throw_message('Phrase not deleted: not exists');
-            }
-        }
-        // Do modify
-        else
-        {
-            $updated = TRUE;
-            $tkn[$exid] = str_replace("\n", '', $translate);
 
-            cn_throw_message('Row edited');
+                break;
+
+            case 'cancel':
+
+                $relocate_after = true;
+                break;
+        }
+
+        if ($updateItems) {
+
+            $writeFile = fopen($lFile, 'w+');
+            foreach ($wordsCollection as $token => $text) {
+                $text = trim(str_replace("\n", ' ', $text));
+                fwrite($writeFile, "$token: $text\n");
+            }
+            fclose($writeFile);
+
+            cn_lang_init();
+            cn_load_skin();
+        }
+
+        if ($relocate_after) {
+            cn_relocation(PHP_SELF.'?mod=main&opt=locale&lang='.$lang);
         }
     }
 
-    // Updated? Try save
-    if ($updated && isset($cfile))
-    {
-        $w = fopen($cfile, 'w+');
-        foreach ($tkn as $I => $T) fwrite($w, "$I: ".trim($T)."\n");
-        fclose($w);
-
-        // Reinitialize skin
-        cn_lang_init();
-        cn_load_skin();
+    if ($selected) {
+        $translate = isset($wordsCollection[$selected]) ? $wordsCollection[$selected] : '';
     }
 
-    // Select
-    if ($exid && isset($tkn[$exid]))
-    {
-        $phraseid  = $exid;
-        $translate = $tkn[$exid];
-    }
+    // Assign
+    cn_assign('lang', $lang);
+    cn_assign('langs', $langs);
+    cn_assign('selected', $selected);
+    cn_assign('translate', $translate);
+    cn_assign('words', $wordsCollection);
 
-    cn_assign('lang_token, lang, list, tkn, phraseid, translate', $lang_token, $lang, $list, $tkn, $phraseid, $translate);
-    echoheader('-@dashboard/style.css', 'Localization'); echo exec_tpl('dashboard/locale'); echofooter();
+    cn_bc_add(i18n('Edit translation'), '');
+
+    // Show templates
+    echoheader('-@dashboard/style.css', i18n('Localization'));
+    echo exec_tpl('dashboard/locale');
+    echofooter();
 }
 
 // Since 2.0.1: Scripts
@@ -2212,8 +2224,9 @@ function dashboard_script()
 {
     list($snippet, $text) = GET('snippet, text');
 
-    if ($snippet == '')
-    {
+    $text = trim($text);
+
+    if ($snippet == '') {
         $snippet = 'sandbox';
     }
 
@@ -2225,45 +2238,45 @@ function dashboard_script()
         cn_dsi_check();
 
         // Click select only
-        if (!REQ('select', 'POST'))
-        {
-            if (REQ('delete', 'POST'))
-            {
+        if (!REQ('select', 'POST')) {
+            if (REQ('delete', 'POST')) {
+
                 $_t = getoption('#snippets');
-                unset($_t[$snippet]);
+                unset($_t[ $snippet ]);
+
                 setoption('#snippets', $_t);
                 $snippet = 'sandbox';
-            }
-            else
-            {
+
+            } elseif ($text) {
+
                 // Create new snippet
-                if (REQ('create', 'POST'))
-                {
+                if (REQ('create', 'POST')) {
                     $snippet = REQ('create');
                 }
 
                 setoption('#snippets/'.$snippet, $text);
                 cn_throw_message('Changes saved');
+
+            } else {
+                cn_throw_message('HTML snippet is empty', 'e');
             }
-        }
-        else
-        {
+
+        } else {
             cn_throw_message('Select snippet ['.cn_htmlspecialchars($snippet).']');
         }
     }
 
     $list = getoption('#snippets');
-    if (empty($list)) 
-    {
+    if (empty($list)) {
         $list['sandbox'] = '';
     }
 
-    $opt_txt=getoption('#snippets/'.$snippet);
+    $opt_txt = getoption('#snippets/'.$snippet);
     
     $params = array
     (
         'list' => $list,
-        'text' =>(!empty($opt_txt)?$opt_txt:''),
+        'text' => (!empty($opt_txt) ? $opt_txt : ''),
         'can_delete' => ($snippet !== 'sandbox') ? TRUE : FALSE,
         'snippet'  => $snippet,
         'snippets' => getoption('#snippets'),

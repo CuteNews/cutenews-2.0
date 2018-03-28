@@ -8,21 +8,12 @@ function edit_news_invoke()
     list($action) = GET('action', 'GPG');
 
     // [DETECT ACTION]
-    if ($action == 'editnews') 
-    {
-        edit_news_action_edit();
-    }
-    elseif ($action == 'massaction') 
-    {
-        edit_news_action_massaction();
-    }
-    elseif ($action == 'delete') 
-    {
-        edit_news_delete();
-    }
-    else 
-    {
-        edit_news_action_list();
+    switch ($action) {
+
+        case 'editnews': edit_news_action_edit(); break;
+        case 'massaction': edit_news_action_massaction(); break;
+        case 'delete': edit_news_delete(); break;
+        default: edit_news_action_list(); break;
     }
 
     die();
@@ -32,6 +23,9 @@ function edit_news_invoke()
 // ---------------------------------------------------------------------------------------------------------------------
 function edit_news_action_list()
 {
+    cn_bc_add('Dashboard', PHP_SELF.'?mod=main');
+    cn_bc_add('News listing', PHP_SELF.'?mod=editnews');
+
     // init
     list($source, $archive_id, $per_page, $sort, $dir, $YS, $MS, $DS, $page) = GET('source, archive_id, per_page, sort, dir, year, mon, day, page', 'GET,POST');
     list($add_category, $add_user, $rm_cat, $rm_user, $cat_filter) = GET('add_category_filter, add_user_filter, rm_category_filter, rm_user_filter, cat_filter', 'GET');
@@ -42,31 +36,35 @@ function edit_news_action_list()
     $ctime = ctime();
     $nocat = FALSE;
 
-    if ($per_page == 0)
-    {
+    if ($per_page == 0) {
         $per_page = 25;
     }
     
-    if ($sort == '')
-    {
+    if ($sort == '') {
         $sort = 'date';
     }
     
-    if ($sort == 'date' && !$dir)
-    {
+    if ($sort == 'date' && !$dir) {
         $dir = 'd';
     }
     
-    if ($dir == '')
-    {
+    if ($dir == '') {
         $dir = 'a';
     }
     
     // --- changes in acp filters ---
     list($cfilter, $ufilter) = cn_cookie_unpack('filter_cat, filter_user');
 
-    if ($add_category)
-    {
+    // Check category exists and remove if NOT exists
+    $category_list = getoption('#category');
+    foreach ($cfilter as $i => $_cat_id) {
+        if (!isset($category_list[$_cat_id])) {
+            unset($cfilter[$i]);
+        }
+    }
+
+    if ($add_category) {
+
         $sp = spsep($add_category);
         foreach ($sp as $id) 
         {
@@ -105,19 +103,14 @@ function edit_news_action_list()
         }
     }        
 
-    // Add concrete filter
-    if ($cat_filter)
-    {
-        if ($cat_filter !== '-')
-        {
+    // Add filter
+    if ($cat_filter) {
+        if ($cat_filter !== '-') {
             $filter = intval($cat_filter);
-            if (test_cat($filter))
-            {
-                $cfilter[$filter]=$filter;
+            if (test_cat($filter)) {
+                $cfilter[$filter] = $filter;
             }
-        }
-        else
-        {
+        } else {
             $nocat = TRUE;
         }
     }
@@ -288,19 +281,21 @@ function edit_news_action_edit()
     $preview_html   = $preview_html_full = '';
     $ID             = $gstamp = intval(REQ('id', 'GETPOST'));
 
+    cn_bc_add('Dashboard', PHP_SELF);
+    cn_bc_add('News listing', PHP_SELF . '?mod=editnews');
+    cn_bc_add('Edit');
+
     list($status, $preview) = GET('m, preview');
     list($vConcat, $vTags, $faddm, $archive_id, $source)  = GET('concat, tags, faddm, archive_id, source', 'GETPOST');
 
     // get news part by day
     $news = db_news_load(db_get_nloc($ID));
 
-    if ($ID == 0)
-    {
+    if ($ID == 0) {
         msg_info("Can't edit news without ID");
     }
 
-    if (!isset($news[$ID]))
-    {
+    if (!isset($news[$ID])) {
         msg_info("News entry not found!");
     }
 
@@ -309,18 +304,16 @@ function edit_news_action_edit()
     $oldentry = $entry;
 
     // disallowed by category
-    if (!test_cat($entry['c']))
-    {
+    if (!test_cat($entry['c'])) {
         msg_info("You can't view entry. Category disallow");
     }
 
     // set status message
-    if ($status == 'added')
-    {
+    if ($status == 'added') {
         cn_throw_message('News was added');
     }
-    if ($status == 'moved') 
-    {
+
+    if ($status == 'moved') {
         cn_throw_message('Moved to another time');
     }
 
@@ -328,13 +321,13 @@ function edit_news_action_edit()
     list($morefields) = cn_get_more_fields($entry['mf']);
 
     // do save news?
-    if (request_type('POST'))
-    {
+    if (request_type('POST')) {
+
         $flatdb->cache_clean();
 
         // check exists news
-        if (isset($news[$ID]))
-        {
+        if (isset($news[$ID])) {
+
             // extract data
             $entry = $storent = $news[$ID];
 
@@ -348,16 +341,15 @@ function edit_news_action_edit()
             // sanitize page name
             $page = preg_replace('/[^a-z0-9_\.]/i', '-', $page);
 
-            if (empty($page) && !empty($title) && getoption('auto_news_alias'))
-            {
+            if (empty($page) && !empty($title) && getoption('auto_news_alias')) {
                 $page = strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($title)));
-            }            
+            }
+
             // current source is archive, active (postponed) or draft news
             $draft_target = ($postpone_draft === 'draft');
 
             // User can't post active news
-            if (test('Bd') && $draft_target !== 'draft') 
-            {
+            if (test('Bd') && $draft_target !== 'draft') {
                 $draft_target = 'draft';
             }
 
@@ -365,6 +357,9 @@ function edit_news_action_edit()
             $current_source = $archive_id ? "archive-$archive_id" : ($source == 'draft' ? 'draft' : '');
             $target_source  = $archive_id ? "archive-$archive_id" : ($draft_target ? 'draft' : '');
             $if_use_html    = $if_use_html ? TRUE : (getoption('use_wysiwyg') ? TRUE : FALSE);
+
+            // Don't allow put [img] tag there
+            $title = preg_replace('~\[\/?img(.+)\]~', '', $title);
 
             $entry['t'] = cn_htmlclear($title);
             $entry['c'] = is_array($category) ? join(',', $category) : $category;
@@ -381,88 +376,82 @@ function edit_news_action_edit()
             list($morefields) = cn_get_more_fields($faddm);
 
             // has message from function
-            if ($disallow_message)
-            {
+            if ($disallow_message) {
                 cn_throw_message($disallow_message, 'e');
             }
 
             // Make preview
-            if ($preview)
-            {
-                //correct preview links
+            if ($preview) {
+
                 $gstamp = $entry['id'] = $c_time;
-                $preview_html=  preg_replace('/href="(.*?)"/', 'href="#"', entry_make($entry, 'active'));
-                $preview_html_full= preg_replace('/href="(.*?)"/', 'href="#"',entry_make($entry, 'full'));                                
+
+                // Disable all links
+                $preview_html = preg_replace('/href="(.*?)"/', 'href="#"', entry_make($entry, 'active'));
+                $preview_html_full = preg_replace('/href="(.*?)"/', 'href="#"', entry_make($entry, 'full'));
+
+                // Disable all target
+                $preview_html = preg_replace('/target=[^\s\b]+/i', '', $preview_html);
+                $preview_html_full = preg_replace('/target=[^\s\b]+/i', '', $preview_html_full);
+
             }
             // Save new data
-            elseif (REQ('do_editsave', 'POST'))
-            {
-                if (!getoption('disable_title') && empty($title))
-                {
+            elseif (REQ('do_editsave', 'POST')) {
+
+                if (!getoption('disable_title') && empty($title)) {
                     cn_throw_message('The title cannot be blank', 'e');
                 }
 
-                if (!getoption('disable_short') && empty($short_story))
-                {
+                if (!getoption('disable_short') && empty($short_story)) {
                     cn_throw_message('The story cannot be blank', 'e');
                 }
 
                 // Check for change alias
                 $pgts = bt_get_id($ID, 'ts_pg');
-                if ($pgts && $pgts !== $page)
-                {
-                    if ($page)
-                    {
-                        if (bt_get_id($page, 'pg_ts'))
-                        {
+                if ($pgts && $pgts !== $page) {
+                    if ($page) {
+                        if (bt_get_id($page, 'pg_ts')) {
                             cn_throw_message('For other news page alias already exists!', 'e');
                         }
-                    }
-                    else
-                    {
+                    } else {
                         bt_del_id($pgts, 'pg_ts');
                         bt_del_id($ID, 'ts_pg');
                     }
                 }
 
                 // no errors in a[rticle] area
-                if (cn_get_message('e', 'c') == 0)
-                {
+                if (cn_get_message('e', 'c') == 0) {
+
                     $FlatDB  = new FlatDB();
 
                     $ida = db_index_load($current_source);
                     $idd = db_index_load($target_source);
 
                     // Time is changed
-                    if ($c_time != intval($ID))
-                    {
+                    if ($c_time != intval($ID)) {
+
                         // Load next block (or current)
                         $next = db_news_load(db_get_nloc($c_time));
 
-                        if (isset($next[$c_time]))
-                        {
+                        if (isset($next[$c_time])) {
                             cn_throw_message('The article time already busy, select another', 'e');
-                        }
-                        else
-                        {
+
+                        } else {
+
                             // set new time
                             $entry['id'] = $c_time;
                             $next[$c_time] = $entry;
 
                             // remove old news [from source / dest]
-                            if (isset($news[$ID])) 
-                            {
+                            if (isset($news[$ID])) {
                                 unset($news[$ID]);
                             }
                             
-                            if (isset($next[$ID])) 
-                            {
+                            if (isset($next[$ID])) {
                                 unset($next[$ID]);
                             }
 
                             // remove old index
-                            if (isset($idd[$ID])) 
-                            {
+                            if (isset($idd[$ID])) {
                                 unset($idd[$ID]);
                             }
 
@@ -478,11 +467,11 @@ function edit_news_action_edit()
                             db_save_news($news, db_get_nloc($ID));
                             db_save_news($next, db_get_nloc($c_time));
 
-                            cn_throw_message('News moved from <b>'.date('Y-m-d H:i:s', $ID).'</b> to <b>'.date('Y-m-d H:i:s', $c_time).'</b>');
+							cn_throw_message('News moved from date \n'.date('d-m-Y g:i:a', $ID).'\n'.' to \n'. date('d-m-Y g:i:a', $c_time));
                         }
-                    }
-                    else
-                    {
+
+                    } else {
+
                         $news[$ID] = $entry;
                         db_save_news($news, db_get_nloc($ID));
 
@@ -495,21 +484,19 @@ function edit_news_action_edit()
                     bt_del_id($ID, 'ts_pg');
                     bt_del_id($_ts_pg, 'pg_ts');
 
-                    if ($page)
-                    {
+                    if ($page) {
                         bt_set_id($c_time, $page, 'ts_pg');
                         bt_set_id($page, $c_time, 'pg_ts');
                     }
 
                     // 1) remove from old index
-                    if (isset($ida[$ID]))
-                    {
+                    if (isset($ida[$ID])) {
                         unset($ida[$ID]);
                     }
 
                     // Fill probably unused
                     $storent['tg'] = isset($storent['tg']) ? $storent['tg'] : '';
-                    
+
                     // 2) add new index
                     $idd[$c_time] = db_index_create($entry);
 
@@ -531,15 +518,12 @@ function edit_news_action_edit()
                     // ------
                 }
             }
-        }
-        else
-        {
+        } else {
             msg_info("News entry not found or has been deleted");
         }
     }
 
-    if (empty($entry['pg'])&&isset($entry['t'])&& getoption('auto_news_alias'))
-    {
+    if (empty($entry['pg'])&&isset($entry['t'])&& getoption('auto_news_alias')) {
         $entry['pg'] = strtolower(preg_replace('/[^a-z0-9_\.]/i', '-', cn_transliterate($entry['t'])));
     }
 
@@ -556,8 +540,7 @@ function edit_news_action_edit()
     $if_use_html   = isset($entry['ht'])? $entry['ht']:false;
     $is_active_html = test('Csr');
 
-    cn_assign
-    (
+    cn_assign(
         'categories, vCategory, vTitle, vPage, vShort, vFull, vUseHtml, preview_html, preview_html_full, gstamp, is_draft, vConcat, vTags, morefields, archive_id, is_active_html',
         $categories, $category, $title, $page, $short_story, $full_story, $if_use_html, $preview_html, $preview_html_full, $gstamp, $is_draft, $vConcat, $vTags, $morefields, $archive_id, $is_active_html
     );

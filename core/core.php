@@ -258,7 +258,7 @@ function UTF8ToEntities($string)
         {
             $key = pack("CC",  hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)));
         }
-        elseif (strlen($hex) == 6)  
+        else if (strlen($hex) == 6)
         {
             $key = pack("CCC", hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
         }
@@ -502,7 +502,10 @@ function cn_category_struct($cats, $nc = array(), $parent = 0, $level = 0)
     
     foreach ($cats as $id => $vc)
     {                        
-        if($id=='#') continue;
+        if ($id == '#') {
+            continue;
+        }
+
         if ($vc['parent'] == $parent)
         {
             $nc[$id] = $vc;
@@ -563,7 +566,7 @@ function test($requested_acl, $requested_user = NULL, $is_self = FALSE)
         {
             if ($gp && !in_array($requested_user['acl'], $gp))
                 return FALSE;
-            elseif (!$gp)
+            else if (!$gp)
                 return FALSE;
         }
     }
@@ -699,7 +702,7 @@ function exec_tpl()
 {
     $args = func_get_args();
     $tpl  = preg_replace('/[^a-z0-9_\/]/i', '', array_shift($args));
-    $open = SKIN.'/'.($tpl?$tpl:'default').'.php';
+    $open = SKIN.'/'.($tpl?$tpl:'master').'.php';
 
     foreach ($args as $arg)
     {
@@ -927,12 +930,12 @@ function proc_tpl()
         {
             $var = 0;
             $vs[1] = trim($vs[1]);
-            if     ($vs[1][0] == '$') $var = $args[ substr($vs[1], 1) ];
-            elseif ($vs[1][1] == '$') $var = $args[ substr($vs[1], 2) ];
+            if      ($vs[1][0] == '$') $var = $args[ substr($vs[1], 1) ];
+            else if ($vs[1][1] == '$') $var = $args[ substr($vs[1], 2) ];
 
             // If boolean logic OK, replace
             if ($vs[1][0] == '$' && $var)            $d = str_replace($vs[0], $vs[2], $d);
-            elseif ($vs[1][0] == '!' && empty($var)) $d = str_replace($vs[0], $vs[2], $d);
+            else if ($vs[1][0] == '!' && empty($var)) $d = str_replace($vs[0], $vs[2], $d);
             else $d = str_replace($vs[0], false, $d);
         }
     }
@@ -996,15 +999,13 @@ function cn_db_init()
 function cn_lang_init()
 {
     $lang = getoption('cn_language');
-    if (!$lang) 
-    {
+    if (!$lang) {
         $lang = 'en';
     }
 
     $st = array();
     $ln = file(SERVDIR.'/core/lang/'.$lang.'.txt');
-    foreach ($ln as $vi)
-    {
+    foreach ($ln as $vi) {
         list($S532, $RS) = explode(': ', trim($vi), 2);
         $st[$S532] = $RS;
     }
@@ -1022,8 +1023,8 @@ function cn_config_load()
     if (!is_dir($conf_dir) || !is_writable($conf_dir)) {
         return false;
     }
-                    
-    $conf_path=cn_path_construct(SERVDIR,'cdata').'conf.php';    
+
+    $conf_path = cn_path_construct(SERVDIR, 'cdata') . 'conf.php';
     $cfg = cn_touch_get($conf_path);
     if (!$cfg)
     {
@@ -1184,7 +1185,7 @@ function cn_filter_magic_quotes($in = null, $lv = 0)
 
         return TRUE;
     }
-    elseif (is_array($in))
+    else if (is_array($in))
     {
         foreach ($in as $a => $b)
         {
@@ -1350,8 +1351,8 @@ function hook($hook, $args = null)
 function format_size($file_size)
 {
     if($file_size >= 1073741824)    $file_size = round($file_size / 1073741824 * 100) / 100 . " Gb";
-    elseif($file_size >= 1048576)   $file_size = round($file_size / 1048576 * 100) / 100 . " Mb";
-    elseif($file_size >= 1024)      $file_size = round($file_size / 1024 * 100) / 100 . " Kb";
+    else if($file_size >= 1048576)   $file_size = round($file_size / 1048576 * 100) / 100 . " Mb";
+    else if($file_size >= 1024)      $file_size = round($file_size / 1024 * 100) / 100 . " Kb";
     else                            $file_size = $file_size . " B";
     return $file_size;
 }
@@ -1361,11 +1362,18 @@ function msg_info($title, $go_back = null)
 {
     echoheader('info', i18n("Permission check"));
 
-    if ($go_back === null) $go_back = $_POST['__referer'];
-    if (empty($go_back)) $go_back = PHP_SELF;
+    if ($go_back === null) {
+        $go_back = $_POST['__referer'];
+    }
 
+    if (empty($go_back)) {
+        $go_back = PHP_SELF;
+    }
+
+    echo '<section><div class="container">';
     echo "<p>".i18n($title)."</p>";
     echo "<p><b><a href='$go_back'>OK</a></b></p>";
+    echo '</div></section>';
 
     echofooter();
     DIE();
@@ -1385,7 +1393,7 @@ function confirm_post($text, $required = 'mod,action,subaction,source')
     foreach ($sp as $v) $required[trim($v)] = REQ(trim($v), 'GETPOST');
 
     if (REQ('__my_confirm') == '_confirmed') return TRUE; // Click "confirm"
-    elseif (REQ('__my_confirm') == '_decline') return FALSE; // Click "decline"
+    else if (REQ('__my_confirm') == '_decline') return FALSE; // Click "decline"
 
     // Echo message form -----------------------
     echoheader('question', i18n('Confirm action?'));
@@ -1408,14 +1416,15 @@ function confirm_post($text, $required = 'mod,action,subaction,source')
 // $image = img@custom_style_tpl
 function echoheader($image, $header_text, $bread_crumbs = false)
 {
-    global $skin_header, $lang_content_type, $skin_menu, $skin_prefix, $_SESS, $_SERV_SESS;
+    global $skin_header, $lang_content_type, $skin_menu, $skin_prefix, $_SESS, $_SERV_SESS, $SiteTitle;
 
     $header_time = date('H:i:s M, d', ctime());
-    
-    $customs=explode("@", $image);
-    $image=  isset($customs[0])?$customs[0]:'';
-    $custom_style=isset($customs[1])?$customs[1]:false;
-    $custom_js=isset($customs[2])?$customs[2]:false;
+    $SiteTitle = empty($SiteTitle) ? 'CuteNews' : $SiteTitle;
+
+    $customs = explode("@", $image);
+    $image = isset($customs[0])?$customs[0]:'';
+    $custom_style = isset($customs[1])?$customs[1]:false;
+    $custom_js = isset($customs[2])?$customs[2]:false;
     
     if (isset($_SESSION['user']))
     {
@@ -1423,12 +1432,16 @@ function echoheader($image, $header_text, $bread_crumbs = false)
     }
     else 
     {
-        $skin_header = preg_replace("/{menu}/", "<div style='padding: 5px;'><a href='".PHP_SELF."'>".VERSION_NAME."</a></div>", $skin_header);
+        $skin_header = preg_replace("/{menu}/", "<li><a class='nav' href='".PHP_SELF."?login'>".i18n("LogIn")."</a></li><!--li><a href='".PHP_SELF."'>".VERSION_NAME."</a></li-->", $skin_header);
     }
 
+	$theme_bs = preg_replace('~[^a-z]~i','', getoption('skin'));//theme
+    $theme_bs = $theme_bs ? $theme_bs : 'default';
+
     $skin_header = get_skin($skin_header);
-    $skin_header = str_replace('{title}', ($header_text? $header_text.' / ' : ''). 'CuteNews', $skin_header);
-    $skin_header = str_replace("{image-name}", $skin_prefix.$image, $skin_header);
+    $skin_header = str_replace('{title}', ($header_text? $header_text.' / ' : '') . $SiteTitle, $skin_header);
+	$skin_header = str_replace('{theme}', $theme_bs, $skin_header); //theme
+	$skin_header = str_replace("{image-name}", $skin_prefix.$image, $skin_header);
     $skin_header = str_replace("{header-text}", $header_text, $skin_header);
     $skin_header = str_replace("{header-time}", $header_time, $skin_header);
     $skin_header = str_replace("{content-type}", $lang_content_type, $skin_header);
@@ -1472,7 +1485,8 @@ function b64dck()
     $shder = bd_config('c2tpbl9oZWFkZXI=');
     $sfter = bd_config('c2tpbl9mb290ZXI=');
 
-    global $$shder,$$sfter;
+    global $$shder, $$sfter;
+
     $HDpnlty = bd_config('PGNlbnRlcj48aDE+Q3V0ZU5ld3M8L2gxPjxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbSI+Q3V0ZVBIUC5jb208L2E+PC9jZW50ZXI+PGJyPg==');
     $FTpnlty = bd_config('PGNlbnRlcj48ZGl2IGRpc3BsYXk9aW5saW5lIHN0eWxlPVwnZm9udC1zaXplOiAxMXB4XCc+UG93ZXJlZCBieSA8YSBzdHlsZT1cJ2ZvbnQtc2l6ZTogMTFweFwnIGhyZWY9XCJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvXCIgdGFyZ2V0PV9ibGFuaz5DdXRlTmV3czwvYT4gqSAyMDA1ICA8YSBzdHlsZT1cJ2ZvbnQtc2l6ZTogMTFweFwnIGhyZWY9XCJodHRwOi8vY3V0ZXBocC5jb20vXCIgdGFyZ2V0PV9ibGFuaz5DdXRlUEhQPC9hPi48L2Rpdj48L2NlbnRlcj4=');
 
@@ -1486,16 +1500,13 @@ function b64dck()
 function fcutenewslic()
 {
     global $reg_site_key;
+
     $clst = bd_config("PGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxNXB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udDo5cHggVmVyZGFuYTsiPlBvd2VyZWQgYnkgPGEgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGl0bGU9IkN1dGVOZXdzIC0gUEhQIE5ld3MgTWFuYWdlbWVudCBTeXN0ZW0iIHRhcmdldD0iX2JsYW5rIj5DdXRlTmV3czwvYT48L2Rpdj4=");
-    if (!file_exists( cn_path_construct(SERVDIR,'cdata').'reg.php')) 
-    { 
+    if (!file_exists( cn_path_construct(SERVDIR,'cdata').'reg.php')) {
         echo $clst;         
-    } 
-    else 
-    { 
+    } else {
         include SERVDIR."/cdata/reg.php"; 
-        if (!preg_match(base64_decode("L1xBKFx3ezZ9KS1cd3s2fS1cd3s2fVx6Lw=="), $reg_site_key)) 
-        {
+        if (!preg_match(base64_decode("L1xBKFx3ezZ9KS1cd3s2fS1cd3s2fVx6Lw=="), $reg_site_key)) {
             echo $clst;
         }        
     } 
@@ -1630,40 +1641,32 @@ function insert_smilies($insert_location, $break_location = FALSE, $admincp = FA
 function get_skin($skin)
 {
     $licensed = false;
-    if (!file_exists(cn_path_construct(SERVDIR,'cdata').'reg.php')) 
-    {
+    if (!file_exists(cn_path_construct(SERVDIR,'cdata').'reg.php')) {
         $stts = base64_decode('KHVucmVnaXN0ZXJlZCk=');
-    }
-    else
-    {
+    } else {
+
         include (SERVDIR.'/cdata/reg.php');
-        if (isset($reg_site_key) == false) 
-        {
+        if (isset($reg_site_key) == false) {
             $reg_site_key = false;
         }
         
-        $mmbrid=null;
-        if (preg_match('/\\A(\\w{6})-\\w{6}-\\w{6}\\z/', $reg_site_key, $mmbrid))
-        {
-            if ( !isset($reg_display_name) or !$reg_display_name or $reg_display_name == '')
-            {
+        $mmbrid = null;
+        if (preg_match('/\\A(\\w{6})-\\w{6}-\\w{6}\\z/', $reg_site_key, $mmbrid)) {
+            if ( !isset($reg_display_name) or !$reg_display_name or $reg_display_name == '') {
                  $stts = "<!-- (-$mmbrid[1]-) -->";
-            }
-            else 
-            {
+            } else {
                 $stts = "<label title='(-$mmbrid[1]-)'>". base64_decode('TGljZW5zZWQgdG86IA==').$reg_display_name.'</label>';
             }
             $licensed = true;
-        }
-        else 
-        {
+        } else {
             $stts = '!'.base64_decode('KHVucmVnaXN0ZXJlZCk=').'!';
         }
     }
 
     $msn  = bd_config('c2tpbg==');
     $cr   = bd_config('e2NvcHlyaWdodHN9');
-    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3Mge2N2ZXJzaW9ufTwvYT4gJmNvcHk7IDIwMDImbmRhc2g7MjAxNCA8YSBzdHlsZT0iZm9udC1zaXplOiA5cHgiIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbS8iIHRhcmdldD0iX2JsYW5rIj5DdXRlUEhQPC9hPi48YnI+e2wtc3RhdHVzfTwvZGl2Pg==');
+    $lct  = bd_config('PGRpdiBzdHlsZT0iZm9udC1zaXplOiA5cHgiPlBvd2VyZWQgYnkgPGEgc3R5bGU9ImZvbnQtc2l6ZTogOXB4IiBocmVmPSJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvIiB0YXJnZXQ9Il9ibGFuayI+Q3V0ZU5ld3Mge2N2ZXJzaW9ufTwvYT4gJmNvcHk7IDIwMDImbmRhc2g7e2RhdGV9IDxhIHN0eWxlPSJmb250LXNpemU6IDlweCIgaHJlZj0iaHR0cDovL2N1dGVwaHAuY29tLyIgdGFyZ2V0PSJfYmxhbmsiPkN1dGVQSFA8L2E+Ljxicj57bC1zdGF0dXN9PC9kaXY+');
+    $lct  = preg_replace("/{date}/", date('Y'), $lct);
     $lct  = preg_replace("/{l-status}/", $stts, $lct);
     $lct  = preg_replace("/{cversion}/", VERSION, $lct);
 
@@ -2183,14 +2186,11 @@ function cn_detect_user_ip()
 // Since 2.0: @bootstrap
 function cn_load_skin()
 {
-    $config_skin = preg_replace('~[^a-z]~i','', getoption('skin'));
-    if (file_exists($skin_file = SERVDIR."/skins/$config_skin.skin.php")) 
-    {
-        include($skin_file);
-    }
-    else 
-    {
-        die("Can't load skin $config_skin");
+    // $config_skin = preg_replace('~[^a-z]~i','', getoption('skin')); // @deprecated?
+    if (file_exists($master_skin = SERVDIR."/skins/master.skin.php")) {
+        include($master_skin);
+    } else {
+        die("Can't load skin $master_skin");
     }
 }
 
@@ -2456,10 +2456,8 @@ function cn_get_requested_cats($category, $ucat = '', $nocategory = '')
     // Make aliases
     $_ct_names = array();
     $cat_conf  = getoption('#category');
-    foreach ($cat_conf as $id => $cn) 
-    {
-        if ($id !== '#') 
-        {
+    foreach ($cat_conf as $id => $cn) {
+        if ($id !== '#') {
             $_ct_names[$cn['name']] = $id;
         }
     }
@@ -2656,15 +2654,14 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
         foreach ($tpls as $tpl)
         {
             $result = '';
-            $tplp=explode('|', $tpl[1], 2);
-            $tplc=isset($tplp[0])?$tplp[0]:'';
+            $tplp = explode('|', $tpl[1], 2);
+            $tplc = isset($tplp[0])?$tplp[0]:'';
             $tpla = isset($tplp[1])?$tplp[1]:'';
 
             // send modifiers
             $short  = "cn_modify_" . ($section ? $section.'_' : "");
             $short .= preg_replace('/[^a-z]/i', '_', $tplc);
-            if (function_exists($short)) 
-            {
+            if (function_exists($short)) {
                 $result = call_user_func($short, $entry, explode('|', $tpla));
             }
             $template = str_replace($tpl[0], $result, $template);
@@ -2678,17 +2675,16 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     list($template) = hook('core/entry_make_mid', array($template, $entry, $template_name, $template_glob));
 
     // Catch[bb-tag]...[/bb-tag]
-    if (preg_match_all('/\[([\w-]+)(.*?)\](.*?)\[\/\\1\]/is', $template, $tpls, PREG_SET_ORDER) )
-    {
-        foreach ($tpls as $tpl)
-        {
+    if (preg_match_all('/\[([\w-]+)(.*?)\](.*?)\[\/\\1\]/is', $template, $tpls, PREG_SET_ORDER) ) {
+
+        foreach ($tpls as $tpl) {
             $result = '';
             $short  = "cn_modify_bb_" . ($section ? $section.'_' : "");
             $short .= preg_replace('/[^a-z]/i', '_', $tpl[1]);
-            if (function_exists($short)) 
-            {
+            if (function_exists($short)) {
                 $result = call_user_func($short, $entry, $tpl[3], $tpl[2]); // entry, text, options
             }
+
             $template = str_replace($tpl[0], $result, $template);
         }
     }
@@ -2697,18 +2693,14 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     list($template) = hook('core/entry_make_end', array($template, $entry, $template_name, $template_glob));
 
     // UTF-8 -- convert to entities on frontend
-    if ($section == 'comm' && getoption('comment_utf8html'))
-    {
+    if ($section == 'comm' && getoption('comment_utf8html')) {
         $template = UTF8ToEntities($template);
-    }
-    elseif (!$section && getoption('utf8html'))
-    {
+    } elseif (!$section && getoption('utf8html')) {
         $template = UTF8ToEntities($template);
     }
     
     // Return raw data
     list($template) = cn_extrn_raw_template($template, $raw_vars);
-
     return $template;
 }
 
@@ -2718,11 +2710,12 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
 function cn_parse_url()
 {
     // Decode post data
-    $post_data=array();
-    if(isset($_POST['__post_data']))
-    {
+    $post_data = array();
+
+    if (isset($_POST['__post_data'])) {
         $post_data = unserialize(base64_decode($_POST['__post_data']));
     }
+
     // A. Click "confirm"
     if (REQ('__my_confirm') == '_confirmed')
     {
@@ -2914,34 +2907,49 @@ function cn_get_menu()
         'logout'    => array('', 'Logout', 'logout'),
     ));
 
-    if (getoption('main_site'))
-        $modules['my_site'] = getoption('main_site');
+    if (getoption('main_site')) {
+        $modules['site'] = array( '#'.getoption('main_site'), 'Visit site', 'site');
+    }
 
     $result = '';
     $mod = REQ('mod', 'GPG');
 
     foreach ($modules as $mod_key => $var)
     {
-        if (!is_array($var))
-        {
-            $result .= '<a class="nav" href="'.cn_htmlspecialchars($var).'" target="_blank">'.i18n('Visit site').'</a>';
-            continue;
+        $acl = isset($var[0]) ? $var[0] : false;
+        $name = isset($var[1]) ? $var[1] : '';
+        $title = isset($var[2]) ? $var[2] : '';
+        $app = isset($var[3]) ? $var[3] : '';
+
+        $link = null;
+
+        // If # in start of ACL, it's reserved for DIRECT LINK
+        // Else: for ACL test
+        if ($acl) {
+            if ($acl[0] == '#') {
+                $link = substr($acl, 1);
+            }
+            else if (!test($acl)) {
+                continue;
+            }
         }
 
-        $acl=isset($var[0])?$var[0]:false;
-        $name=isset($var[1])?$var[1]:'';
-        $title=isset($var[2])?$var[2]:'';
-        $app=isset($var[3])?$var[3]:'';                
+        if (isset($title) && $title) {
+            $action = '&amp;action='.$title;
+        } else {
+            $action = '';
+        }
 
-        if ($acl && !test($acl))
-            continue;
-
-        if (isset($title) && $title) $action = '&amp;action='.$title; else $action = '';
-        if ($mod == $mod_key) $select = ' selected '; else $select = '';
+         // active menu bootstrap Mod Shixel current
+		if ($mod == $mod_key) {
+            $select = ' active ';
+        } else {
+            $select = '';
+        }
 
         // Append urls for menu (preserve place)
-        if (isset($app) && $app)
-        {
+        if (isset($app) && $app) {
+
             $actions = array();
             $mv = spsep($app);
 
@@ -2952,7 +2960,11 @@ function cn_get_menu()
             if ($actions) $action .= '&amp;'.join('&amp;', $actions);
         }
 
-        $result .= '<a class="nav'.$select.'" href="'.PHP_SELF.'?mod='.$mod_key.$action.'">'.i18n($name).'</a>';
+        if (!$link) { // It is system mod switcher (no link)
+            $link = PHP_SELF.'?mod=' . $mod_key . $action;
+        }
+
+		$result .= '<li class='.$select.'><a class="nav-top-item" href="'.$link.'">'.i18n($name).'</a></li>'; // Mod Shixel
     }
 
     return $result;
@@ -2964,15 +2976,11 @@ function cn_cookie_unpack($cookie)
     $list = array();
 
     $cookies = explode(',', $cookie);
-    foreach ($cookies as $c)
-    {
+    foreach ($cookies as $c) {
         $c = trim($c);
-        if (isset($_COOKIE[$c]))
-        {
+        if (isset($_COOKIE[$c])) {
             $list[] = unserialize( base64_decode($_COOKIE[$c]) );
-        }
-        else
-        {
+        } else {
             $list[] = array();
         }
     }
@@ -2987,15 +2995,11 @@ function cn_cookie_pack()
     $cookie = array_shift($args);
 
     $cookies = explode(',', $cookie);
-    foreach ($cookies as $id => $cookie)
-    {
+    foreach ($cookies as $id => $cookie) {
         $cookie = trim($cookie);
-        if ($args[$id])
-        {
+        if ($args[$id]) {
             $data = base64_encode( serialize($args[$id]) ); 
-        }
-        else
-        {
+        } else {
             $data = null;
         }
         setcookie($cookie, $data);
@@ -3028,7 +3032,7 @@ function cn_require_install()
     if (defined('AREA') && AREA == 'ADMIN')
     {
         $_SESSION = array();
-        include SERVDIR . '/skins/default.skin.php';
+        include SERVDIR . '/skins/master.skin.php';
 
         // Submit
         if (request_type('POST'))
@@ -3474,7 +3478,7 @@ function cn_htmlspecialchars($str)
 
 function cn_unhtmlspecialchars($str)
 {
-    $key=array( '&quot;'=>'"' ,   '&#039;'=>"'",   '&lt;'=>'<',   '&gt;'=>'>', '&amp;'=>'&');
+    $key = array( '&quot;'=>'"' ,   '&#039;'=>"'",   '&lt;'=>'<',   '&gt;'=>'>', '&amp;'=>'&');
     return str_replace(array_keys($key),  array_values($key), $str);
 }
 
@@ -3861,7 +3865,11 @@ function cn_rewrite_load()
     }
     else
     {
-        define('PHP_SELF',   $_SERVER["SCRIPT_NAME"]);
+        if (isset($PHP_SELF)) {
+            define('PHP_SELF', $PHP_SELF);
+        } else {
+            define('PHP_SELF', $_SERVER["SCRIPT_NAME"]);
+        }
         define('CN_REWRITE', FALSE);
     }
 
@@ -3873,7 +3881,7 @@ function cn_rewrite_load()
 }
 
 // Since 2.0: Add BreadCrumb
-function cn_bc_add($name, $url)
+function cn_bc_add($name, $url = '')
 {
     $bc = mcache_get('.breadcrumbs');
     $bc[] = array('name' => $name, 'url' => $url);
@@ -3911,41 +3919,45 @@ function cn_snippet_digital_signature($type = 'std')
 // Since 2.0; HTML show errors
 function cn_snippet_messages($area = 'new')
 {
-    $delay = 7500;
-    $result = '';
+    $delay = 10000;
+    $success = '';
+    $failed = '';
 
-    for ($i = 0; $i < strlen($area); $i++)
-    {
+    for ($i = 0; $i < strlen($area); $i++) {
+
         $messages = cn_get_message($area[$i], 's');
 
-        $type = 'notify';
-        if ($area[$i] == 'e') 
-        {
-            $type = 'error';
-        }
-        elseif ($area[$i] == 'w') 
-        {
-            $type = 'warnings';
+        $type_text = 'Success - ';
+		$type_class = 'success';
+
+        if ($area[$i] == 'e') {
+            $type_text = 'Error - ';
+			$type_class ='danger';
+
+        } elseif ($area[$i] == 'w') {
+            $type_text = 'Warning - ';
+			$type_class = 'warning';
         }
 
-        if ($messages)
-        {
-            $result .= '<div class="cn_'.$type.'_list">';
-            foreach ($messages as $msg)
-            {
-                $NID = 'notify_'.time().mt_rand();
-                $result .= '<div class="cn_'.$type.'_item" id="'.$NID.'"><div><b>'.date('H:i:s', ctime()).'</b> '.$msg.'</div></div>';
-                $result .= '<script>notify_auto_hide("'.$NID.'", '.$delay.');</script>';
-
-                $delay += 1000;
+		if ($messages) {
+            foreach ($messages as $msg) {
+                if ($type_class == 'success') {
+                    $success .= '<div class="alert alert-success fade in alert-dismissable"><b>'.$type_text.'</b> '.$msg.'<a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a></div>';
+                } else {
+                    $failed .= '<div class=\"alert alert-'.$type_class.' lead\" ><b>'.$type_text.'</b> '.$msg.'</div>';
+                }
             }
-            $result .= '</div>';
         }
     }
 
-    if ($result) 
-    {
-        echo '<div class="cn_notify_overall">'.$result.'</div>';
+    if ($failed) {
+
+        $msg_swal = '<script>swal({ title: "info", html: "'.$failed.'", type: "info" });</script>';
+        echo $msg_swal;
+    }
+    elseif ($success) {
+
+        echo '<section><div class="container">'.$success.'</div></section>';
     }
 }
 
@@ -4022,19 +4034,29 @@ function cn_snippet_open_win($url, $params = array(), $title = 'CN Window' )
 // Since 2.0: Show breadcrumbs
 function cn_snippet_bc($sep = '&gt;')
 {
-    $bc = mcache_get('.breadcrumbs');
-    echo '<div class="cn_breadcrumbs">';
+    $bc = array_values(mcache_get('.breadcrumbs'));
+    if ($bc) {
 
-    $ls = array();
-    if (is_array($bc)) 
-    {
-        foreach ($bc as $item)
-        {
-           $ls[] = '<span class="bcitem"><a href="'.$item['url'].'">'.cn_htmlspecialchars($item['name']).'</a></span>';
+        echo '<section><div class="container"><div class="breadcrumb lead">';
+
+        $ls = array();
+        if (is_array($bc)) {
+
+            $kcount = count($bc) - 1;
+            foreach ($bc as $i => $item) {
+
+                $title = $item['name'];
+                if ($kcount == $i) {
+                    $ls[] = '<span class="bcitem">' . i18n($item['name']) . '</span>';
+                } else {
+                    $ls[] = '<span class="bcitem"><a href="' . $item['url'] . '">' . i18n($item['name']) . '</a></span>';
+                }
+            }
         }
+
+        echo join(' <span class="bcsep">' . '<i class="fa fa-angle-right"></i>' . '</span> ', $ls);
+        echo '</div></div></section>';
     }
-    echo join(' <span class="bcsep">'.$sep.'</span> ', $ls);
-    echo '</div>';
 }
 
 function cn_snippet_ckeditor($ids = '')

@@ -14,7 +14,7 @@ $skin_menu = cn_get_menu() . '<div style="clear:both;"></div>';
 $skin_header = <<<HTML
 <html>
 <head>
-<title>CuteNews</title>
+<title>{title}</title>
 <meta name="robots" content="noindex" />
 <link rel="shortcut icon" type="image/ico" href="skins/images/favicon.ico"/>
 <script type="text/javascript" src="skins/cute.js"></script>

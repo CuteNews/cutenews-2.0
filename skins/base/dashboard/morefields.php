@@ -7,73 +7,95 @@ cn_snippet_messages();
 cn_snippet_bc();
 
 ?>
-<table class="std-table" width="100%">
-    <tr> <th>Name</th> <th>Type</th> <th>Desc</th> <th>Meta</th> <th>Group</th> <th>Required</th> </tr>
 
-    <?php if ($list) foreach ($list as $_name => $item) { ?>
-        <tr <?php if ($name == $_name) echo 'class="row_selected"'; ?>>
-            <td align="center"><a href="<?php echo cn_url_modify("extr_name=$_name"); ?>"><?php echo cn_htmlspecialchars($_name); ?></a></td>
-            <td align="center" style="color: #666666;"><?php echo $item['type']; ?></td>
-            <td><?php echo cn_htmlspecialchars($item['desc']); ?></td>
-            <td><?php echo cn_htmlspecialchars($item['meta']); ?></td>
-            <td align="center"><?php echo $item['grp']; ?></td>
-            <td align="center"><?php echo $item['req'] ? "YES" : ''; ?></td>
-        </tr>
-    <?php } else { ?><tr><td colspan="5">No entries found</td></tr><?php } ?>
+<section>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+				<h2>Add Field</h2>
+				<form action="<?php echo PHP_SELF; ?>" method="POST">
 
-</table>
+					<?php cn_form_open('mod, opt'); ?>
+                    <div class="form-group">
 
-<br/>
-<form action="<?php echo PHP_SELF; ?>" method="POST">
-    <?php cn_form_open('mod, opt'); ?>
+                        <label>Field type</label>
+                        <select class="form-control" name="type">
+                            <option value="text">Text</option>
+                            <option value="image" <?php if ($type == 'image') echo 'selected'; ?>>Image/Resource</option>
+                            <option value="select" <?php if ($type == 'select') echo 'selected'; ?>>Select</option>
+                            <option value="checkbox" <?php if ($type == 'checkbox') echo 'selected'; ?>>Checkbox</option>
+                            <option value="price" <?php if ($type == 'price') echo 'selected'; ?>>Price</option>
+                        </select>
 
-    <table class="panel">
+                    </div>
 
-        <tr>
-            <td align="right">Field type</td>
-            <td>
-                <select name="type">
-                    <option value="text">Text</option>
-                    <option value="image" <?php if ($type == 'image') echo 'selected'; ?>>Image/Resource</option>
-                    <option value="select" <?php if ($type == 'select') echo 'selected'; ?>>Select</option>
-                    <option value="checkbox" <?php if ($type == 'checkbox') echo 'selected'; ?>>Checkbox</option>
-                    <option value="price" <?php if ($type == 'price') echo 'selected'; ?>>Price</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td align="right">Name <span class="required">*</span></td>
-            <td><input type="text" style="width: 250px;" name="name" value="<?php echo cn_htmlspecialchars($name); ?>"/></td>
-        </tr>
-        <tr>
-            <td align="right">Group</td>
-            <td style="color: #666;"><input style="width: 250px;" type="text" name="group" value="<?php echo cn_htmlspecialchars($group); ?>"/>
-                <br/>Grouping allows you to group fields in different blocks</td>
-        </tr>
-        <tr>
-            <td align="right">Description</td>
-            <td><input style="width: 675px;" type="text" name="desc" value="<?php echo cn_htmlspecialchars($desc); ?>"/></td>
-        </tr>
-        <tr>
-            <td align="right">Meta</td>
-            <td style="color: #666;"><input style="width: 675px;" type="text" name="meta" value="<?php echo cn_htmlspecialchars($meta); ?>"/>
-                <br/>Meta used by SELECT box, enter value1;value2;...;valueN</td>
-        </tr>
+                    <div class="form-group">
+                        <label>Name</label> <span class="required">*</span>
+                        <input class="form-control" type="text"  name="name" value="<?php echo cn_htmlspecialchars($name); ?>" required/>
+                    </div>
 
-        <tr>
-            <td align="right"><input type="checkbox" name="req" <?php if ($req) echo 'checked'; ?> value="Y"/></td>
-            <td>Required</td>
-        </tr>
+                    <div class="form-group">
+                    <label>Group</label>
+                        <input class="form-control" type="text" name="group" value="<?php echo cn_htmlspecialchars($group); ?>"/>
+                        <small>Grouping allows you to group fields in different blocks</small>
+                    </div>
 
-        <tr>
-            <td align="right"><input type="checkbox" name="remove" value="Y"/></td>
-            <td>Delete field</td>
-        </tr>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input class="form-control"  type="text" name="desc" value="<?php echo cn_htmlspecialchars($desc); ?>"/>
+                    </div>
 
+                    <div class="form-group">
+                        <label>Meta</label>
+                        <input class="form-control" type="text" name="meta" value="<?php echo cn_htmlspecialchars($meta); ?>"/>
+                        <small>Meta used by SELECT box, enter value1;value2;...;valueN</small>
+                    </div>
 
-        <tr><td>&nbsp;</td> <td><input type="submit" value="Add/Replace field" /></td></tr>
+                    <div class="form-group">
+                        <input type="checkbox" id="lbl_required_field" name="req" <?php if ($req) echo 'checked'; ?> value="Y"/>
+                        <label for="lbl_required_field">Required</label>
+                    </div>
 
-    </table>
+                    <div class="form-group">
+                        <input type="checkbox" name="remove" value="Y" id="lbl_delete_field"/>
+                        <label for="lbl_delete_field">Delete field</label>
+                    </div>
 
+                    <input class="btn btn-primary" type="submit" value="Add / Replace field" />
 
-</form>
+				</form>
+			</div>
+
+			<div class="col-sm-6">
+
+				<h2>Fields</h2>
+				<table class="table table-bordered table-striped table-hover">
+
+					<tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Desc</th>
+                        <th>Meta</th>
+                        <th>Group</th>
+                        <th>Required</th>
+                    </tr>
+
+					<?php if ($list) foreach ($list as $_name => $item) { ?>
+
+                        <tr <?php if ($name == $_name) echo 'class="row_selected"'; ?>>
+							<td align="center"><a href="<?php echo cn_url_modify("extr_name=$_name"); ?>"><?php echo cn_htmlspecialchars($_name); ?></a></td>
+							<td align="center" ><?php echo $item['type']; ?></td>
+							<td><?php echo cn_htmlspecialchars($item['desc']); ?></td>
+							<td><?php echo cn_htmlspecialchars($item['meta']); ?></td>
+							<td align="center"><?php echo $item['grp']; ?></td>
+							<td align="center"><?php echo $item['req'] ? "YES" : ''; ?></td>
+						</tr>
+
+					<?php } else { ?><tr><td colspan="6">No entries found</td></tr><?php } ?>
+
+				</table>
+			</div>
+
+		</div>
+	</div>
+</section>

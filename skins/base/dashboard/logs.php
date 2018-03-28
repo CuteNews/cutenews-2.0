@@ -8,44 +8,40 @@ $num = intval($num);
 cn_snippet_bc();
 
 ?>
+<section>
+	<div class="container">
+		<ul class="nav nav-tabs">
+			<li<?php if (!$section) echo ' class="active"'; ?>><a href="<?php echo cn_url_modify('section'); ?>">System</a></li>
+			<li<?php if ($section === 'user') echo ' class="active"'; ?>><a href="<?php echo cn_url_modify('section=user'); ?>">User</a></li>
+		</ul>
 
-<ul class="sysconf_top">
-    <li<?php if (!$section) echo ' class="selected"'; ?>><a href="<?php echo cn_url_modify('section'); ?>">System</a></li>
-    <li<?php if ($section === 'user') echo ' class="selected"'; ?>><a href="<?php echo cn_url_modify('section=user'); ?>">User</a></li>
-</ul>
+		<table class="table table-bordered table-striped table-hover">
 
-<table class="std-table" width="100%">
-    <tr>
-        <th width="75">Date</th>
-        <th>Message</th>
-    </tr>
+            <tr>
+				<th width="75">Date</th>
+				<th>Message</th>
+			</tr>
 
-    <?php foreach ($logs as $item) { ?>
+			<?php foreach ($logs as $item) { ?>
 
-        <tr>
-            <td width="75" style="color: #707070;"><nobr><?php echo $item['date']; ?></nobr></td>
-            <td><?php echo cn_htmlspecialchars($item['msg']); ?></td>
-        </tr>
-    <?php } ?>
+				<tr>
+					<td  ><nobr><?php echo $item['date']; ?></nobr></td>
+					<td><?php echo cn_htmlspecialchars($item['msg']); ?></td>
+				</tr>
 
-</table>
+			<?php } ?>
 
-<p style='color: #808080;'>You may manually clean log there ./cdata/log/<?php if (!$section) echo "error_dump.log"; else echo 'user.log'; ?></p>
+		</table>
 
-<div>
-    <?php 
-    if ($st-$num >= 0) 
-        echo '<a href="'.cn_url_modify('st='.($st-$num)).'">&lt;&lt; Prev</a>'; 
-    else 
-        echo '&lt;&lt; Prev' 
-    ?>
-    &nbsp;[<?php echo $st; ?>]&nbsp;
-    <?php
-        if(!$isfin)
-            echo '<a href="'.cn_url_modify('st='.($st+$num)).'">Next &gt;&gt;</a>';
-        else 
-            echo 'Next &gt;&gt;';
-    ?>
-    <!--a href="<?php /*echo cn_url_modify('st='.($st+$num));*/ ?>">Next &gt;&gt;</a-->
-</div>
+		<p>You may manually clean log there ./cdata/log/<?php echo $section ?  'user.log' : 'error_dump.log'; ?></p>
+
+		<div><?php
+
+            echo ($st - $num >= 0) ? '<a href="'.cn_url_modify('st='.($st-$num)).'">&lt;&lt; Prev</a>' : '&lt;&lt; Prev';
+            echo '&nbsp;['.$st.']&nbsp;';
+            echo $isfin ? 'Next &gt;&gt;' : '<a href="'.cn_url_modify('st='.($st+$num)).'">Next &gt;&gt;</a>';
+        ?>
+		</div>
+	</div>
+</section>
 

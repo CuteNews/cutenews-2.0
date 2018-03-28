@@ -686,13 +686,13 @@ function maintenance_migrate()
 
                         $old_sr = maint_getoption($cfg,'#rword');
                         $cur_sr = getoption('#rword');
-                        $sr=  array_merge_recursive($old_sr,$cur_sr);                    
+                        $sr = array_merge_recursive($old_sr,$cur_sr);
                         setoption('#rword', $sr);
                         cn_throw_message('Word replacement updated');
 
-                        $old_cats = maint_getoption($cfg,'#category');                    
-                        $cur_cats=  getoption('#category');                    
-                        $cats= array_merge_recursive($old_cats,$cur_cats);
+                        $old_cats = maint_getoption($cfg, '#category');
+                        $cur_cats = getoption('#category');
+                        $cats = array_merge_recursive($old_cats, $cur_cats);
                         setoption('#category', $cats);
                         cn_throw_message('Category updated');    
 

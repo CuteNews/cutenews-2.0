@@ -234,21 +234,20 @@ function check_uncheck_all(name)
 function insertAtCursor(myField, myValue)
 {
     // IE support
-    if (document.selection)
-    {
+    if (document.selection) {
+
         myField.focus();
         var sel = document.selection.createRange();
         sel.text = myValue;
+
     }
     // MOZILLA and others
-    else if (myField.selectionStart || myField.selectionStart == '0')
-    {
+    else if (myField.selectionStart || myField.selectionStart == '0') {
         var startPos  = myField.selectionStart;
         var endPos    = myField.selectionEnd;
         myField.value = myField.value.substring(0, startPos) + myValue + myField.value.substring(endPos, myField.value.length);
-    }
-    else
-    {
+
+    } else {
         myField.value += myValue;
     }
 
@@ -262,49 +261,44 @@ function bb_wrap(id, wrp)
     var src = null;
 
     // Has inner wrapper
-    if (arguments.length == 4)
-    {
+    if (arguments.length == 4) {
         src = arguments[2];
         HW  = arguments[3];
         W   = src.getElementById(id);
-    }
-    else
-    {
+    } else {
         src = document;
         W = getId(id);
     }
 
     // ----
-    if (src.selection)
-    {
+    if (src.selection) {
+
         W.focus();
         var sel = src.selection.createRange();
         if (sel.text == '') return false;
 
         sel.text = '[' + wrp + (HW? '=' + HW : '') + ']' + sel.text + '[/'+wrp+']';
-        return true;
-    }
-    else if (W.selectionStart || W.selectionStart == '0')
-    {
+
+    } else if (W.selectionStart || W.selectionStart == '0') {
+
         var startPos  = W.selectionStart;
         var endPos    = W.selectionEnd;
 
-        if (startPos < endPos)
-        {
+        if (startPos < endPos) {
             var txt = W.value.substring(startPos, endPos);
             W.value = W.value.substring(0, startPos) + '[' + wrp + (HW? '=' + HW : '') +']' + txt + '[/' + wrp + ']' + W.value.substring(endPos);
-            return true;
         }
-        else return false;
     }
-    else return false;
+
+    return false;
 }
 
-function notify_auto_hide(id, delay) { setTimeout(function() { getId(id).remove(); }, delay); }
+function notify_auto_hide(id, delay) {
+    setTimeout(function() { getId(id).remove(); }, delay);
+}
 
-function tiny_msg(object)
-{
+function tiny_msg(object)  {
+
     alert(object.title);
-
     return false;
 }

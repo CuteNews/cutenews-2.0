@@ -6,207 +6,266 @@
     list($_dateD, $_dateM, $_dateY, $_dateH, $_dateI, $_dateS) = make_postponed_date($gstamp);
     list($morefields) = _GL('morefields');
     list($id) = GET('id', "GETPOST");
+
     // CKEDITOR INITIALIZE BLOCK
     $CKEDITOR_Active = getoption('use_wysiwyg');
+    $is_draft = test('Bd');
 
-    // DRAFT
-    if (test('Bd'))
-    {
-        $is_draft = TRUE;
-    }
-
-    // MESSAGES BLOCK
     cn_snippet_messages();
+	cn_snippet_bc();
 
     if ($preview_html) { ?>
 
-        <div style="margin: 10px 0 30px 0;">
-            <div style="border: 1px dashed gray; float: left; width: 50%;">
-                <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px; text-align: center;"><b>PREVIEW ACTIVE NEWS ENTRY</b></div>
-                <div style="border:4px solid #f0f0a0;"><?php echo $preview_html; ?></div> </div>
-            <div style="clear:left;"></div>
-            <div style="height: 8px"></div>
-        </div>
+        <section>
+            <div class="container">
 
-        <?php if($preview_html_full) { ?>
-            <div style="margin: 10px 0 30px 0;">
-                <div style="border: 1px dashed gray; float: left; width: 50%;">
-                    <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px; text-align: center;"><b>PREVIEW FULL STORY ENTRY</b></div>
-                    <div style="border:4px solid #f0f0a0;"><?php echo $preview_html_full; ?></div> </div>
-                <div style="clear:left;"></div>
-                <div style="height: 8px"></div>
-            </div>        
-        <?php } ?>
-    <?php } ?>
-
-<form method="post" action="<?php echo PHP_SELF; ?>">
-
-    <?php cn_form_open('mod, action, archive_id, source'); ?>
-    <input type="hidden" name="id" value="<?php echo intval($id); ?>" />
-
-    <div class="section">
-        <div class="name">Article title<?php if (!getoption('disable_title')) { echo ' <span class="req">*</span>'; } ?></div>
-        <div><input type="text" style="width: 100%" value="<?php echo cn_htmlspecialchars($vTitle); ?>" name="title" tabindex=1></div>
-    </div>
-
-    <?php hook('template/AdditionalFieldsTop'); ?>
-
-    <!-- Categories -->
-    <?php if ($categories) { // Categories not exists ?>
-        <div class="section">
-            <div class="name">Category [<a href="#" onclick="return(tiny_msg(this));" title="Categories help you organize your news">?</a>]</div>
-
-            <?php if (getoption('category_style') == 'select') { ?>
-
-                <select name="category">
-                    <option value="">---</option>
-                    <?php foreach ($categories as $catid => $cat_data) { ?>
-                        <option <?php if (in_array($catid, $vCategory)) { echo 'selected="selected"'; } ?> value="<?php echo $catid; ?>"><?php echo cn_htmlspecialchars($cat_data['name']); ?></option>
-                    <?php } ?>
-                </select>
-
-            <?php } else { ?>
-
-                <div class="panel category-panel">
-                    <?php foreach ($categories as $catid => $cat_data) { ?>
-                        <span class="category-item">
-                             <input id="chkbx<?php echo $catid ?>" type="checkbox" name="category[]" <?php if ($vCategory && in_array($catid, $vCategory)) echo 'checked'; ?> value="<?php echo $catid;?>" class="chkbox-fix"/>
-                             <label for="chkbx<?php echo $catid ?>">   
-                                    <?php echo cn_htmlspecialchars($cat_data['name']); ?>
-                             </label>
-                        </span>
-                    <?php } ?>
-                    <div style="clear: both;"> </div>
+                <div style="margin: 10px 0 30px 0;">
+                    <div style="border: 1px dashed gray; float: left; width: 100%;">
+                        <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px; text-align: center;"><b>PREVIEW ACTIVE NEWS ENTRY</b></div>
+                        <div style="border:4px solid #f0f0a0;"><?php echo $preview_html; ?></div> </div>
+                    <div style="clear:left;"></div>
+                    <div style="height: 8px"></div>
                 </div>
 
-            <?php } ?>
-        </div>
+                <?php if($preview_html_full) { ?>
+                    <div style="margin: 10px 0 30px 0;">
+                        <div style="border: 1px dashed gray; float: left; width: 100%;">
+                            <div style="background: #eeeeee; border-bottom: 1px solid #cccccc; margin: 0; padding: 4px; text-align: center;"><b>PREVIEW FULL STORY ENTRY</b></div>
+                            <div style="border:4px solid #f0f0a0;"><?php echo $preview_html_full; ?></div> </div>
+                        <div style="clear:left;"></div>
+                        <div style="height: 8px"></div>
+                    </div>
+                <?php } ?>
+            </div>
+        </section>
+
     <?php } ?>
 
-    <!-- MORE FIELDS -->
-    <?php include SKIN.'/dashboard/snippet/morefields.php'; ?>
+<section>
+	<div class="container">
 
-    <!-- Short story -->
-    <div class="section">
+		<form method="post" action="<?php echo PHP_SELF; ?>">
 
-        <div class="name">Short Story<?php if (!getoption('disable_short')) { echo ' <span class="req">*</span>'; } ?></div>
-        <div><textarea rows="12" cols="74" id="short_story" name="short_story" tabindex=2><?php echo cn_htmlspecialchars($vShort); ?></textarea></div>
+			<?php cn_form_open('mod, action, archive_id, source'); ?>
+			<input type="hidden" name="id" value="<?php echo intval($id); ?>" />
 
-        <?php if ($CKEDITOR_Active == 0) { ?>
-            <div class="ballon">
-                <?php $GLOBALS['callback'] = 'short_story'; include SKIN.'/dashboard/snippet/editor.php'; ?>
-                <?php hook('Hook_AdditionalFieldsShort'); ?>
-            </div>
-        <?php } ?>
+			<div>
+				<label for="articletitle"><?php echo i18n('Article title');?>:</label>
+				<?php if (!getoption('disable_title')) { echo ' <span class="required">*</span>'; } ?>
+				<div><input id="articletitle" class="form-control" type="text" value="<?php echo cn_htmlspecialchars($vTitle); ?>" name="title" tabindex="1" <?php if (!getoption('disable_title')) { /*echo ' required ';*/ } ?> ></div>
+			</div>
 
-    </div>
+			<?php hook('template/AdditionalFieldsTop'); ?>
 
-    <!-- Full story -->
-    <div class="section" id="full-story" <?php if (!$vFull) { echo 'style="display: none;"'; } ?>>
+			<!-- Categories -->
+			<?php if ($categories) { // Categories not exists ?>
 
-        <div class="name">Full Story (optional)</div>
-        <div> <textarea rows="12" cols="74" id="full_story" name="full_story" tabindex=3><?php echo cn_htmlspecialchars($vFull); ?></textarea> </div>
+                <br/>
+				<div>
+                    <label for="categories"><?php echo i18n('Category');?>:</label> [<a href="#" onclick="swal('<?php echo i18n('Categories help you organize your news');?>','','info');">?</a>]
 
-        <?php if ($CKEDITOR_Active == 0) { ?>
-            <div class="ballon">
-                <?php $GLOBALS['callback'] = 'full_story'; include SKIN.'/dashboard/snippet/editor.php'; ?>
-                <?php hook('Hook_AdditionalFieldsFull'); ?>
-            </div>
-        <?php } ?>
+					<?php if (getoption('category_style') == 'select') { ?>
 
-    </div>
+						<select id="categories" name="category">
+							<option value="">---</option>
+							<?php foreach ($categories as $catid => $cat_data) { ?>
+								<option <?php if (in_array($catid, $vCategory)) { echo 'selected="selected"'; } ?> value="<?php echo $catid; ?>"><?php echo cn_htmlspecialchars($cat_data['name']); ?></option>
+							<?php } ?>
+						</select>
 
-    <div class="section">
+					<?php } else { ?>
 
-        <div style="float: right">            
-            <?php if ($EDITMODE && test('Nud') && $archive_id == 0) { ?>
-                <input type="button" onClick="if (confirm('Please confirm')) { window.location = '<?php echo cn_url_modify('action=delete', cn_snippet_digital_signature('a')); ?>'; return true; } else return false;" value="Delete">
-            <?php } ?>
-            <?php if (empty($_POST['full_story'])) { ?><input type=button onClick="ShowOrHide('full-story','');" value="Toggle Full-Story"><?php } ?>
-            <input type=submit name="do_editsave" style='font-weight: bold' title="Post the New Article" value="     <?php if (!$EDITMODE) { echo 'Add News'; } else { echo 'Edit'; } ?>     " accesskey="s">
-        </div>
-        <input type="hidden" name="preview" id="chkPreview" value=""/>
-        <input type="submit" value="  Preview  " onclick="CheckPreview();" /> 
-        <div style="clear: both"></div>
-    </div>
+						<div class="well">
+							<?php foreach ($categories as $catid => $cat_data) { ?>
+								<span class="category-item">
+									 <input id="chkbx<?php echo $catid ?>" type="checkbox" name="category[]" <?php if ($vCategory && in_array($catid, $vCategory)) echo 'checked'; ?> value="<?php echo $catid;?>" class="chkbox-fix"/>
+									 <label for="chkbx<?php echo $catid ?>">
+											<?php echo cn_htmlspecialchars($cat_data['name']); ?>
+									 </label>
+								</span>
+							<?php } ?>
+							<div style="clear: both;"> </div>
+						</div>
 
-    <!-- SOME ADDITIONAL FIELDS -->
+					<?php } ?>
+				</div>
+			<?php } ?>
 
-    <br/>
-    <!-- Page alias -->
-    <div class="section">
+			<!-- MORE FIELDS -->
+			<?php include SKIN.'/dashboard/snippet/morefields.php'; ?>
+			<?php //include SKIN.'/dashboard/snippet/slider.php'; ?>
 
-        <div class="name">Article meta  [<a href="#" onclick="return(tiny_msg(this));" title="Some additional optional data">?</a>]</div>
-        <hr/>
+			<!--Publish date-->
+			<div>
+                <br/>
+                <div class="form-group">
+                    <label for="publish-date"><?php echo i18n('Publish date');?></label>
+                        <div class="well">
 
-        <div class="name">Page alias</div>
-        <div><input type="text" style="width: 100%" value="<?php echo cn_htmlspecialchars($vPage); ?>" name="page" tabindex=4></div>
-        <div style="font-size: 10px; color: #808080; margin: 0 0 15px 0;">The unique name of the page. Use $page_alias parameter before include show_news.php, charset [a-zA-Z0-9_-]</div>
+                            <select id="" name="from_date_day" class="selectpicker" data-hide-disabled="true" data-live-search="true" data-size="5" data-style="btn-primary" data-width="fit">
+                                <?php echo $_dateD; ?>
+                            </select>
+                            <select id="" name="from_date_month" class="selectpicker" data-hide-disabled="true" data-live-search="true" data-size="5" data-style="btn-primary" data-width="fit">
+                                <?php echo $_dateM; ?>
+                            </select>
+                            <select id="" name="from_date_year" class="selectpicker" data-hide-disabled="true" data-live-search="true" data-size="5" data-style="btn-primary" data-width="fit">
+                                <?php echo $_dateY; ?>
+                            </select>
 
-        <!-- tags line -->
-        <div class="section">
-            <div class="name">Tagline</div>
-            <div><input type="text" style="width: 100%" value="<?php echo cn_htmlspecialchars($vTags); ?>" name="tags" tabindex=5></div>
-            <div style="font-size: 10px; color: #808080; margin: 0 0 15px 0;">List the tags for news, separated by commas</div>
-        </div>
-    </div>
+                            <label>@</label>
 
-    <?php hook('template/AdditionalFieldsBottom'); ?>
+                            <input value="<?php echo $_dateH; ?>" class="form-control" style="width:50px;display:inline;" name="from_date_hour" size=3 type=text title='24 Hour format [hh]'  /><label>:</label>
+                            <input value="<?php echo $_dateI; ?>" class="form-control" style="width:50px;display:inline;" name="from_date_minutes" size=3 type=text title='Minutes [mm]' /><label>:</label>
+                            <input value="<?php echo $_dateS; ?>" class="form-control" style="width:50px;display:inline;" name="from_date_seconds" size=3 type=text title='Seconds [ss]' />
 
-    <div class="section" id="options">
+                        </div>
+                </div>
+			</div>
+			<!--short story, full story, page alias, article options-->
+			<div>
+				<ul class="nav nav-tabs">
+					<li class="active"><a data-toggle="tab" href="#menu1"><?php echo i18n('Short Story'); ?><?php if (!getoption('disable_short')) { echo ' <span class="required">*</span>'; } ?></a></li>
+					<li><a data-toggle="tab" href="#menu2"><?php echo i18n('Full Story'); ?> (optional)</a></li>
+					<li><a data-toggle="tab" href="#menu3"><?php echo i18n('Page alias and tagline'); ?>: </a></li>
+					<li><a data-toggle="tab" href="#menu4"><?php echo i18n('Article options');?></a></li>
+				</ul>
 
-        <div class="name">Article options</div>
-        <hr/>
+				<div class="tab-content card">
+					<div id="menu1" class="tab-pane fade in active">
 
-        <div>
-            <?php hook('template/addedit_news_opts'); ?>
+						<!-- Short story -->
+						<div>
 
-            <div>                
-                <?php if ($CKEDITOR_Active == 0 && $is_active_html) { ?>                
-                    <div><label for='html'> <input id='html' class="chkbox-fix" type="checkbox" value="1" name="if_use_html" <?php if ($vUseHtml) echo 'checked'; ?>> Use HTML in this article</label></div>
-                <?php } else { ?>
-                    <?php if($is_active_html) { ?>                         
-                        <div><label for='html'> <input id='html' class="chkbox-fix" type="checkbox" value="1" name="if_use_html" checked="checked" disabled="disabled"> Use HTML in this article</label></div>
-                    <?php } else { ?>
-                        <input type="hidden" name="if_use_html" value="1"/>
-                    <?php } ?>
-                <?php } ?>
-                <div><label for='html'> <input id='concat' class="chkbox-fix" type="checkbox" value="Y" name="concat" <?php if ($vConcat) echo 'checked'; ?>> Concate short and full story</label></div>
-            </div>
-            <br/>
+							<!--label for="short_story">Short Story:</label-->
+							<textarea class="form-control" rows="12" cols="74" id="short_story" name="short_story" tabindex="2" <?php if (!getoption('disable_short')) { echo ' required '; } ?> ><?php echo cn_htmlspecialchars($vShort); ?></textarea>
 
-            <div>
-                Publish date
-                <select name="from_date_day"><?php echo $_dateD; ?></select>
-                <select name="from_date_month"><?php echo $_dateM; ?></select>
-                <select name="from_date_year"><?php echo $_dateY; ?></select>
-                @ <input value='<?php echo $_dateH; ?>' style="text-align: center;" name="from_date_hour" size=3 type=text title='24 Hour format [hh]'  /> :
-                <input value="<?php echo $_dateI; ?>" style="text-align: center;" name="from_date_minutes" size=3 type=text title='Minutes [mm]' />
-                <input value="<?php echo $_dateS; ?>" style="text-align: center;" name="from_date_seconds" size=3 type=text title='Seconds [ss]' />
-            </div>
+							<?php if ($CKEDITOR_Active == 0) { ?>
+								<div class="well">
+									<?php $GLOBALS['callback'] = 'short_story'; include SKIN.'/dashboard/snippet/editor.php'; ?>
+									<?php hook('Hook_AdditionalFieldsShort'); ?>
+								</div>
+							<?php } ?>
 
-            <br/>
-            <div>
-                <?php if (!$archive_id) { ?>
+						</div>
+					</div>
+					<div id="menu2" class="tab-pane fade">
 
-                    <?php if (!test('Bd')) { ?>
+						<!-- Full story -->
+						<div id="full-story">
 
-                        <label for='active'><input checked id='active' style="border:0; background-color: transparent" type=radio value="active" name="postpone_draft"> <b>Normal</b>, article is active</label>
-                        &nbsp;&nbsp;&nbsp;
+						   <!--label for="full_story">Full Story (optional):</label-->
+						   <textarea class="form-control" rows="12" cols="74" id="full_story" name="full_story" tabindex=3><?php echo cn_htmlspecialchars($vFull); ?></textarea>
 
-                    <?php } ?>
+							<?php if ($CKEDITOR_Active == 0) { ?>
+								<div class="well">
+									<?php $GLOBALS['callback'] = 'full_story'; include SKIN.'/dashboard/snippet/editor.php'; ?>
+									<?php hook('Hook_AdditionalFieldsFull'); ?>
+								</div>
+							<?php } ?>
 
-                    <label for='draft'><input id='draft' style="border:0; background-color: transparent" type=radio value="draft" <?php if ($is_draft) echo "checked"; ?> name="postpone_draft"> <b>Draft</b>, article is unapproved</label>
+						</div>
+					</div>
 
-                <?php } ?>
-            </div>
+					<!-- SOME ADDITIONAL FIELDS -->
+					<div id="menu3" class="tab-pane fade">
+						<div class="well">
+							<!-- Page alias -->
+							<div class="form-group">
+							<label for="page_alias" >Page alias:</label>
+							<input id="page_alias" class="form-control" type="text" value="<?php echo cn_htmlspecialchars($vPage); ?>" name="page" tabindex=4>
+							<small>The unique name of the page. Use $page_alias parameter before include show_news.php, charset [a-zA-Z0-9_-]</small>
+							</div>
+							<!-- tags line -->
+							<div class="form-group">
+							<label for="tagline" >Tagline:</label>
+							<input id="tagline" class="form-control" type="text" value="<?php echo cn_htmlspecialchars($vTags); ?>" name="tags" tabindex=5>
+							<small>List the tags for news, separated by commas</small>
+							</div>
+						</div>
+
+						<?php hook('template/AdditionalFieldsBottom'); ?>
+					</div>
+
+					<div id="menu4" class="tab-pane fade">
+						<div class="well" id="options">
+							<div>
+								<?php hook('template/addedit_news_opts'); ?>
+
+								<div class="form-group">
+
+                                    <!-- CkEditor disabled, and active html -->
+									<?php if ($CKEDITOR_Active == 0 && $is_active_html) { ?>
+
+                                        <div class="checkbox">
+											<label for="html">
+                                                <input id='html' type="checkbox" value="1" name="if_use_html" <?php if ($vUseHtml) echo 'checked'; ?> /> Use HTML in this article
+                                            </label>
+										</div>
+
+									<?php } else { ?>
+
+										<?php if ($is_active_html) { ?>
+											<div class="checkbox">
+												<label for='html'> <input id='html' type="checkbox" value="1" name="if_use_html" checked="checked" disabled="disabled"> Use HTML in this article</label>
+											</div>
+										<?php } else { ?>
+											<input type="hidden" name="if_use_html" value="1"/>
+										<?php } ?>
+
+									<?php } ?>
+
+									<div class="checkbox">
+										<label for='concat'> <input id='concat' type="checkbox" value="Y" name="concat" <?php if ($vConcat) echo 'checked'; ?>> Concate short and full story</label>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<?php if (!$archive_id) { ?>
+
+										<?php if (!test('Bd')) { ?>
+										<div class="radio">
+											<label for='active'><input checked id="active" type="radio" value="active" name="postpone_draft"> <b>Normal, article is active</b></label>
+											&nbsp;&nbsp;&nbsp;
+										</div>
+
+										<?php } ?>
+										<div class="radio">
+											<label for='draft'><input id="draft" type=radio value="draft" <?php if ($is_draft) echo "checked"; ?> name="postpone_draft"> <b>Draft, article is unapproved</b></label>
+										</div>
+									<?php } ?>
+								</div>
 
 
-        </div>
+							</div>
 
-        <?php hook('template/AdditionalFieldsOptions'); ?>
+							<?php hook('template/AdditionalFieldsOptions'); ?>
 
-    </div>
-</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!--Buttons Actions-->
+			<div>
+				<div class="well">
+					<div class="pull-right">
+						<?php if ($EDITMODE && test('Nud') && $archive_id == 0) { ?>
+							<input class="btn btn-primary" type="button" onClick="if (confirm('Please confirm')) { window.location = '<?php echo cn_url_modify('action=delete', cn_snippet_digital_signature('a')); ?>'; return true; } else return false;" value="<?php echo i18n('Delete');?>">
+						<?php } ?>
+						<?php if (empty($_POST['full_story'])) { ?>
+							<!--input class="btn btn-primary" type="button" onClick="ShowOrHide('full-story','');" value="Toggle Full-Story"-->
+						<?php } ?>
+
+						<input class="btn btn-primary" type="submit" name="do_editsave" title="Post the New Article" value="     <?php if (!$EDITMODE) { echo i18n('Add News'); } else { echo i18n('Edit'); } ?>     " accesskey="s">
+
+					</div>
+					<input type="hidden" name="preview" id="chkPreview" value=""/>
+					<input class="btn btn-primary" type="submit" value="  <?php echo i18n('Preview');?>  " onclick="CheckPreview();" />
+					<div style="clear: both"></div>
+				</div>
+			</div>
+		</form>
+	</div>
+</section>
 
 <?php if ($CKEDITOR_Active) cn_snippet_ckeditor('full_story, short_story');

@@ -12,25 +12,24 @@ define('ACL_LEVEL_BANNED',        5);
 function path_construct()
 {
     $arg_list = func_get_args();
-    if($arg_list[0][0]==DIRECTORY_SEPARATOR)
-    {
-        $arg_list[0]=  substr($arg_list[0], 1);
+    if ($arg_list[0][0] == DIRECTORY_SEPARATOR) {
+        $arg_list[0] = substr($arg_list[0], 1);
     }
-    return DIRECTORY_SEPARATOR.join(DIRECTORY_SEPARATOR,$arg_list);
+
+    return DIRECTORY_SEPARATOR . join(DIRECTORY_SEPARATOR, $arg_list);
 }
 
 // Since 2.0: Check users exists. If no, require install script
 function db_installed_check()
 {
-    $is_dir=SERVDIR.DIRECTORY_SEPARATOR.'cdata';
-    $cfile=false;
+    $is_dir = SERVDIR.DIRECTORY_SEPARATOR.'cdata';
+    $cfile = false;
     
-    if(is_dir($is_dir)&&  is_writable($is_dir))
-    {
-        $cfile = cn_touch(SERVDIR. path_construct('cdata','users.txt'));
+    if (is_dir($is_dir) && is_writable($is_dir)) {
+        $cfile = cn_touch(SERVDIR. path_construct('cdata', 'users.txt'));
     }
-    if (empty($cfile) || filesize($cfile) < 4)
-    {
+
+    if (empty($cfile) || filesize($cfile) < 4) {
         cn_require_install();
     }
 

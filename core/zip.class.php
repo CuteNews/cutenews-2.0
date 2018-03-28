@@ -248,11 +248,11 @@ class zipfile
 					{
 						$entrya['error'] = "Decompression failed.";
 					}
-					elseif(strlen($filedata) != $unpackeda['size_uncompressed'])
+					else if(strlen($filedata) != $unpackeda['size_uncompressed'])
 					{
 						$entrya['error'] = "File size is not equal to the value given in header.";
 					}
-					elseif(crc32($filedata) != $unpackeda['crc'])
+					else if(crc32($filedata) != $unpackeda['crc'])
 					{
 						$entrya['error'] = "CRC32 checksum is not equal to the value given in header.";
 					}

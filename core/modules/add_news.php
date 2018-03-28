@@ -7,6 +7,10 @@ function add_news_invoke()
 {
     $FlatDB = new FlatDB();
 
+    cn_bc_add('Dashboard', PHP_SELF . '?mod=main');
+    cn_bc_add('News listing', PHP_SELF . '?mod=editnews');
+    cn_bc_add('Add new');
+
     // loadall
     list($article_type, $preview) = GET('postpone_draft, preview', 'GETPOST');    
     list($from_date_hour, $from_date_minutes, $from_date_seconds, $from_date_month, $from_date_day, $from_date_year) = GET('from_date_hour, from_date_minutes, from_date_seconds, from_date_month, from_date_day, from_date_year', 'GETPOST');

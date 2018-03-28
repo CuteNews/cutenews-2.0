@@ -1,3 +1,6 @@
+<section>
+	<div class="container">
+
 <?php
 list($help_sections) = _GL('help_sections');
 
@@ -7,3 +10,6 @@ foreach ($help_sections as $id => $section) {
     <div style="clear:both;"> </div>
 
 <?php } ?>
+
+    </div>
+</section>

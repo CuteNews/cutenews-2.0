@@ -74,9 +74,8 @@ function get_sizes_form($title,$action='thumb')
 
 function do_resize_image($root_dir, $is_thumb=true)
 {
-    $act='thumb';
-    if (!$is_thumb)
-    {
+    $act = 'thumb';
+    if (!$is_thumb) {
         $act='resize';
     }
     
@@ -97,16 +96,14 @@ function do_resize_image($root_dir, $is_thumb=true)
             if (is_dir($fn)) {
                 continue;
             }
-            
-            if (!preg_match('/\.thumb\./', $fn)) // ignore already exists thumbnails
-            {
+
+            // ignore already exists thumbnails
+            if (!preg_match('/\.thumb\./', $fn)) {
+
                 $resize_result = resize_image($fn, $wt, $ht, $is_thumb);
-                if($resize_result['status'])
-                {
+                if($resize_result['status']) {
                     cn_throw_message($resize_result['msg']);
-                }
-                else
-                {
+                } else {
                     cn_throw_message($resize_result['msg'],'w');
                     continue;                                                       
                 }
@@ -146,7 +143,6 @@ function media_invoke()
     // Path detection
     $path       = preg_replace('/[^a-z0-9\/_\\\]/i', '-', $path);
     $root_dir   = cn_path_construct($udir, $path) .DIRECTORY_SEPARATOR;
-
     $just_uploaded = array();
 
     // Get path struct
@@ -701,14 +697,12 @@ function media_invoke()
     // Top level (dashboard)
     cn_bc_add('Dashboard', cn_url_modify(array('reset')));
     cn_bc_add('Media manager', cn_url_modify());    
-    cn_assign("files, dirs, path, pathes, popup_form, root_dir", $files, $dirs, $path, $pathes, $popup_form, $root_dir);
+    cn_assign("files, dirs, path, pathes, popup_form, root_dir, is_inline", $files, $dirs, $path, $pathes, $popup_form, $root_dir, ($opt == 'inline') ? 1 : 0);
 
-    if ($opt === 'inline')
-    {
-        echo exec_tpl('window', 'title=Quick insert image', 'style=media/style.css', 'content='.exec_tpl('media/general'));        
-    }
-    else
-    {
+    if ($opt === 'inline') {
+        echo exec_tpl('window', 'title=Quick insert image', 'style=media/style.css', 'content='.exec_tpl('media/general'));
+
+    } else {
         echoheader('-@media/style.css', 'Media manager');
         echo exec_tpl('media/general');
         echofooter();

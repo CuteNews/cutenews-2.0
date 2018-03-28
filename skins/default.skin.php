@@ -47,7 +47,7 @@ $skin_footer = <<<HTML
         <div style="clear:both;"></div>
     </div>
 </div>
-<div style="text-align: center;"><span style="color: #888888; font-size: 10px;">Execution time: {exec-time} s.</span>{copyrights}</div>
+<div style="text-align: center;"><span style="color: #888888; font-size: 10px; ">Execution time: {exec-time} s.</span>{copyrights}</div>
 </body></html>
 HTML;
 

@@ -1,6 +1,6 @@
 <?php
 
-list($lang_token, $lang, $list, $tkn, $phraseid, $translate) = _GL('lang_token, lang, list, tkn, phraseid, translate');
+list($lang, $langs, $words, $selected, $translate) = _GL('lang, langs, words, selected, translate');
 
 $exid = REQ('exid');
 
@@ -8,79 +8,97 @@ cn_snippet_bc();
 cn_snippet_messages();
 
 ?>
+<section>
+	<div class="container">
 
-<!-- selection -->
-<form action="<?php echo PHP_SELF; ?>" method="POST">
-    <?php cn_form_open('mod, opt'); ?>
+		<!-- selection -->
+		<form action="<?php echo PHP_SELF;?>" method="POST">
 
-    <p>
-        Select language <sup><a href="#" title="Create new language file (e.g. fr.txt) in ./core/lang with 666, 664 or 644 permission" onclick="return(tiny_msg(this));">?</a></sup>
-        <select name="lang_token">
-            <?php foreach ($list as $token) { ?>
-                <option <?php if ($token == $lang_token) echo 'selected="selected"'; ?>><?php echo $token; ?></option>
-            <?php } ?>
-        </select>
-        <input type="submit" value="Select" />
-    </p>
-</form>
+			<?php cn_form_open('mod, opt'); ?>
 
-<!-- operations -->
-<?php if ($lang_token) { ?>
+			<label>Select language</label>
+			<sup><a href="#" title="Create new language file (e.g. fr.txt) in ./core/lang with 666, 664 or 644 permission" onclick="return(tiny_msg(this));">?</a></sup>
 
-    <form action="<?php echo PHP_SELF; ?>" method="POST">
-        <?php cn_form_open('mod, opt, lang_token, exid'); ?>
-        <input type="hidden" name="modifica" value="Y" />
+			<select name="lang" class="btn btn-default">
+				<?php foreach ($langs as $name) { ?>
+					<option <?php echo ($name == $lang) ? 'selected="selected"' : ''; ?>><?php echo $name;?></option>
+				<?php } ?>
+			</select>
 
-        <table class="panel" width="100%">
+			<input class="btn btn-primary" type="submit" value="Select" />
 
-            <?php if ($exid) { ?>
-                <tr>
-                    <td align="right"><input type="checkbox" name="create_phrase" value="Y" /></td>
-                    <td>Create new phrase</td>
-                </tr>
-            <?php } ?>
+		</form>
 
-            <tr>
-                <td align="right"><?php if ($exid) echo 'Phrase / ID'; else echo 'Phrase'; ?></td>
-                <td><input type="text" style="width: 450px;" name="phraseid" value="<?php echo $phraseid; ?>" /> </td>
-            </tr>
+		<!-- operations -->
+		<?php if ($lang) { ?>
 
-            <tr>
-                <td align="right">Translate</td>
-                <td><input type="text" style="width: 650px;" name="translate" value="<?php echo $translate; ?>" /> </td>
-            </tr>
+            <br/>
+			<form action="<?php echo PHP_SELF; ?>" method="POST">
 
-            <?php if ($exid) { ?>
-                <tr>
-                    <td align="right"><input type="checkbox" name="delete_phrase" value="Y" /></td>
-                    <td>Delete phrase</td>
-                </tr>
-            <?php } ?>
+				<?php cn_form_open('mod, opt, lang, selected'); ?>
+				<input type="hidden" name="modifica" value="Y" />
 
-            <tr>
-                <td>&nbsp;</td>
-                <td><input type="submit" value="<?php if ($exid) echo 'Edit'; else echo 'Create'; ?>"/> </td>
-            </tr>
-        </table>
-        <br/>
+				<table class="table table-bordered table-striped table-hover">
 
-        <table class="std-table" width="100%">
+                    <?php if ($selected) { ?>
 
-            <tr><th>ID</th> <th>Translate</th></tr>
-            <?php foreach ($tkn as $id => $tran) { ?>
+                        <tr><td align="right">Translate</td>
+                            <td><input type="text" style="width: 650px;" name="translate" value="<?php echo $translate; ?>" /> </td>
+                        </tr>
 
-                <tr <?php if ($id == $exid) echo 'class="row_selected"'; ?>>
-                    <td><a href="<?php echo cn_url_modify('lang_token='.$lang_token, 'exid='.$id); ?>"><?php echo $id; ?></a></td>
-                    <td><?php echo cn_htmlspecialchars($tran); ?></td>
-                </tr>
+                        <tr><td align="right"><input type="checkbox" name="delete" value="Y" /></td>
+                            <td>Delete phrase</td>
+                        </tr>
 
-            <?php } ?>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td><input type="submit" class="btn btn-success" name="action" value="Edit"/>
+                                <input type="submit" class="btn btn-warning" name="action" value="Cancel" />
+                            </td>
+                        </tr>
 
-        </table>
+                    <?php } else { ?>
 
-        <br/>
-        <div><input type="submit" name="submit" value="Submit" /></div>
+                        <tr><td align="right">Phrase</td>
+                            <td><input type="text" style="width: 450px;" name="phrase" required value="" /></td>
+                        </tr>
 
-    </form>
+                        <tr><td align="right">Translate</td>
+                            <td><input type="text" style="width: 650px;" name="translate" value="" required /></td>
+                        </tr>
 
-<?php } ?>
+                        <tr><td>&nbsp;</td>
+                            <td><input type="submit" class="btn btn-success" name="action" value="Add"/></td>
+                        </tr>
+
+                    <?php } ?>
+
+				</table>
+				<br/>
+
+                <!-- Show translation list -->
+                <?php if ($words) { ?>
+				<table class="table table-bordered table-striped table-hover">
+
+					<tr><th width="100">Token</th><th>Translate</th></tr>
+					<?php foreach ($words as $name => $translation) { ?>
+
+						<tr <?php if ($name == $selected) echo 'class="row_selected"'; ?>>
+							<td><a href="<?php echo cn_url_modify('lang='.$lang, 'selected='.$name); ?>"><?php echo $name;?></a></td>
+							<td><?php echo cn_htmlspecialchars($translation);?></td>
+						</tr>
+
+					<?php } ?>
+
+				</table>
+                <?php } else { ?>
+
+                    <h3 align="center">No translations yet</h3><br/><br/>
+
+                <?php } ?>
+
+			</form>
+
+		<?php } ?>
+	</div>
+</section>

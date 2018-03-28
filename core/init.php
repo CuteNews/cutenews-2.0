@@ -6,7 +6,7 @@ if (substr(PHP_VERSION, 0, 5) < '4.1.0')
     die('PHP Version is '.PHP_VERSION.', need great than PHP &gt;= 4.1.0 to start cutenews');
 }
 
-define('CACHE_DISABLE', false); // disable cache
+define('CACHE_DISABLE', true); // disable cache
 define('DEV_DEBUG', false);    // show errors
 
 if (DEV_DEBUG)
@@ -28,8 +28,8 @@ $ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz))
 // definitions
 
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.0.4');
-define('VERSION_ID',    204);
+define('VERSION',       '2.1.0');
+define('VERSION_ID',    210);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
 define('MODULE_DIR',    SERVDIR . '/core/modules');

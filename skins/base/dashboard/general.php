@@ -1,7 +1,7 @@
 <?php
 
-    if (function_exists('disk_total_space') && function_exists('disk_free_space'))
-    {
+    if (function_exists('disk_total_space') && function_exists('disk_free_space')) {
+
         $ds = disk_total_space("/");
         $fs = disk_free_space("/");
 
@@ -9,9 +9,9 @@
         $exp     = intval(log($ds) / log(1024));
         $ds_t    = sprintf('%.2f '.$symbols[$exp], ($ds / pow(1024, floor($exp))));
         $free    = intval((1 - $fs / $ds) * 100);
-    }
-    else
-    {
+
+    } else {
+
         $free = 0;
         $ds_t = 0;
     }
@@ -19,8 +19,8 @@
     list($dashboard, $username, $greeting_message) = _GL('dashboard, username, greeting_message');
 ?>
 
-<div class="wrapper">
-
+<section>
+	<div class="container">
     <?php if (test('Cvm')) { ?>
 
         <script type="text/javascript">
@@ -43,30 +43,58 @@
                 document.write(greeting);
             }
         </script>
-        <div class="greet"><script type="text/javascript">cn_greetings();</script>, <?php echo $username; ?>! <?php echo $greeting_message; ?></div>
+        <div class="lead"><script type="text/javascript">cn_greetings();</script>, <?php echo $username; ?>! <?php echo $greeting_message; ?></div><!--reemplazo greet por lead bootstrap-->
 
     <?php } ?>
-
-    <h2 style="margin-top: 0;"><?php echo i18n('Site options'); ?></h2>
-    <div class="options">
-        <?php foreach ($dashboard as $id => $item) { ?>
-
-            <div class="opt-item">
-                <a href="<?php echo cn_url_modify("mod=".$item['mod'], "opt=".$item['opt']); ?>">
-                    <div><img src="skins/images/<?php echo $item['img']; ?>" width="48" /></div>
-                    <div><?php echo $item['name']; ?></div>
-                </a>
-            </div>
-
-        <?php } ?>
     </div>
+</section>
 
-    <div style="clear: both"></div>
+<section>
+	<div class="container">
+		<h2><?php echo i18n('Site options'); ?></h2>
+		<div class="options well">
+			<?php foreach ($dashboard as $id => $item) { ?>
 
+				<div class="opt-item">
+					<a href="<?php echo cn_url_modify("mod=".$item['mod'], "opt=".$item['opt']); ?>">
+						<div><img src="skins/images/<?php echo $item['img']; ?>" width="60" /></div>
+						<div><?php echo $item['name']; ?></div>
+					</a>
+				</div>
+
+			<?php } ?>
+		</div>
+	</div>
+</section>
+
+<section>
+	<div class="container">
+
+		<h2><?php echo i18n('Statistics'); ?></h2>
+        <div class="options well">
+
+            <div><?php echo i18n('Disk usage'); ?> (<?php echo $ds_t; ?>)</div>
+            <div class="progress">
+
+              <div
+                  class="progress-bar progress-bar-striped active"
+                  role="progressbar"
+                  aria-valuenow="<?php echo $free; ?>"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  style="width: <?php echo $free; ?>%"><?php echo $free; ?>% Free
+              </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+	<div class="container">
     <?php if (test('Cvm')) { ?>
 
         <h2><?php echo i18n('Misc links'); ?></h2>
-        <div class="options">
+        <div class="options well">
 
             <a href="example.php" target="blank">Example</a> &middot;
             <a href="docs/readme.html" target="blank">Readme</a> &middot;
@@ -74,20 +102,8 @@
             <a href="docs/release.html" target="blank">Release notes</a>
 
         </div>
-
         <div style="clear: both"></div>
 
-        <h2><?php echo i18n('Statistics'); ?></h2>
-        <div class="options">
-
-            <?php if ($free) { ?>
-                <div><?php echo i18n('Disk usage'); ?> (<?php echo $ds_t; ?>)</div>
-                <div class="a"><div class="b" style='width: <?php echo $free; ?>%'><?php echo $free; ?>%</div></div>
-                <div style="clear: left;"></div>
-            <?php } ?>
-
-        </div>
-
     <?php } ?>
-
-</div>
+	</div>
+</section>

@@ -85,11 +85,11 @@ if ($is_in_category && empty($CN_HALT))
             $allow_add_comment  = true;
             $allow_comments     = true;
         }
-        elseif ($subaction == "showcomments")
+        else if ($subaction == "showcomments")
         {
             $allow_comments     = true;
         }
-        elseif ($subaction == "showfull")
+        else if ($subaction == "showfull")
         {
             $allow_full_story   = true;
         }
