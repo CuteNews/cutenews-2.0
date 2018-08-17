@@ -13,11 +13,8 @@ cn_sendheaders();
 cn_load_skin();
 cn_register_form();
 
-if (cn_login())
-{
+if (cn_login()) {
     hook('index/invoke_module', array($_module) );
-}
-else
-{
+} else {
     cn_login_form();
 }

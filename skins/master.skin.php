@@ -20,25 +20,29 @@ $skin_header = <<<HTML
     <meta name="description" content="">
     <meta name="author" content="">
     <title>{title}</title>
+
     <link href="skins/images/favicon.ico" rel="shortcut icon" type="image/ico" />
-    <link href="libs/css/themes/{theme}/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="libs/css/{theme}.min.css" rel="stylesheet" type="text/css" />
     <link href="libs/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
     <link href="skins/custom.css" rel="stylesheet" type="text/css" />
+    <link href="libs/sweet-alert2/sweet-alert2.css" rel="stylesheet" type="text/css" >
+    <link href="libs/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" >
+    <link href="libs/codemirror/lib/codemirror.css" rel="stylesheet" type="text/css" >
+
     <script src="libs/js/jquery.js"></script>
     <script src="libs/js/bootstrap.min.js"></script>
-    <script src="libs/sweet-alert2/sweet-alert2.min.js"></script>
-    <link href="libs/sweet-alert2/sweet-alert2.css" rel="stylesheet" type="text/css" >
     <script src="libs/bootbox/bootbox.min.js"></script>
     <script src="libs/bootstrap-select/js/bootstrap-select.min.js"></script>
-    <link href="libs/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" >
+    <script src="libs/sweet-alert2/sweet-alert2.min.js"></script>
+    
     <script src="libs/codemirror/lib/codemirror.js"></script>
-    <link href="libs/codemirror/lib/codemirror.css" rel="stylesheet" type="text/css" >
     <script src="libs/codemirror/addon/selection/selection-pointer.js"></script>
     <script src="libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
     <script src="libs/codemirror/mode/xml/xml.js"></script>
     <script src="libs/codemirror/mode/javascript/javascript.js"></script>
     <script src="libs/codemirror/mode/css/css.js"></script>
     <script src="libs/codemirror/mode/vbscript/vbscript.js"></script>
+    
     <script type="text/javascript" src="skins/cute.js"></script>
     {CustomJS}
     <script></script>

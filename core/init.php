@@ -1,32 +1,26 @@
 <?php
 
 // check PHP version
-if (substr(PHP_VERSION, 0, 5) < '4.1.0')
-{
+if (substr(PHP_VERSION, 0, 5) < '4.1.0') {
     die('PHP Version is '.PHP_VERSION.', need great than PHP &gt;= 4.1.0 to start cutenews');
 }
 
 define('CACHE_DISABLE', true); // disable cache
 define('DEV_DEBUG', false);    // show errors
 
-if (DEV_DEBUG)
-{
+if (DEV_DEBUG) {
     ini_set('display_errors', '1');
     error_reporting(E_ALL | E_STRICT);
-}
-else 
-{
+} else {
     error_reporting(E_ALL ^ E_NOTICE);
 }
 
 //date timezone set
-$ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz))
-{
+$ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz)) {
     date_default_timezone_set('EST5EDT');
 }
 
 // definitions
-
 define('EXEC_TIME',     microtime(true));
 define('VERSION',       '2.1.0');
 define('VERSION_ID',    210);
@@ -45,13 +39,11 @@ require_once SERVDIR . '/core/downloader.php';
 require_once SERVDIR . '/core/captcha/captcha.php';
 
 // magic quotes = ON, filtering it
-if (ini_get('magic_quotes_gpc'))
-{
+if (ini_get('magic_quotes_gpc')) {
     cn_filter_magic_quotes();
 }
 
-if (!DEV_DEBUG)
-{
+if (!DEV_DEBUG) {
     // catch errors
     set_error_handler("user_error_handler");
 }
@@ -62,8 +54,7 @@ $_CN_cache_block_id = array();
 $_CN_cache_block_dt = array();
 
 // Define ALL privileges and behaviors
-$_CN_access = array
-(
+$_CN_access = array(
     // configs
     'C' => 'Cd,Cvm,Csc,Cp,Cc,Ct,Ciw,Cmm,Cum,Cg,Cb,Ca,Cbi,Caf,Crw,Csl,Cwp,Cmt,Cpc,Can,Cvn,Ccv,Cen,Clc,Csr,Com',
     // news
@@ -85,8 +76,7 @@ cn_detect_user_ip();
 cn_load_session();
 
 // 2.0.3 checking existing configuration
-if ($is_config)
-{    
+if ($is_config) {
     cn_load_plugins();
     cn_online_counter();
 }

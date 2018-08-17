@@ -119,7 +119,7 @@
 *comment
  <div class="media card">
     <div class="pull-left">
-       <!--img class="avatar img-circle" src="images/blog/avatar1.png" alt=""-->
+        <!--img class="avatar img-circle" src="images/blog/avatar1.png" alt=""-->
         {avatar}
     </div>
 
@@ -300,133 +300,132 @@
 
 #bootstrap
 *active
-    <div class="container">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-10"><span>[link]{title}[/link]</span></div>
-                    <div class="col-xs-12 col-sm-2 text-right">[print][/print]</div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading "  style='padding:5px;'>
+            <div class="row">
+                <div class="col-xs-12 col-sm-3 col-md-2" style='padding:0 5px;'>
+                    <div class="col-xs-2 col-sm-4" style='padding:0 5px;'>{avatar}</div>
+                    <div class="col-xs-10 col-sm-8 text-center" style='padding:0px 5px;'>{date}<br />[ {author} ]</div>
+                </div>
+                <div class="col-xs-12 col-sm-8 col-md-10 text-left" style='padding:5px;'>
+                    <span class="h3">[link]{title}[/link]</span>
                 </div>
             </div>
+        </div>
 
-            <div class="panel-body">{short-story}<br />
-                [full-link target=_blank]<span class="glyphicon glyphicon-eye-open"></span><span>Read more... </span>[/full-link]</div>
+        <div class="panel-body">
+            {short-story}
+        </div>
 
-            <div class="panel-footer" style="padding:2px;">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-3">
-                        <div class="row">
-                            <div class="col-xs-3  text-right">{avatar}</div>
-
-                            <div class="col-xs-9">[{author}] {date}<br />
-                                [com-link] <span class="btn btn-default btn-xs"> Count of comments: {comments-num} </span> [/com-link]</div>
-                        </div>
-                    </div>
-
-                    <div class="col-xs-8 col-sm-6 text-center">{tagline}</div>
-
-                    <div class="col-xs-4 col-sm-3 text-left">
-                        <div class="pull-left" style="min-height:30px">{twitter}</div>
-                        <div class="pull-left" style="min-height:30px">{gplus}</div>
-                        <div class="pull-left" style="min-height:30px">{fb-like}</div>
-                    </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="pull-left"  style="padding:2px;">
+                    [full-link target=_blank]<button type="button" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-eye-open"> </span> Read more </button>[/full-link]
+                    [com-link]<button type="button" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-education"> </span> comments: {comments-num}</button>[/com-link]
+                    [print]<button type="button" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-print"> </span> print</button>[/print]
                 </div>
+                <div class="pull-left"  style="padding:2px;">{twitter}</div>
+                <div class="pull-left"  style="padding:2px;">{gplus}</div>
+                <div class="pull-left"  style="padding:2px;">{fb-like}</div>
 
-                <div class="row">
-                    <div class="col-xs-12 col-sm-12">{fb-comments}</div>
-                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12"><strong>{tagline}</strong></div>
             </div>
         </div>
     </div>
 
 *full
 
-    <div class="container">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-3">
-                        <div class="row">
-                            <div class="col-xs-3  text-right">{avatar}
-                            </div>
-                            <div class="col-xs-9">[{author}] {date}<br />[com-link] <span class="btn btn-default btn-xs"> Count of comments: {comments-num} </span> [/com-link]
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xs-8 col-sm-6 text-center"><span class="lead">[link]{title}[/link]</span>
-                    </div>
-                    <div class="col-xs-4 col-sm-3 text-right">[print][/print]
+    <div class="panel panel-default">
+        <div class="panel-heading "  style='padding:5px;'>
+            <div class="row">
+                <div class="col-xs-12 col-sm-3 col-md-2" style='padding:0 5px;'>
+                    <div class="col-xs-3 col-sm-5" style='padding: 10px;'>{avatar}</div>
+                    <div class="col-xs-9 col-sm-7 text-center" style='padding:0px 5px;'>{date}<br />
+                        [ {author} ]<br />
+                        [com-link]<button type="button" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-education"> </span> comments: {comments-num}</button>[/com-link]
                     </div>
                 </div>
-            </div>
-
-            <div class="panel-body">{full-story}
-            </div>
-
-            <div class="panel-footer">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-8">{tagline}
-                    </div>
-
-                    <div class="col-xs-12 col-sm-4 text-left">
-                        <div class="pull-left" style="min-height:30px">{twitter}
-                        </div>
-
-                        <div class="pull-left" style="min-height:30px">{gplus}
-                        </div>
-
-                        <div class="pull-left" style="min-height:30px">{fb-like}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-xs-12 col-sm-12">{fb-comments}
-                    </div>
+                <div class="col-xs-12 col-sm-8 col-md-10 text-left" style='padding:5px;'>
+                    <span class="h3">[link]{title}[/link]</span>
                 </div>
             </div>
+        </div>
+
+        <div class="panel-body">
+            {full-story}
+        </div>
+
+        <div class="panel-footer">
+            <div class="row">
+                <div class="pull-left"  style="padding:2px;">
+                    [print]<button type="button" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-print"> </span> print</button>[/print]
+                </div>
+                <div class="pull-left"  style="padding:2px;">{twitter}</div>
+                <div class="pull-left"  style="padding:2px;">{gplus}</div>
+                <div class="pull-left"  style="padding:2px;">{fb-like}</div>
+
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12"><strong>{tagline}</strong></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12">{fb-comments}</div>
         </div>
     </div>
 
 *comment
 
-    <div class="container">
-        <div class="panel panel-default">
-            <div class="panel-heading">[delete]%cbox[/delete] by <strong>{author}</strong> @ {date} [edited](<i>Edited: %edited</i>)[/edited] [edit][Edit comment][/edit]
-            </div>
-
-            <div class="panel-body">{comment}
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">[delete]%cbox[/delete] by <strong>{author}</strong> @ {date} [edited](<i>Edited: %edited</i>)[/edited] [edit][Edit comment][/edit]
+        </div>
+        <div class="panel-body">{comment}
         </div>
     </div>
 
 *form
 
-    <div class="container">
-        <div class="panel panel-default panel-footer col-xs-12 col-md-4 col-sm-6 "><br />
-            {remember_me}<br />
-            &ensp; {input_username} {input_email} {input_commentbox} {smilies}<br />
-            <br>[captcha]{captcha}[/captcha]<br />
-            [submit]Add comment[/submit]<br />
-            &ensp;
-        </div>
+    <div class="panel panel-default panel-footer col-xs-12 col-md-4 col-sm-6 "><br />
+        {remember_me}<br />
+        &ensp; {input_username} {input_email} {input_commentbox} {smilies}<br />
+        <br>[captcha]{captcha}[/captcha]<br />
+        [submit]Add comment[/submit]<br />
+        &ensp;
     </div>
 
 *prev_next
-    <p align="center">[prev-link]<< Previous page[/prev-link] {pages} [next-link]Next page >>[/next-link]</p>
+
+    <div class="text-center">
+        [prev-link]<button type="button" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-triangle-left"> </span> Previous page</button>[/prev-link]
+        <span class="h4"><strong>{pages}</strong></span>
+        [next-link]<button type="button" class="btn btn-primary btn-xs"> Next page <span class="glyphicon glyphicon-triangle-right"></span> </button>[/next-link]
+    </div>
 
 *comments_prev_next
-    <p align="center">[prev-link]<< Previous page[/prev-link] ({pages}) [next-link]Next page >>[/next-link]</p>
+
+    <div class="text-center">
+        [prev-link]<button type="button" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-triangle-left"> </span> Previous page</button>[/prev-link]
+        <span class="h4"><strong>{pages}</strong></span>
+        [next-link]<button type="button" class="btn btn-primary btn-xs"> Next page <span class="glyphicon glyphicon-triangle-right"></span> </button>[/next-link]
+    </div>
 
 *search
-    <form action="{php_self}" method="GET" class="cn_search_form">
-        <div>{search_basic} Author: {author} {in_archives} In archives</div>
-        <div>{select=year:from} {select=mon:from} {select=day:from} &ndash; {select=year:to} {select=mon:to} {select=day:to}</div>
-        <div>[submit]Search[/submit]</div>
-    </form>
+
+
+    <div class="panel panel-default panel-footer col-xs-12 col-md-4 col-sm-6 "><br />
+        <form action="{php_self}" method="GET" class="form cn_search_form">
+            <div>{search_basic} Author: {author} {in_archives} In archives</div>
+            <div>{select=year:from} {select=mon:from} {select=day:from} &ndash; {select=year:to} {select=mon:to} {select=day:to}</div>
+            <div>[submit]Search[/submit]</div>
+        </form>
+    </div>
+
 
 *tagline
-    <a href="{url}" target="_blank" class="cn_tag_item{tag:selected| cn_tag_selected}">{tag}</a>{comma| }
+    <a href="{url}" target="_blank" class="cn_tag_item{tag:selected| cn_tag_selected}"><button type="button" class="btn btn-default btn-xs">{tag}</button></a>{comma| }
 
 *print
     <html>
@@ -437,4 +436,5 @@
     <strong>{title} @ <small>{date}</small></strong>
     <hr/>{full-story}<hr/>
     <small>News powered by CuteNews - http://cutephp.com</small>
-    </body></html>
+    </body>
+    </html>

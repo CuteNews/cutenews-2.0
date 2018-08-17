@@ -73,47 +73,40 @@ if (isset($_GET['id']) && $_GET['id']!='' && $category!='') {
 }
 
 // Show news only is in category
-if ($is_in_category && empty($CN_HALT))
-{
+if ($is_in_category && empty($CN_HALT))  {
+
     // --- Determine what user want to do ---
     hook('show_news/determs_before');
 
-    if (empty($static) and in_array($subaction, array("showcomments", "showfull", "addcomment", "only_comments")) && $show_detail)
-    {
-        if ($subaction == "addcomment")
-        {
+    if (empty($static) and in_array($subaction, array("showcomments", "showfull", "addcomment", "only_comments")) && $show_detail) {
+
+        if ($subaction == "addcomment") {
             $allow_add_comment  = true;
             $allow_comments     = true;
         }
-        else if ($subaction == "showcomments")
-        {
+        else if ($subaction == "showcomments") {
             $allow_comments     = true;
         }
-        else if ($subaction == "showfull")
-        {
+        else if ($subaction == "showfull") {
             $allow_full_story   = true;
         }
 
         // Additional tuning
-        if (($subaction == "showcomments" || $allow_comments == true) && getoption('show_full_with_comments'))
-        {
+        if (($subaction == "showcomments" || $allow_comments == true) && getoption('show_full_with_comments')) {
             $allow_full_story = true;
         }
         
-        if ($subaction == "showfull" && getoption('show_comments_with_full'))
-        {
+        if ($subaction == "showfull" && getoption('show_comments_with_full')) {
             $allow_comments = true;
         }
 
         // For popup
-        if ($subaction == "only_comments")
-        {
+        if ($subaction == "only_comments") {
             $allow_comments     = true;
             $allow_full_story   = false;
         }
-    }
-    else
-    {
+
+    } else {
         $allow_active_news = true;
     }
 

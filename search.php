@@ -1,5 +1,21 @@
 <?php
 
+/* Input parameters:
+ *
+ * string $category_exclude Comma separated category for exclude for search
+ * string $template         Use template
+ * bool   $dosearch         Do search action
+ * string $search           Search query
+ * string $user             Search by user
+ * bool   $archives         Search in archives
+ * int    $search_st        Search start
+ * int    $number           Count news
+ *
+ * Dates (From - To)
+ * $from_date_day $from_date_month $from_date_year
+ * $to_date_day   $to_date_month   $to_date_year
+ */
+
 require_once ('core/init.php');
 
 // plugin tells us: he is fork, stop
@@ -10,9 +26,12 @@ check_direct_including('search.php');
 
 // Variables by default
 list($template, $dosearch, $search, $user, $archives) = GET('template, dosearch, search, user, archives');
-list($search_st, $number) = GET('search_st, number', 'GPG');
+list($search_st, $number, $category_exclude) = GET('search_st, number, category_exclude', 'GPG');
 list($_fd, $_fm, $_fy) = GET('from_date_day, from_date_month, from_date_year');
 list($_td, $_tm, $_ty) = GET('to_date_day, to_date_month, to_date_year');
+
+// Info about category excluded
+$category_exclude = $category_exclude ? explode(',', $category_exclude) : array();
 
 // Default date range
 if ($_fm && $_fd && $_fy)
@@ -118,6 +137,14 @@ if ($dosearch)
                 if (empty($ent)) continue;
 
                 $item = $ent[$id];
+
+                // Check category (exclude for search)
+                if ($item['c']) {
+                    $categories = explode(',', $item['c']);
+                    if (isset($category_exclude) && array_intersect($categories, $category_exclude)) {
+                        continue;
+                    }
+                }
 
                 $MB = function_exists('mb_strtolower');
 

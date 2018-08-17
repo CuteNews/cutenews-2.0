@@ -536,6 +536,11 @@ function test($requested_acl, $requested_user = NULL, $is_self = FALSE)
     // Deny ANY access of unathorized member
     if (!$user) return FALSE;
 
+    // Always allow for Admin
+    if ($user['acl'] == 1) {
+        return in_array($requested_acl, ['Bd', 'Bs']) ? false : true;
+    }
+
     $acl = $user['acl'];
     $grp = getoption('#grp');
     $ra  = spsep($requested_acl);
@@ -1305,40 +1310,43 @@ function add_hook($hook, $func)
     global $_HOOKS;
 
     $prior = 1;
-    if ($hook[0] == '+') $hook = substr($hook, 1);
-    if ($hook[0] == '-')
-    {
+    if ($hook[0] == '+') {
+        $hook = substr($hook, 1);
+    }
+
+    if ($hook[0] == '-') {
         $prior = 0;
         $hook = substr($hook, 1);
     }
 
-    if (!isset($_HOOKS[$hook])) $_HOOKS[$hook] = array();
+    if (!isset($_HOOKS[$hook])) {
+        $_HOOKS[$hook] = array();
+    }
 
     // priority (+/-)
-    if ($prior) array_unshift($_HOOKS[$hook], $func); else $_HOOKS[$hook][] = $func;
+    if ($prior) {
+        array_unshift($_HOOKS[$hook], $func);
+    } else {
+        $_HOOKS[$hook][] = $func;
+    }
 }
 
 // Since 1.5.0: Cascade Hooks
-function hook($hook, $args = null)
-{
+function hook($hook, $args = null) {
+
     global $_HOOKS;
 
     // Plugin hooks
-    if (!empty($_HOOKS[$hook]) && is_array($_HOOKS[$hook]))
-    {
-        foreach ($_HOOKS[$hook] as $hookfunc)
-        {
-            if ($hookfunc[0] == '*')
-            {
-                 $_args = call_user_func_array(substr($hookfunc, 1), $args);
-            }
-            else 
-            {
+    if (!empty($_HOOKS[$hook]) && is_array($_HOOKS[$hook])) {
+        foreach ($_HOOKS[$hook] as $hookfunc) {
+
+            if ($hookfunc[0] == '*') {
+                $_args = call_user_func_array(substr($hookfunc, 1), $args);
+            } else {
                 $_args = call_user_func($hookfunc, $args);
             }
 
-            if (!is_null($_args)) 
-            {
+            if (!is_null($_args)) {
                 $args = $_args;
             }
         }
@@ -1348,9 +1356,9 @@ function hook($hook, $args = null)
 }
 
 //  Since 1.5.2: Format the size of given file
-function format_size($file_size)
-{
-    if($file_size >= 1073741824)    $file_size = round($file_size / 1073741824 * 100) / 100 . " Gb";
+function format_size($file_size) {
+
+    if ($file_size >= 1073741824)    $file_size = round($file_size / 1073741824 * 100) / 100 . " Gb";
     else if($file_size >= 1048576)   $file_size = round($file_size / 1048576 * 100) / 100 . " Mb";
     else if($file_size >= 1024)      $file_size = round($file_size / 1024 * 100) / 100 . " Kb";
     else                            $file_size = $file_size . " B";
@@ -1370,10 +1378,9 @@ function msg_info($title, $go_back = null)
         $go_back = PHP_SELF;
     }
 
-    echo '<section><div class="container">';
-    echo "<p>".i18n($title)."</p>";
-    echo "<p><b><a href='$go_back'>OK</a></b></p>";
-    echo '</div></section>';
+    echo '<section><div class="container"><div class="alert alert-warning">';
+    echo '<strong>'.i18n('Warning!').' </strong> '.i18n($title).' <a href="'.$go_back.'" class="btn btn-warning btn-xs">OK</a>';
+    echo '</div></div></section>';
 
     echofooter();
     DIE();
@@ -1414,8 +1421,8 @@ function confirm_post($text, $required = 'mod,action,subaction,source')
 
 // Displays header skin
 // $image = img@custom_style_tpl
-function echoheader($image, $header_text, $bread_crumbs = false)
-{
+function echoheader($image, $header_text, $bread_crumbs = false) {
+
     global $skin_header, $lang_content_type, $skin_menu, $skin_prefix, $_SESS, $_SERV_SESS, $SiteTitle;
 
     $header_time = date('H:i:s M, d', ctime());
@@ -1425,17 +1432,45 @@ function echoheader($image, $header_text, $bread_crumbs = false)
     $image = isset($customs[0])?$customs[0]:'';
     $custom_style = isset($customs[1])?$customs[1]:false;
     $custom_js = isset($customs[2])?$customs[2]:false;
-    
-    if (isset($_SESSION['user']))
-    {
-         $skin_header = preg_replace("/{menu}/", $skin_menu, $skin_header);
-    }
-    else 
-    {
-        $skin_header = preg_replace("/{menu}/", "<li><a class='nav' href='".PHP_SELF."?login'>".i18n("LogIn")."</a></li><!--li><a href='".PHP_SELF."'>".VERSION_NAME."</a></li-->", $skin_header);
+
+    /*
+      Get hook for additional items
+      USAGE:
+      Params:
+       -- version (0)
+      Result:
+       -- Array of $items[]
+       $item = [ 0 => target url, 1 => title ]
+      If "target url" must starts from '#', else got PHP_SELF
+    */
+
+    $menu_result = '';
+    $headermenu = hook('core/headermenu', array('version' => array()));
+    foreach ($headermenu as $menu_key => $vol) {
+
+        $menu_target = isset($vol[0]) ? $vol[0] : false;
+        $menu_title  = isset($vol[1]) ? $vol[1] : false;
+
+        if (($menu_target) && ($menu_target[0] == '#')) {
+            $menu_target = substr($menu_target, 1);
+        } else {
+            $menu_target = PHP_SELF;
+        }
+
+        if ($menu_title) {
+            $menu_result .= '<li><a class="nav-top-item" href="'.$menu_target.'">'.i18n($menu_title).'</a></li>';
+        } else {
+            $menu_result .= '<li><a class="nav-top-item" href="'.PHP_SELF.'">'.VERSION_NAME.'</a></li>';
+        }
     }
 
-	$theme_bs = preg_replace('~[^a-z]~i','', getoption('skin'));//theme
+    if (isset($_SESSION['user'])) {
+        $skin_header = preg_replace("/{menu}/", $skin_menu, $skin_header);
+    } else {
+        $skin_header = preg_replace("/{menu}/", $menu_result, $skin_header);
+    }
+
+	$theme_bs = preg_replace('~[^a-z]~i','', getoption('skin'));
     $theme_bs = $theme_bs ? $theme_bs : 'default';
 
     $skin_header = get_skin($skin_header);
@@ -1447,19 +1482,18 @@ function echoheader($image, $header_text, $bread_crumbs = false)
     $skin_header = str_replace("{content-type}", $lang_content_type, $skin_header);
     $skin_header = str_replace("{breadcrumbs}", $bread_crumbs, $skin_header);
 
-    if ($custom_style) 
-    {
+    if ($custom_style) {
         $custom_style = read_tpl($custom_style);
     }
+
     $skin_header = str_replace("{CustomStyle}", $custom_style, $skin_header);
 
-    if ($custom_js) 
-    {
+    if ($custom_js) {
         $custom_js = '<script type="text/javascript">'.read_tpl($custom_js).'</script>';
     }
-    $skin_header = str_replace("{CustomJS}", $custom_js, $skin_header);
 
-    echo $skin_header;
+    $skin_header = str_replace("{CustomJS}", $custom_js, $skin_header);
+    echo hook('core/skin_header', $skin_header);
 }
 
 // Displays footer skin
@@ -2649,10 +2683,10 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     list($template) = hook('core/entry_make_start', array($template, $entry, $template_name, $template_glob));
     
     // Catch { ... }
-    if (preg_match_all('/\{(.*?)\}/is', $template, $tpls, PREG_SET_ORDER) )
-    {
-        foreach ($tpls as $tpl)
-        {
+    if (preg_match_all('/\{(.*?)\}/is', $template, $tpls, PREG_SET_ORDER) ) {
+
+        foreach ($tpls as $tpl) {
+
             $result = '';
             $tplp = explode('|', $tpl[1], 2);
             $tplc = isset($tplp[0])?$tplp[0]:'';
@@ -2678,6 +2712,7 @@ function entry_make($entry, $template_name, $template_glob = 'default', $section
     if (preg_match_all('/\[([\w-]+)(.*?)\](.*?)\[\/\\1\]/is', $template, $tpls, PREG_SET_ORDER) ) {
 
         foreach ($tpls as $tpl) {
+
             $result = '';
             $short  = "cn_modify_bb_" . ($section ? $section.'_' : "");
             $short .= preg_replace('/[^a-z]/i', '_', $tpl[1]);
@@ -3860,8 +3895,12 @@ function cn_rewrite_load()
             die("404 Not Found");
         }
 
-        define('CN_REWRITE', $layout);                    
-        define('PHP_SELF',  pathinfo(str_replace($basedir, '', $layout),PATHINFO_BASENAME));
+        define('CN_REWRITE', $layout);
+        if (isset($PHP_SELF)) {
+            define('PHP_SELF', $PHP_SELF);
+        } else {
+            define('PHP_SELF',  pathinfo(str_replace($basedir, '', $layout),PATHINFO_BASENAME));
+        }
     }
     else
     {
@@ -4283,6 +4322,7 @@ function cn_get_news($opts)
                 'tg'     => $tag, // title or sort by tags
                 'title'  => (strtolower($sort) === 'title'), // sort by title
                 'author' => ($sort === 'author'), // sort by author name
+                'vcnt'   => ($sort === 'vcnt'), // sort by views count
             ));
 
             // Filtering data

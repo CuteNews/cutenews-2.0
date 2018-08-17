@@ -257,32 +257,42 @@ function cn_modify_author($e)
     // user allow to show his email?
     if (isset($user['e-hide']) && $user['e-hide'])
     {
+        // Users can modify URL template for make custom query
+        // by returning modified data from hook('news/authorurl')
         if (db_user_by_name($e['u'])) {
-            return '<a href="' . PHP_SELF . '?mod=main&opt=usersabout&user_name=' . $e['u'] . '">' . $username . '</a>';
+            $authorurl = hook('news/authorurl', '?dosearch=yes&user=');
+            $authorurl = $authorurl ? $authorurl : '?mod=main&opt=usersabout&user_name=';
+            return '<a href="' . PHP_SELF . $authorurl . $e['u'] . '">' . $username . '</a>';
         } else {
             return $username;
         }
-    }
-    else
-    {
+    } else {
         return cn_user_email_as_site($user['email'], $username);
     }
 }
 
-function cn_modify_avatar($e,$p)
-{    
+function cn_modify_avatar($e,$p) {
+
     $user = db_user_by_name($e['u']);
-    $result='';
-    if (!is_null($user))
-    {
-        if(isset($user['avatar'])&&!empty($user['avatar']))
-        {
-            $pathtoavatar=(getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads').'/'.$user['avatar'];
-            $w=isset($p[0])?$p[0]:50;
-            $h=  isset($p[1])?$p[1]:50;
-            $result='<img src="'.$pathtoavatar.'" style="width:'.$w.'px;height:'.$h.'px; margin:0px 5px;"/>';
+    $result = '';
+
+    if (!is_null($user)) {
+
+        if (isset($user['avatar']) && !empty($user['avatar'])) {
+
+            $pathtoavatar = (getoption('uploads_ext') ? getoption('uploads_ext') : getoption('http_script_dir') . '/uploads').'/'.$user['avatar'];
+
+            $w = isset($p[0]) ? $p[0] : 64;
+            $h = isset($p[1]) ? $p[1] : 64;
+
+            $style = ['margin: 0px 5px'];
+            if ($w) $style[] = "width:{$w}px";
+            if ($h) $style[] = "width:{$h}px";
+            $result = '<img src="'.$pathtoavatar.'" style="'.join(';', $style).'"/>';
+
         }
-    }        
+    }
+
     return $result;
 }
 
@@ -387,6 +397,10 @@ function cn_modify_since($e)
     return join(' ', $res);
 }
 
+function cn_modify_views_count($e) {
+    return isset($e['vcnt']) ? $e['vcnt'] : 0;
+}
+
 // Since 2.0.1
 function cn_modify_tagline($e)
 {
@@ -395,7 +409,7 @@ function cn_modify_tagline($e)
     $tag_extrn = strtolower(trim(REQ('tag')));
 
     $echo = array();
-    $x =isset($e['tg'])? spsep($e['tg']):array();
+    $x = isset($e['tg'])? spsep($e['tg']):array();
 
     $ix = 1;
     $tc = count($x);

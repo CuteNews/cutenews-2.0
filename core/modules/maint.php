@@ -2,12 +2,11 @@
 
 add_hook('index/invoke_module', '*maint_invoke');
 
-function maint_invoke()
-{
+function maint_invoke() {
+
     $sub = REQ('sub');
 
-    if (!$sub) 
-    {
+    if (!$sub) {
         $sub = 'migrate';
     }
 
@@ -19,10 +18,10 @@ function maint_invoke()
 
     // ----
     $fn_req = "maintenance_{$sub}";
-    if (function_exists($fn_req))
-    {
+    if (function_exists($fn_req)) {
         call_user_func($fn_req);
     }
+
     // REPAIR purpose
     // - migrate
     // - optimize category

@@ -70,3 +70,4 @@ if ($plugins) { ?>
 		</div>
     </section>
 <?php } ?>
+<br/>

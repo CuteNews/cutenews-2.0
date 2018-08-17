@@ -123,39 +123,33 @@ function dashboard_invoke()
 function dashboard_sysconf()
 {
     $lng   = $grps = $all_skins = array();
-    $skins = scan_dir(cn_path_construct(SERVDIR,'libs/css/themes'));
+    $skins = scan_dir(cn_path_construct(SERVDIR,'libs/css'));
     $langs = scan_dir(cn_path_construct(SERVDIR,'core','lang'), 'txt');
     $_grps = getoption('#grp');
 
     // fetch skins
-    foreach ($skins as $skin)
-    {
-        if (preg_match('/(.*)/i', $skin, $c))
-        {
-            $all_skins[$c[1]] = $c[1];
+    foreach ($skins as $skin) {
+        if (preg_match('/(.*).min.css/i', $skin, $c)) {
+            $all_skins[ $c[1] ] = $c[1];
         }
     }
 
     // fetch lang packets
-    foreach ($langs as  $lf)
-    {
-        if (preg_match('/(.*)\.txt/i', $lf, $c))
-        {
-            $lng[$c[1]] = $c[1];
+    foreach ($langs as  $lf) {
+        if (preg_match('/(.*)\.txt/i', $lf, $c)) {
+            $lng[ $c[1] ] = $c[1];
         }
     }
 
     // fetch groups
-    foreach ($_grps as $id => $vn) 
-    {
+    foreach ($_grps as $id => $vn) {
         $grps[$id] = ucfirst($vn['N']);
     }
 
-    $options_list = array
-    (
+    $options_list = array(
+
         // Section
-        'general' => array
-        (
+        'general' => array(
             // Option -> 0=Type(text [Y/N] int select), 1=Title|Description, [2=Optional values]
 
             '_GENERAL'              => array('title', 'General site settings'),
@@ -203,8 +197,7 @@ function dashboard_sysconf()
             'uploads_ext'           => array('text', 'Frontend upload dir|Frontend path for uploads'),
         ),
 
-        'news' => array
-        (
+        'news' => array(
             'search_hl'             => array('Y/N', 'Highlight search'),
             'news_title_max_long'   => array('int', 'Max. Length of news title in characters|enter <b>0</b> to disable chacking.'),
             'active_news_def'       => array('int', 'Count active news, by default|If 0, show all list, with archives'),
@@ -223,8 +216,7 @@ function dashboard_sysconf()
             'disable_short'         => array('Y/N', 'Short story field will not be required'),
         ),
 
-        'comments' => array
-        (
+        'comments' => array(
             'comments_std_show'     => array('Y/N', 'Show standart comments|show/hide standart comment system'),
             'reverse_comments'      => array('Y/N', 'Reverse comments|newest comments will be shown at the top'),
             'flood_time'            => array('int', 'Comments flood protection|in seconds; 0 = no protection'),
@@ -239,8 +231,7 @@ function dashboard_sysconf()
             'check_email_comment'   => array('Y/N', 'Check email or site before add comment'),
         ),
 
-        'notify' => array
-        (
+        'notify' => array(
             'notify_registration' => array('Y/N', 'Notify of new registrations|automatic registration of new users'),
             'notify_comment'    => array('Y/N', 'Notify of new comments|when new comment is added'),
             'notify_unapproved' => array('Y/N', 'Notify of unapproved news|when unapproved article is posted (by journalists)'),
@@ -248,8 +239,7 @@ function dashboard_sysconf()
             'notify_email'      => array('text', 'Email(s)|where the notification will be send, separate multyple emails by comma'),
         ),
 
-        'social' => array
-        (
+        'social' => array(
             '_COM'              => array('title', 'General:'),
             'i18n'           => array('text', 'Language code|by default en_US. See: <a href="http://en.wikipedia.org/wiki/Language_localization#Language_tags_and_codes">codes</a>'),
 
@@ -292,8 +282,7 @@ function dashboard_sysconf()
             'gplus_width'       => array('int', 'Box width, in pixels'),
         ),
 
-        'ckeditor' => array
-        (
+        'ckeditor' => array(
             '_TIP'              => array('title', 'See <a href="http://docs.cksource.com/CKEditor_3.x/Developers_Guide/Toolbar" target="_blank">CKEditor toolbar customization</a>'),
             'ck_ln1'            => array('text', "Row 1|Reqired"),
             'ck_ln2'            => array('text', "Row 2|Optional"),
@@ -306,8 +295,7 @@ function dashboard_sysconf()
             'cklang'            => array('text', "Ckeditor lang"),
         ),
 
-        'rewrite' => array
-        (
+        'rewrite' => array(
             'rw_engine'         => array('Y/N', "Use rewrite engine"),
             'rw_htaccess'       => array('label', ".htaccess real path|Automatic, not modify by user"),
             'rw_layout'         => array('text', "Real path to your layout file|e.g. /home/userdir/www/layout.php"),
@@ -410,13 +398,14 @@ function dashboard_sysconf()
             }
 
             $URI = dirname(preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']) . '.html' );
-            if ($URI == '/') 
-            {
-                $URI = '/show_news.php'; 
-            }
-            else 
-            {
-                $URI .= '/show_news.php';
+            if ($URI == '/') {
+                $URI = '/show_news.php';
+            } else {
+                if (!empty($post_cfg['rw_layout'])) {
+                    $URI .= '/'.basename($post_cfg['rw_layout']);
+                } else {
+                    $URI .= '/show_news.php';
+                }
             }
 
             // Add Cutenews rewrite rules
@@ -512,22 +501,21 @@ function dashboard_personal()
         $clause = '';
         $any_changes = FALSE;
         list($editpassword, $confirmpassword, $editnickname, $edithidemail, $more) = GET('editpassword, confirmpassword, editnickname, edithidemail, more', 'POST');
-        $avatar_file=  isset($_FILES['avatar_file'])?$_FILES['avatar_file']:null;
+
+        $avatar_file = isset($_FILES['avatar_file'])? $_FILES['avatar_file'] : null;
                 
-        if ( (!isset($member['nick']) && !empty($editnickname)) || (isset($member['nick']) && $member['nick'] !== $editnickname))
-        {
+        if ( (!isset($member['nick']) && !empty($editnickname)) || (isset($member['nick']) && $member['nick'] !== $editnickname)) {
             $any_changes = TRUE;
         }
 
-        if((!isset($member['e-hide'])&&!empty($edithidemail)) || (isset($member['e-hide']) && $member['e-hide'] !== $edithidemail))
-        {
-            $any_changes=TRUE;
+        if ((!isset($member['e-hide']) && !empty($edithidemail)) || (isset($member['e-hide']) && $member['e-hide'] !== $edithidemail)) {
+            $any_changes = TRUE;
         }
         
-        if ($editpassword)
-        {
-            if ($editpassword === $confirmpassword)
-            {
+        if ($editpassword) {
+
+            if ($editpassword === $confirmpassword) {
+
                 $any_changes = TRUE;
                 db_user_update($member['name'], "pass=".SHA256_hash($editpassword));
 
@@ -536,9 +524,8 @@ function dashboard_personal()
 
                 $clause = "Check your email.";
                 cn_send_mail($member['email'], i18n("Password was changed"), $notification);
-            }
-            else
-            {
+
+            } else {
                 cn_throw_message('Password and confirm do not match', 'e');
             }
         }
@@ -546,22 +533,24 @@ function dashboard_personal()
         // Update additional fields for personal data
         $o_more  = base64_encode(serialize($member['more']));
         $n_more  = base64_encode(serialize($more));
-        $correct = false;
 
-        if ($o_more !== $n_more)
-        {
+        // If we not update avatar file, avatar is correct (don't touch avatar)
+        $correct = (empty($avatar_file['tmp_name']))? true : false;
+
+        if ($o_more !== $n_more) {
+
             $any_changes = TRUE;
             db_user_update($member['name'], "more=".$n_more);
         }
 
         // Set an avatar
-        if (!empty($avatar_file) && $avatar_file['error'] == 0)
-        {
+        if (!empty($avatar_file) && $avatar_file['error'] == 0) {
+
             $uploads_dir = getoption('uploads_dir');
             $avatar_tmp  = $avatar_file['tmp_name'];
 
-            if ($uploads_dir)
-            {
+            if ($uploads_dir) {
+
                 $imgsize = getimagesize($avatar_tmp);
                 if (!empty($imgsize[0]) && !empty($imgsize[1])) {
 
@@ -594,8 +583,8 @@ function dashboard_personal()
         } else {
 
             // Has changes?
-            if ($any_changes)
-            {
+            if ($any_changes) {
+
                 db_user_update($member['name'], "nick=$editnickname", "e-hide=$edithidemail");
 
                 // Update & Get member from DB
@@ -603,9 +592,8 @@ function dashboard_personal()
                 $member = member_get();
 
                 cn_throw_message("User info updated! $clause");
-            }
-            else
-            {
+
+            } else {
                 cn_throw_message("No changes", 'w');
             }
         }

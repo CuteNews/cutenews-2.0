@@ -1354,10 +1354,11 @@ class FlatDB
 
         asort($klist);
 
-        // Load tag
+        // Load tags and extend data
         if ($options['tg']) { $loadn[] = 'tg'; }
         if ($options['title']) { $loadn[] = 'title'; }
         if ($options['author']) { $loadn[] = 'author'; }
+        if ($options['vcnt']) { $loadn[] = 'vcnt'; }
 
         // Do ext fields load
         if ($loadn)
@@ -1366,27 +1367,28 @@ class FlatDB
 
             foreach ($klist as $id)
             {
-                $news  = $this->list[$id];
                 $nloc  = db_get_nloc($id);
 
                 // Cache feature [floating window]
-                if ($nloc !== $oloc)
-                {
+                if ($nloc !== $oloc) {
                     $ndata = db_news_load($nloc);
                     $oloc  = $nloc;
                 }
 
                 // Append by needed fields
-                foreach ($loadn as $field) {
+                foreach ($loadn as $field) if (isset($ndata)) {
 
                     if ($field === 'author') {
-                        $this->list[$id][$field] = $ndata[$id]['u'];
+                        $this->list[ $id ][$field] = $ndata[ $id ]['u'];
                     }
                     elseif ($field === 'title') {
-                        $this->list[$id][$field] = $ndata[$id]['t'];
+                        $this->list[ $id ][$field] = $ndata[ $id ]['t'];
+                    }
+                    elseif ($field === 'vcnt') {
+                        $this->list[ $id ][$field] = $ndata[ $id ]['vcnt'];
                     }
                     else {
-                        $this->list[$id][$field] = $ndata[$id][$field];
+                        $this->list[ $id ][$field] = $ndata[ $id ][$field];
                     }
                 }
             }
