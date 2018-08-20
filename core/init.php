@@ -22,7 +22,7 @@ $ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz)) {
 
 // definitions
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.1.0');
+define('VERSION',       '2.1.2');
 define('VERSION_ID',    210);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
