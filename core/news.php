@@ -17,7 +17,7 @@ function cn_bb_decode($bb)
 
 function cn_helper_category($e)
 {
-    $nice = '';
+    $nice = array();
     $cat = cn_get_categories(TRUE);
 
     $sp = spsep($e['c']);
