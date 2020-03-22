@@ -552,16 +552,25 @@ function dashboard_personal()
             if ($uploads_dir) {
 
                 $imgsize = getimagesize($avatar_tmp);
-                if (!empty($imgsize[0]) && !empty($imgsize[1])) {
+                if ($imgsize !== FALSE) && (!empty($imgsize[0]) && !empty($imgsize[1])) {
 
-                    if (preg_match('/(jpg|jpeg|gif|png)/i', $imgsize['mime'])) {
+                    if ((imgsize[2] === IMAGETYPE_JPEG) || (imgsize[2] === IMAGETYPE_PNG) || (imgsize[2] === IMAGETYPE_GIF)) {
 
                         // remove old avatar
-                        $file_name = 'avatar_' . $member['name'] . '_' . $avatar_file['name'];
-                        if (isset($member['avatar']) && $member['avatar'] != $file_name) {
+						$permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+						$randompart =  substr(str_shuffle($permitted_chars), 0, 8);
+						if (imgsize[2] === IMAGETYPE_JPEG) {
+							$avatar_ext = '.jpg'
+						} else if (imgsize[2] === IMAGETYPE_PNG) {
+							$avatar_ext = '.png'
+						} else {
+							$avatar_ext = '.txt'
+						}
+                        $file_name = 'avatar_' . $member['name'] . '_' . $randompart . '_' . $avatar_ext;
+                        if (isset($member['avatar']) {
                             unlink($uploads_dir . $member['avatar']);
                         }
-
+						
                         if (move_uploaded_file($avatar_file['tmp_name'], $uploads_dir . $file_name)) {
 
                             $correct = true;
