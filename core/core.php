@@ -379,7 +379,7 @@ function mcs() { global $dbg_microtime; $dbg_microtime = microtime(1); }
 function mce() { global $dbg_microtime; dbg("Microtime: ".(microtime(1) - $dbg_microtime)); $dbg_microtime =  microtime(1); }
 
 // Since 1.5.0: Handle user errors
-function user_error_handler($errno, $errmsg, $filename, $linenum, $vars)
+function user_error_handler($errno, $errmsg, $filename, $linenum, $context = null)
 {
     $errtypes = array
     (
@@ -1971,6 +1971,9 @@ function setoption_rc($names, $var, $cfg)
 
     if (count($names) == 0)
     {
+        if ($cfg === '') {
+            $cfg = array();
+        }
         $cfg[$the_name] = $var;
     }
     else

@@ -38,7 +38,7 @@ class Downloader
                 foreach ($headers as $header)
                     if (substr($header, 0, 10) == 'Location: ')
                     {
-                        $responce = get_remote_file(substr($header, 10), $timeout, $head_only, $max_redirects - 1);
+                        $responce = $this->get_remote_file(substr($header, 10), $timeout, $head_only, $max_redirects - 1);
                         if ($responce !== null)
                             $responce['headers'] = array_merge($headers, $responce['headers']);
                         return $responce;
