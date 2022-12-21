@@ -1971,6 +1971,9 @@ function setoption_rc($names, $var, $cfg)
 
     if (count($names) == 0)
     {
+        if ($cfg === '') {
+            $cfg = array();
+        }
         $cfg[$the_name] = $var;
     }
     else
