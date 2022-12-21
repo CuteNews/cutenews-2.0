@@ -201,7 +201,7 @@ function SHA256_hash($str)
     {
         //    initialize the registers
         for($j = 0; $j < 8; $j++)
-            ${$vars{$j}} = $hash[$j];
+            ${$vars[$j]} = $hash[$j];
 
         //    the SHA-256 compression function
         for($j = 0; $j < 64; $j++)
@@ -233,7 +233,7 @@ function SHA256_hash($str)
 
         //    compute the next hash set
         for($j = 0; $j < 8; $j++)
-            $hash[$j] = SHA256_sum(${$vars{$j}}, $hash[$j]);
+            $hash[$j] = SHA256_sum(${$vars[$j]}, $hash[$j]);
     }
 
     // HASH HEX
