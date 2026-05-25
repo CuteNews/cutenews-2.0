@@ -378,8 +378,8 @@ function dbg($out) { echo "<PRE>"; var_dump($out); echo "</PRE>"; }
 function mcs() { global $dbg_microtime; $dbg_microtime = microtime(1); }
 function mce() { global $dbg_microtime; dbg("Microtime: ".(microtime(1) - $dbg_microtime)); $dbg_microtime =  microtime(1); }
 
-// Since 1.5.0: Handle user errors
-function user_error_handler($errno, $errmsg, $filename, $linenum, $context = null)
+// Since 1.5.0: Handle user errors; PHP 8.0 needs added "= null" because of Fatal error: Uncaught ArgumentCountError: Too few arguments to function; PHP 8.4 E_STRICT is deprecated;
+function user_error_handler($errno = null, $errmsg = null, $filename = null, $linenum = null, $vars = null)
 {
     $errtypes = array
     (
@@ -394,7 +394,7 @@ function user_error_handler($errno, $errmsg, $filename, $linenum, $context = nul
         E_USER_ERROR        => "User Error",
         E_USER_WARNING      => "User Warning",
         E_USER_NOTICE       => "User Notice",
-        E_STRICT            => "Runtime Notice",
+//        E_STRICT            => "Runtime Notice",
         E_DEPRECATED        => "Deprecated"
     );
 
@@ -1379,7 +1379,7 @@ function msg_info($title, $go_back = null)
     }
 
     echo '<section><div class="container"><div class="alert alert-warning">';
-    echo '<strong>'.i18n('Warning!').' </strong> '.i18n($title).' <a href="'.$go_back.'" class="btn btn-warning btn-xs">OK</a>';
+    echo '<strong>'.i18n('Warning!').' </strong> '.i18n($title).' <a href="'.cn_htmlspecialchars($go_back).'" class="btn btn-warning btn-xs">OK</a>';
     echo '</div></div></section>';
 
     echofooter();
@@ -1470,13 +1470,13 @@ function echoheader($image, $header_text, $bread_crumbs = false) {
         $skin_header = preg_replace("/{menu}/", $menu_result, $skin_header);
     }
 
-	$theme_bs = preg_replace('~[^a-z]~i','', getoption('skin'));
+        $theme_bs = preg_replace('~[^a-z]~i','', getoption('skin'));
     $theme_bs = $theme_bs ? $theme_bs : 'default';
 
     $skin_header = get_skin($skin_header);
     $skin_header = str_replace('{title}', ($header_text? $header_text.' / ' : '') . $SiteTitle, $skin_header);
-	$skin_header = str_replace('{theme}', $theme_bs, $skin_header); //theme
-	$skin_header = str_replace("{image-name}", $skin_prefix.$image, $skin_header);
+        $skin_header = str_replace('{theme}', $theme_bs, $skin_header); //theme
+        $skin_header = str_replace("{image-name}", $skin_prefix.$image, $skin_header);
     $skin_header = str_replace("{header-text}", $header_text, $skin_header);
     $skin_header = str_replace("{header-time}", $header_time, $skin_header);
     $skin_header = str_replace("{content-type}", $lang_content_type, $skin_header);
@@ -1512,7 +1512,7 @@ function echofooter()
     die($skin_footer);
 }
 
-// And the duck fly away.
+// And the duck fly away. Changed: Opens CutePHP.com in new window
 function b64dck()
 {
     $cr = bd_config('e2NvcHlyaWdodHN9');
@@ -1521,7 +1521,7 @@ function b64dck()
 
     global $$shder, $$sfter;
 
-    $HDpnlty = bd_config('PGNlbnRlcj48aDE+Q3V0ZU5ld3M8L2gxPjxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbSI+Q3V0ZVBIUC5jb208L2E+PC9jZW50ZXI+PGJyPg==');
+    $HDpnlty = bd_config('PGNlbnRlcj48aDE+Q3V0ZU5ld3M8L2gxPjxhIGhyZWY9Imh0dHA6Ly9jdXRlcGhwLmNvbSIgdGFyZ2V0PSJfYmxhbmsiPkN1dGVQSFAuY29tPC9hPjwvY2VudGVyPjxicj4=');
     $FTpnlty = bd_config('PGNlbnRlcj48ZGl2IGRpc3BsYXk9aW5saW5lIHN0eWxlPVwnZm9udC1zaXplOiAxMXB4XCc+UG93ZXJlZCBieSA8YSBzdHlsZT1cJ2ZvbnQtc2l6ZTogMTFweFwnIGhyZWY9XCJodHRwOi8vY3V0ZXBocC5jb20vY3V0ZW5ld3MvXCIgdGFyZ2V0PV9ibGFuaz5DdXRlTmV3czwvYT4gqSAyMDA1ICA8YSBzdHlsZT1cJ2ZvbnQtc2l6ZTogMTFweFwnIGhyZWY9XCJodHRwOi8vY3V0ZXBocC5jb20vXCIgdGFyZ2V0PV9ibGFuaz5DdXRlUEhQPC9hPi48L2Rpdj48L2NlbnRlcj4=');
 
     if (!stristr($$shder,$cr) and !stristr($$sfter,$cr))
@@ -2314,6 +2314,17 @@ function cn_load_plugins()
 function cn_load_session()
 {
     session_name('CUTENEWS_SESSION');
+
+    // Security: Set session cookie parameters with HttpOnly and Secure flags
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => $is_https,
+        'httponly'  => true,
+        'samesite'  => 'Strict',
+    ]);
     session_start();
 
     if(isset($_COOKIE['session']) && ($user = cn_cookie_restore()))
@@ -2751,7 +2762,13 @@ function cn_parse_url()
     $post_data = array();
 
     if (isset($_POST['__post_data'])) {
-        $post_data = unserialize(base64_decode($_POST['__post_data']));
+        $decoded = base64_decode($_POST['__post_data']);
+        if ($decoded !== false) {
+            $post_data = @unserialize($decoded, ['allowed_classes' => false]);
+            if ($post_data === false) {
+                $post_data = array();
+            }
+        }
     }
 
     // A. Click "confirm"
@@ -2777,7 +2794,13 @@ function cn_parse_url()
     // C. First access
     else
     {
-        $_POST['__referer'] = isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:'';
+        // Security: Sanitize referer to prevent XSS injection via crafted Referer header
+        $raw_referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        // Only allow URLs that look like valid HTTP(S) URLs to prevent javascript: injection
+        if ($raw_referer && !preg_match('#^https?://#i', $raw_referer)) {
+            $raw_referer = '';
+        }
+        $_POST['__referer'] = $raw_referer;
     }
 
     // Set POST required params to GET
@@ -2979,7 +3002,7 @@ function cn_get_menu()
         }
 
          // active menu bootstrap Mod Shixel current
-		if ($mod == $mod_key) {
+                if ($mod == $mod_key) {
             $select = ' active ';
         } else {
             $select = '';
@@ -3002,7 +3025,7 @@ function cn_get_menu()
             $link = PHP_SELF.'?mod=' . $mod_key . $action;
         }
 
-		$result .= '<li class='.$select.'><a class="nav-top-item" href="'.$link.'">'.i18n($name).'</a></li>'; // Mod Shixel
+                $result .= '<li class='.$select.'><a class="nav-top-item" href="'.$link.'">'.i18n($name).'</a></li>'; // Mod Shixel
     }
 
     return $result;
@@ -3017,7 +3040,13 @@ function cn_cookie_unpack($cookie)
     foreach ($cookies as $c) {
         $c = trim($c);
         if (isset($_COOKIE[$c])) {
-            $list[] = unserialize( base64_decode($_COOKIE[$c]) );
+            $decoded = base64_decode($_COOKIE[$c]);
+            if ($decoded !== false) {
+                $unserialized = @unserialize($decoded, ['allowed_classes' => false]);
+                $list[] = ($unserialized !== false) ? $unserialized : array();
+            } else {
+                $list[] = array();
+            }
         } else {
             $list[] = array();
         }
@@ -3032,6 +3061,7 @@ function cn_cookie_pack()
     $args   = func_get_args();
     $cookie = array_shift($args);
 
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
     $cookies = explode(',', $cookie);
     foreach ($cookies as $id => $cookie) {
         $cookie = trim($cookie);
@@ -3040,7 +3070,13 @@ function cn_cookie_pack()
         } else {
             $data = null;
         }
-        setcookie($cookie, $data);
+        setcookie($cookie, $data, [
+            'expires'  => 0,
+            'path'     => '/',
+            'secure'   => $is_https,
+            'httponly'  => true,
+            'samesite'  => 'Strict',
+        ]);
     }
 }
 
@@ -3177,7 +3213,14 @@ function cn_cookie_remember($client = false)
     }
     else
     {
-        setcookie('session', $cookie, time() + 60*60*24*2, '/');
+        $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+        setcookie('session', $cookie, [
+            'expires'  => time() + 60*60*24*2,
+            'path'     => '/',
+            'secure'   => $is_https,
+            'httponly'  => true,
+            'samesite'  => 'Strict',
+        ]);
     }
 }
 
@@ -3187,7 +3230,8 @@ function cn_cookie_restore()
     
     if($xb64d)
     {    
-        return unserialize($xb64d);
+        // Security: prevent object injection via cookie deserialization
+        return @unserialize($xb64d, ['allowed_classes' => false]);
     }
     
     return false;
@@ -3195,7 +3239,14 @@ function cn_cookie_restore()
 
 function cn_cookie_unset()
 {
-    setcookie('session', '', 0, '/');
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    setcookie('session', '', [
+        'expires'  => 0,
+        'path'     => '/',
+        'secure'   => $is_https,
+        'httponly'  => true,
+        'samesite'  => 'Strict',
+    ]);
 }
 
 // Since 2.0.3: Logout user and clean session
@@ -3970,23 +4021,23 @@ function cn_snippet_messages($area = 'new')
         $messages = cn_get_message($area[$i], 's');
 
         $type_text = 'Success - ';
-		$type_class = 'success';
+                $type_class = 'success';
 
         if ($area[$i] == 'e') {
             $type_text = 'Error - ';
-			$type_class ='danger';
+                        $type_class ='danger';
 
         } elseif ($area[$i] == 'w') {
             $type_text = 'Warning - ';
-			$type_class = 'warning';
+                        $type_class = 'warning';
         }
 
-		if ($messages) {
+                if ($messages) {
             foreach ($messages as $msg) {
                 if ($type_class == 'success') {
                     $success .= '<div class="alert alert-success fade in alert-dismissable"><b>'.$type_text.'</b> '.$msg.'<a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a></div>';
                 } else {
-                    $failed .= '<div class=\"alert alert-'.$type_class.' lead\" ><b>'.$type_text.'</b> '.$msg.'</div>';
+                    $failed .= '<div class=\"alert alert-'.$type_class.' lead\" ><b>'.addslashes(cn_htmlspecialchars($type_text)).'</b> '.addslashes(cn_htmlspecialchars($msg)).'</div>';
                 }
             }
         }

@@ -9,7 +9,7 @@ if (!defined('EXEC_TIME')) die('Access restricted');
 function cn_bb_decode($bb)
 {
     $result = array();
-    if (preg_match_all('/(\w+)\=([^\s\=]+)/i', $bb, $c, PREG_SET_ORDER))
+    if (preg_match_all('/(\w+)=([^\s=]+)/i', $bb, $c, PREG_SET_ORDER))
         foreach ($c as $k) $result[$k[1]] = $k[2];
 
     return $result;
@@ -17,7 +17,7 @@ function cn_bb_decode($bb)
 
 function cn_helper_category($e)
 {
-    $nice = array();
+    $nice = [];
     $cat = cn_get_categories(TRUE);
 
     $sp = spsep($e['c']);
@@ -387,7 +387,7 @@ function cn_modify_since($e)
     $diff = $ts - $e['id'];
 
     $out = time_since_format($diff);
-    $res = '';
+    $res = [];
     foreach ($out as $id => $v)
         if ($id != 's') $res[] = "$v $id.";
 

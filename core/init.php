@@ -22,8 +22,8 @@ $ini_dtz = ini_get('date.timezone'); if (empty($ini_dtz)) {
 
 // definitions
 define('EXEC_TIME',     microtime(true));
-define('VERSION',       '2.1.2');
-define('VERSION_ID',    210);
+define('VERSION',       '2.2.1');
+define('VERSION_ID',    221);
 define('VERSION_NAME',  'CuteNews v.' . VERSION);
 define('SERVDIR',       dirname(dirname(__FILE__).'.html'));
 define('MODULE_DIR',    SERVDIR . '/core/modules');

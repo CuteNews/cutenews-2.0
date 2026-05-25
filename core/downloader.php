@@ -74,7 +74,7 @@ class Downloader
                 fwrite($remote, 'Host: '.$parsed_url['host']."\r\n");
                 fwrite($remote, 'User-Agent: CutePHP'."\r\n");
                 fwrite($remote, 'Connection: Close'."\r\n\r\n");
-                stream_set_timeout($remote, $timeout);
+                stream_set_timeout($remote, $timeout, 0);
                 $stream_meta = stream_get_meta_data($remote);
 
                 // Fetch the response 1024 bytes at a time and watch out for a timeout
@@ -93,7 +93,7 @@ class Downloader
                     foreach ($headers as $header)
                         if (substr($header, 0, 10) == 'Location: ')
                         {
-                            $responce = get_remote_file(substr($header, 10), $timeout, $head_only, $max_redirects - 1);
+                            $responce = $this->get_remote_file(substr($header, 10), $timeout, $head_only, $max_redirects - 1);
                             if ($responce !== null)
                                 $responce['headers'] = array_merge($headers, $responce['headers']);
                             return $responce;

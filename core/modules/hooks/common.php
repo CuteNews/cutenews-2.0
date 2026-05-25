@@ -207,7 +207,15 @@ if (isset($_POST['widget_personal_keep']))
     global $_SESS;
 
     $_REQ = $_POST;
-    $_POST = unserialize(base64_decode($_POST['widget_personal_keep']));
+    $decoded_keep = base64_decode($_POST['widget_personal_keep']);
+    if ($decoded_keep !== false) {
+        $_POST = @unserialize($decoded_keep, ['allowed_classes' => false]);
+        if (!is_array($_POST)) {
+            $_POST = array();
+        }
+    } else {
+        $_POST = array();
+    }
 
     // Try authorize
     if ($_REQ['widget_personal_action'] === 'login')

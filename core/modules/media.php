@@ -79,7 +79,18 @@ function do_resize_image($root_dir, $is_thumb=true)
         $act='resize';
     }
     
-    $rms = unserialize(REQ($act.'_rms', 'POST'));
+    $raw_rms = REQ($act.'_rms', 'POST');
+    $rms = @unserialize($raw_rms, ['allowed_classes' => false]);
+    if (!is_array($rms)) {
+        cn_throw_message('Invalid data', 'e');
+        return;
+    }
+    // Sanitize: only allow simple filename strings, no path traversal
+    foreach ($rms as $k => $v) {
+        if (!is_string($v) || preg_match('/\.\./', $v) || preg_match('#[/\\\\]\.#', $v)) {
+            unset($rms[$k]);
+        }
+    }
 
     $wt = intval(REQ($act.'_size_w', 'POST'));
     $ht = intval(REQ($act.'_size_h', 'POST'));
@@ -176,6 +187,38 @@ function media_invoke()
             {
                 if (ini_get('allow_url_fopen'))
                 {
+                    // Security: Validate URL - only allow HTTP/HTTPS and block internal networks (SSRF prevention)
+                    $parsed_url = parse_url($upload_from_inet);
+                    $url_scheme = isset($parsed_url['scheme']) ? strtolower($parsed_url['scheme']) : '';
+                    $url_host   = isset($parsed_url['host']) ? strtolower($parsed_url['host']) : '';
+
+                    $ssrf_blocked = false;
+                    // Only allow http and https schemes
+                    if (!in_array($url_scheme, array('http', 'https'))) {
+                        $ssrf_blocked = true;
+                    }
+                    // Block internal/private IP ranges and localhost
+                    if (!$ssrf_blocked && $url_host) {
+                        $resolved_ip = gethostbyname($url_host);
+                        if ($resolved_ip) {
+                            if (
+                                $url_host === 'localhost' ||
+                                $url_host === '127.0.0.1' ||
+                                $url_host === '::1' ||
+                                strpos($url_host, '169.254.') === 0 ||
+                                preg_match('/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|0\.|::1|fe80:)/i', $resolved_ip) ||
+                                filter_var($resolved_ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
+                            ) {
+                                $ssrf_blocked = true;
+                            }
+                        }
+                    }
+
+                    if ($ssrf_blocked) {
+                        cn_throw_message('URL not allowed: only public HTTP/HTTPS URLs are permitted', 'e');
+                    }
+                    else
+                    {
                     // Get filename
                     $url_name = spsep($upload_from_inet, '/');
                     $url_name = $url_name[ count($url_name) - 1 ];
@@ -248,6 +291,7 @@ function media_invoke()
                     {
                         cn_throw_message("Can't overwrite or save", 'e');
                     }
+                    } // end SSRF-safe else block
                 }
                 else 
                 {
@@ -349,7 +393,20 @@ function media_invoke()
                 {                                    
                     foreach ($rm as $file)
                     {
-                        if (file_exists($cfile = $dfile . $file))
+                        // Security: prevent path traversal in file deletion
+                        if (strpos($file, '..') !== false || strpos($file, '/') !== false || strpos($file, '\\') !== false) {
+                            cn_throw_message('Invalid filename ['.cn_htmlspecialchars($file).']', 'e');
+                            continue;
+                        }
+                        // Verify the resolved path is within the uploads directory
+                        $cfile = $dfile . $file;
+                        $real_cfile = realpath($cfile);
+                        $real_udir  = realpath($udir);
+                        if ($real_cfile === false || strpos($real_cfile, $real_udir) !== 0) {
+                            cn_throw_message('Access denied for file ['.cn_htmlspecialchars($file).']', 'e');
+                            continue;
+                        }
+                        if (file_exists($cfile))
                         {
                             if (is_dir($cfile))
                             {

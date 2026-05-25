@@ -494,7 +494,7 @@ function dashboard_personal()
         'about' => array('name' => 'About me', 'type' => 'textarea'),
     );
 
-    if (request_type('POST'))
+    if (request_type())
     {
         cn_dsi_check();
 
@@ -504,7 +504,7 @@ function dashboard_personal()
 
         $avatar_file = isset($_FILES['avatar_file'])? $_FILES['avatar_file'] : null;
                 
-        if ( (!isset($member['nick']) && !empty($editnickname)) || (isset($member['nick']) && $member['nick'] !== $editnickname)) {
+        if ((!isset($member['nick']) && !empty($editnickname)) || (isset($member['nick']) && $member['nick'] !== $editnickname)) {
             $any_changes = TRUE;
         }
 
@@ -535,7 +535,7 @@ function dashboard_personal()
         $n_more  = base64_encode(serialize($more));
 
         // If we not update avatar file, avatar is correct (don't touch avatar)
-        $correct = (empty($avatar_file['tmp_name']))? true : false;
+        $correct = empty($avatar_file['tmp_name']);
 
         if ($o_more !== $n_more) {
 
@@ -543,47 +543,67 @@ function dashboard_personal()
             db_user_update($member['name'], "more=".$n_more);
         }
 
-        // Set an avatar
+        // Set new avatar
         if (!empty($avatar_file) && $avatar_file['error'] == 0) {
 
             $uploads_dir = getoption('uploads_dir');
             $avatar_tmp  = $avatar_file['tmp_name'];
 
-            if ($uploads_dir) {
+            if (empty($uploads_dir)) {
+                $uploads_dir = __DIR__ . '/../../uploads/';
+            }
 
-                $imgsize = getimagesize($avatar_tmp);
-                if (($imgsize !== FALSE) && (!empty($imgsize[0]) && !empty($imgsize[1]))) {
+            $uploads_dir = realpath($uploads_dir) . '/';
+            $imgsize = getimagesize($avatar_tmp);
+            $mime    = isset($imgsize['mime']) ? $imgsize['mime'] : '';
 
-                    if (($imgsize[2] === IMAGETYPE_JPEG) || ($imgsize[2] === IMAGETYPE_PNG) || ($imgsize[2] === IMAGETYPE_GIF)) {
+            if (preg_match('~jpe?g~i', $mime)) {
+                $dst = imagecreatefromjpeg($avatar_tmp);
+                $ext = 'jpg';
+            } elseif (preg_match('~png~i', $mime)) {
+                $dst = imagecreatefrompng($avatar_tmp);
+                $ext = 'png';
+            } elseif (preg_match('~gif~i', $mime)) {
+                $dst = imagecreatefromgif($avatar_tmp);
+                $ext = 'gif';
+            } else {
+                $dst = null;
+                $ext = '';
+            }
 
-                        // remove old avatar
-						$permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-						$randompart =  substr(str_shuffle($permitted_chars), 0, 8);
+            // Check Width x Height x Extension
+            if ($ext && $dst && imagesx($dst) && imagesy($dst)) {
 
-                        if ($imgsize[2] === IMAGETYPE_JPEG) {
-							$avatar_ext = '.jpg';
-						} else if ($imgsize[2] === IMAGETYPE_PNG) {
-							$avatar_ext = '.png';
-						} else {
-							$avatar_ext = '.txt';
-						}
+                // Normalization filename
+                $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                $randompart = substr(str_shuffle($permitted_chars), 0, 8);
+                $file_name = 'avatar_' . $member['name'] . '_' . $randompart;
+                $file_name = trim(preg_replace('~[^a-z0-9_]~i', '', $file_name), '_') . ".$ext";
 
-                        $file_name = 'avatar_' . $member['name'] . '_' . $randompart . '_' . $avatar_ext;
-                        if (isset($member['avatar'])) {
-                            unlink($uploads_dir . $member['avatar']);
-                        }
-						
-                        if (move_uploaded_file($avatar_file['tmp_name'], $uploads_dir . $file_name)) {
-
-                            $correct = true;
-                            $any_changes = true;
-                            db_user_update($member['name'], "avatar=" . $file_name);
-                        }
-                        else {
-                            cn_throw_message("Error: not uploaded", "e");
-                        }
-                    }
+                // Remove old avatar
+                if (!empty($member['avatar'])) {
+                    unlink($uploads_dir . $member['avatar']);
                 }
+
+                $avatar_file = $uploads_dir . $file_name;
+
+                switch ($ext) {
+
+                    case 'jpg': imagejpeg($dst, $avatar_file); break;
+                    case 'png': imagepng($dst, $avatar_file); break;
+                    case 'gif': imagegif($dst, $avatar_file); break;
+                }
+
+                imagedestroy($dst);
+
+                $correct = true;
+                $any_changes = true;
+                db_user_update($member['name'], "avatar=" . $file_name);
+            }
+            else {
+
+                $correct = false;
+                cn_throw_message("Error: not uploaded", "e");
             }
         }
 
