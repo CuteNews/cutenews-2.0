@@ -323,7 +323,9 @@ function db_user_list()
 // Since 2.0: Tranform $ID to date
 function db_get_nloc($id)
 {
-    return date('Y-m-d', $id);
+    $timestamp = (int)trim($id);
+    $timestamp = empty($timestamp) ? time() : $timestamp;
+    return date('Y-m-d', $timestamp);
 }
 
 // Since 2.0: Save block database entries
